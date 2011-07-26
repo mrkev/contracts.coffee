@@ -311,6 +311,9 @@ exports.Lexer = class Lexer
     if match = OPERATOR.exec @chunk
       [value] = match
       @tagParameters() if CODE.test value
+    else if '<::>' == @chunk[0..3]
+      @token 'CONTRACT_SIG', '<::>'
+      return 4
     else
       value = @chunk.charAt 0
     tag  = value

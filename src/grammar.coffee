@@ -91,6 +91,7 @@ grammar =
     o 'Invocation'
     o 'Code'
     o 'Operation'
+    o 'AssignContract'
     o 'Assign'
     o 'If'
     o 'Try'
@@ -130,6 +131,21 @@ grammar =
       val = new Literal $1
       val.isUndefined = yes if $1 is 'undefined'
       val
+  ]
+
+  AssignContract: [
+    o 'SimpleAssignable CONTRACT_SIG ContractExpression TERMINATOR SimpleAssign', -> $5
+    o 'SimpleAssignable CONTRACT_SIG INDENT ContractExpression OUTDENT TERMINATOR SimpleAssign', -> $7
+  ]
+
+  ContractExpression: [
+    o 'NUMBER', -> new Literal $1
+  ]
+
+  # Assignment to SimpleAssignable things (aka not array/object lits)
+  SimpleAssign: [
+    o 'SimpleAssignable = Expression',                -> new Assign $1, $3
+    o 'SimpleAssignable = INDENT Expression OUTDENT', -> new Assign $1, $4
   ]
 
   # Assignment of a variable, property, or index to a value.
