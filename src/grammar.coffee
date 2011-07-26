@@ -134,14 +134,17 @@ grammar =
   ]
 
   AssignContract: [
-    o 'SimpleAssignable CONTRACT_SIG ContractExpression TERMINATOR SimpleAssign', -> new Assign $5.variable, new ContractValue $3, $5.value
-    o 'SimpleAssignable CONTRACT_SIG INDENT ContractExpression OUTDENT TERMINATOR SimpleAssign', -> new Assign $7.variable, new ContractValue $4, $7.value
+    o 'SimpleAssignable CONTRACT_SIG ContractExpression
+          TERMINATOR SimpleAssign', -> new Assign $5.variable, new ContractValue $3, $5.value
+    o 'SimpleAssignable CONTRACT_SIG INDENT ContractExpression OUTDENT
+          TERMINATOR SimpleAssign', -> new Assign $7.variable, new ContractValue $4, $7.value
   ]
 
   ContractExpression: [
     o 'Identifier', -> new Value $1
     o '( ContractExpression )', -> $2
-    o 'PARAM_START ContractList PARAM_END -> INDENT ContractExpression OUTDENT', -> new FunctionContract (new Arr $2), $6
+    o 'PARAM_START ContractList PARAM_END ->
+          INDENT ContractExpression OUTDENT', -> new FunctionContract (new Arr $2), $6
     o 'Object', -> $1
     o 'Array', -> $1
   ]
