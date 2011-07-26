@@ -309,6 +309,69 @@ exports.Literal = class Literal extends Base
   toString: ->
     ' "' + @value + '"'
 
+exports.FunctionContract = class FunctionContract extends Base
+  constructor: (@dom, @rng) ->
+
+  children: ['dom', 'rng']
+
+  makeReturn: ->
+    if @isStatement() then this else new Return this
+
+  isAssignable: ->
+    IDENTIFIER.test @value
+
+  isStatement: ->
+    @value in ['break', 'continue', 'debugger']
+
+  isComplex: NO
+
+  assigns: (name) ->
+    name is @value
+
+  jumps: (o) ->
+    return no unless @isStatement()
+    if not (o and (o.loop or o.block and (@value isnt 'continue'))) then this else no
+
+  compileNode: (o) ->
+    params = @dom.compile o
+    range = @rng.compile o
+    code = "fun(#{params}, #{range})"
+    if @isStatement() then "#{@tab}#{code};" else code
+
+  # toString: ->
+  #   ' "' + @value + '"'
+
+exports.ContractValue = class ContractValue extends Base
+  constructor: (@contract, @value) ->
+
+  children: ['contract', 'value']
+
+  makeReturn: ->
+    if @isStatement() then this else new Return this
+
+  isAssignable: ->
+    IDENTIFIER.test @value
+
+  isStatement: ->
+    @value in ['break', 'continue', 'debugger']
+
+  isComplex: NO
+
+  assigns: (name) ->
+    name is @value
+
+  jumps: (o) ->
+    return no unless @isStatement()
+    if not (o and (o.loop or o.block and (@value isnt 'continue'))) then this else no
+
+  compileNode: (o) ->
+    code = "guard(#{@contract.compile(o, LEVEL_PAREN)}, #{@value.compile(o, LEVEL_PAREN)})"
+    if @isStatement() then "#{@tab}#{code};" else code
+
+  # toString: ->
+  #   ' "' + @value + '"'
+
+
 #### Return
 
 # A `return` is a *pureStatement* -- wrapping it in a closure wouldn't
