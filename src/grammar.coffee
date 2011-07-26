@@ -139,8 +139,18 @@ grammar =
   ]
 
   ContractExpression: [
-    o 'NUMBER', -> new Literal $1
+    o 'Identifier', -> new Literal $1
+    o '( ContractExpression )', -> new Literal $1
+    o 'PARAM_START ContractList PARAM_END -> INDENT ContractExpression OUTDENT', -> $1
   ]
+
+
+  ContractList: [
+    o '',                                       -> []
+    o 'ContractExpression',                                  -> [$1]
+    o 'ContractList , ContractExpression',                      -> $1.concat $3
+  ]
+
 
   # Assignment to SimpleAssignable things (aka not array/object lits)
   SimpleAssign: [
