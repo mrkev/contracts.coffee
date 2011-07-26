@@ -142,6 +142,8 @@ grammar =
     o 'Identifier', -> new Literal $1
     o '( ContractExpression )', -> new Literal $1
     o 'PARAM_START ContractList PARAM_END -> INDENT ContractExpression OUTDENT', -> $1
+    o 'Object', -> $1
+    o 'Array', -> $1
   ]
 
 
