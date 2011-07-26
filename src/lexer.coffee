@@ -311,9 +311,9 @@ exports.Lexer = class Lexer
     if match = OPERATOR.exec @chunk
       [value] = match
       @tagParameters() if CODE.test value
-    else if '<::>' == @chunk[0..3]
-      @token 'CONTRACT_SIG', '<::>'
-      return 4
+    # else if '<::>' == @chunk[0..3]
+    #   @token 'CONTRACT_SIG', '<::>'
+    #   return 4
     else
       value = @chunk.charAt 0
     tag  = value
@@ -331,6 +331,11 @@ exports.Lexer = class Lexer
     else if value in UNARY           then tag = 'UNARY'
     else if value in SHIFT           then tag = 'SHIFT'
     else if value in LOGIC or value is '?' and prev?.spaced then tag = 'LOGIC'
+    else if prev and value is "(" and prev[0] is '::' then prev[0] = 'CONTRACT_SIG'
+    else if prev and value is "{" and prev[0] is '::' then prev[0] = 'CONTRACT_SIG'
+    # the prev.spaced here is used to disambiguate legit usages of angle brackets
+    # with prtotypes
+    else if prev and value is "[" and prev[0] is '::' and prev.spaced then prev[0] = 'CONTRACT_SIG'
     else if prev and not prev.spaced
       if value is '(' and prev[0] in CALLABLE
         prev[0] = 'FUNC_EXIST' if prev[0] is '?'
