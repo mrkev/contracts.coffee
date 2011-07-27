@@ -249,13 +249,13 @@ exports.Block = class Block extends Base
           var name;
           for(name in obj) {
             if(obj.hasOwnProperty(name)) {
-              global[name] = obj[name];
+              window[name] = obj[name];
             }
           }
         }
         load(Contracts.contracts);
                      """
-    if o.bare then code else "#{headerSource}(function() {\n#{code}\n}).call(this);\n"
+    if o.bare then code else "(function() {#{headerSource}\n#{code}\n}).call(this);\n"
 
   # Compile the expressions body for the contents of a function, with
   # declarations of all inner variables pushed up to the top.
