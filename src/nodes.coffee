@@ -240,19 +240,22 @@ exports.Block = class Block extends Base
     o.scope  = new Scope null, this, null
     o.level  = LEVEL_TOP
     code     = @compileWithDeclarations o
-    loadContracts = """
-                function load(obj) {
-                    var name;
-                    for(name in obj) {
-                        if(obj.hasOwnProperty(name)) {
-                            global[name] = obj[name];
-                        }
-                    }
-                }
-                load(Contracts.contracts);
-                    """
-    # contracts don't work if bare is turned on
-    if o.bare then code else "#{contractsSource}\n#{loadContracts}\n(function() {\n#{code}\n}).call(this);\n"
+    headerSource = ""
+    if o.contracts
+      headerSource = """
+        #{contractsSource}
+        // load all the contract identifiers into the global scope
+        function load(obj) {
+          var name;
+          for(name in obj) {
+            if(obj.hasOwnProperty(name)) {
+              global[name] = obj[name];
+            }
+          }
+        }
+        load(Contracts.contracts);
+                     """
+    if o.bare then code else "#{headerSource}\n(function() {\n#{code}\n}).call(this);\n"
 
   # Compile the expressions body for the contents of a function, with
   # declarations of all inner variables pushed up to the top.
@@ -439,7 +442,12 @@ exports.ContractValue = class ContractValue extends Base
     if not (o and (o.loop or o.block and (@value isnt 'continue'))) then this else no
 
   compileNode: (o) ->
-    code = "Contracts.combinators.guard(#{@contract.compile(o, LEVEL_PAREN)}, #{@value.compile(o, LEVEL_PAREN)})"
+    if o.contracts
+      code = "Contracts.combinators.guard(
+              #{@contract.compile(o, LEVEL_PAREN)},
+              #{@value.compile(o, LEVEL_PAREN)})"
+    else
+      code = @value.compile o, LEVEL_PAREN
     if @isStatement() then "#{@tab}#{code};" else code
 
   # toString: ->
