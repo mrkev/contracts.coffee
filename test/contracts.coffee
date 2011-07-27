@@ -44,3 +44,8 @@ test "array, simple props", ->
 #   id :: [ ((Num) -> Num), Str]
 #   id = [(x) -> x, "foo"]
 #   eq (id[0] 42), 42
+
+# todo make a test that catches
+# a :: C
+# b = C
+# idents need to match up

@@ -5,6 +5,8 @@
 
 {Scope} = require './scope'
 
+{contractsSource} = require './contracts'
+
 # Import the helpers we plan to use.
 {compact, flatten, extend, merge, del, starts, ends, last} = require './helpers'
 
@@ -238,7 +240,19 @@ exports.Block = class Block extends Base
     o.scope  = new Scope null, this, null
     o.level  = LEVEL_TOP
     code     = @compileWithDeclarations o
-    if o.bare then code else "(function() {\n#{code}\n}).call(this);\n"
+    loadContracts = """
+                function load(obj) {
+                    var name;
+                    for(name in obj) {
+                        if(obj.hasOwnProperty(name)) {
+                            global[name] = obj[name];
+                        }
+                    }
+                }
+                load(Contracts.contracts);
+                    """
+    # contracts don't work if bare is turned on
+    if o.bare then code else "#{contractsSource}\n#{loadContracts}\n(function() {\n#{code}\n}).call(this);\n"
 
   # Compile the expressions body for the contents of a function, with
   # declarations of all inner variables pushed up to the top.
@@ -335,7 +349,67 @@ exports.FunctionContract = class FunctionContract extends Base
   compileNode: (o) ->
     params = @dom.compile o
     range = @rng.compile o
-    code = "fun(#{params}, #{range})"
+    code = "Contracts.combinators.fun(#{params}, #{range})"
+    if @isStatement() then "#{@tab}#{code};" else code
+
+  # toString: ->
+  #   ' "' + @value + '"'
+
+exports.ObjectContract = class ObjectContract extends Base
+  constructor: (@oc) ->
+
+  children: ['oc']
+
+  makeReturn: ->
+    if @isStatement() then this else new Return this
+
+  isAssignable: ->
+    IDENTIFIER.test @value
+
+  isStatement: ->
+    @value in ['break', 'continue', 'debugger']
+
+  isComplex: NO
+
+  assigns: (name) ->
+    name is @value
+
+  jumps: (o) ->
+    return no unless @isStatement()
+    if not (o and (o.loop or o.block and (@value isnt 'continue'))) then this else no
+
+  compileNode: (o) ->
+    code = "Contracts.combinators.object(#{@oc.compile o})"
+    if @isStatement() then "#{@tab}#{code};" else code
+
+  # toString: ->
+  #   ' "' + @value + '"'
+
+exports.ArrayContract = class ArrayContract extends Base
+  constructor: (@arc) ->
+
+  children: ['arc']
+
+  makeReturn: ->
+    if @isStatement() then this else new Return this
+
+  isAssignable: ->
+    IDENTIFIER.test @value
+
+  isStatement: ->
+    @value in ['break', 'continue', 'debugger']
+
+  isComplex: NO
+
+  assigns: (name) ->
+    name is @value
+
+  jumps: (o) ->
+    return no unless @isStatement()
+    if not (o and (o.loop or o.block and (@value isnt 'continue'))) then this else no
+
+  compileNode: (o) ->
+    code = "Contracts.combinators.arr(#{@arc.compile o})"
     if @isStatement() then "#{@tab}#{code};" else code
 
   # toString: ->
@@ -365,7 +439,7 @@ exports.ContractValue = class ContractValue extends Base
     if not (o and (o.loop or o.block and (@value isnt 'continue'))) then this else no
 
   compileNode: (o) ->
-    code = "guard(#{@contract.compile(o, LEVEL_PAREN)}, #{@value.compile(o, LEVEL_PAREN)})"
+    code = "Contracts.combinators.guard(#{@contract.compile(o, LEVEL_PAREN)}, #{@value.compile(o, LEVEL_PAREN)})"
     if @isStatement() then "#{@tab}#{code};" else code
 
   # toString: ->
