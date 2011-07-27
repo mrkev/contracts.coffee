@@ -255,7 +255,7 @@ exports.Block = class Block extends Base
         }
         load(Contracts.contracts);
                      """
-    if o.bare then code else "#{headerSource}\n(function() {\n#{code}\n}).call(this);\n"
+    if o.bare then code else "#{headerSource}(function() {\n#{code}\n}).call(this);\n"
 
   # Compile the expressions body for the contents of a function, with
   # declarations of all inner variables pushed up to the top.

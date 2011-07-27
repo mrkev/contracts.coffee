@@ -1,5 +1,4 @@
 fs = require 'fs'
-{stacktraceSource} = require './stacktrace'
 
 # pull in javascript contracts library
 
