@@ -66,7 +66,8 @@ callAndNew :: (Num) --> Bool             # call contract
 # maybe >> or >>> as safe new?
 callOnly :: (Num) --> Bool
 newOnly  :: (Num) ==> Bool
-safeNew  :: (Num) >>> {a: Num, b: Str}
+safeNew  :: (Num) >>> {a: Num, b: Str} # conflicts with shift operator
+safeNew  :: (Num) -=> {a: Num, b: Str}
 
 # objects
 o =
