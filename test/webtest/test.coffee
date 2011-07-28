@@ -10,6 +10,14 @@ test "function, first order", ->
 
   raises (-> badRng "foo"), "violates range"
 
+  opt :: (Num, Str?) -> Bool
+  opt = (n, s) -> true
+
+  ok (opt 42, "foo"), "optional abides by contract"
+  ok (opt 42), "does not include optional arg"
+
+  raises (-> opt 42, 42), "violates optional argument"
+
 test "function, higher order", ->
   ho :: ( (Str) -> Bool ) -> Bool
   ho = (f) -> f "foo"
@@ -32,6 +40,7 @@ test "function, higher order", ->
 
   raises (-> bad_ho_rng giveTrue), "bad_ho_range violates its range"
 
+
 test "objects, simple properties", ->
   o :: { a: Str, b: Num }
   o =
@@ -43,6 +52,7 @@ test "objects, simple properties", ->
 
   ok o.a = "bar", "set abides by contract"
   raises (-> o.a = 42), "set violates contract"
+
 
 test "objects, props with functions", ->
   o :: { a: ((Str) -> Num), b: Bool }

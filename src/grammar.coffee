@@ -142,6 +142,7 @@ grammar =
 
   ContractExpression: [
     o 'Identifier', -> new Value $1
+    o 'ContractExpression ?', -> new OptionalContract $1
     o '( ContractExpression )', -> $2
     o 'PARAM_START ContractList PARAM_END ->
          INDENT ContractExpression OUTDENT', -> new FunctionContract (new Arr $2), $6
