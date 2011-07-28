@@ -141,3 +141,18 @@ sort :: ([Num], (Num -> Bool)) -> [Num]
 tup :: (Str, Num, ...Bool)
 tup :: (...Bool) # immutable...unlike array
 arr :: [Str, Num, ...Bool]
+
+
+
+# naming contracts
+NumId = (Num) -> Num # ambiguous!
+NumId ::= (Num) -> Num
+NumId = #{ (Num) -> Num }
+
+Obj = {a: Num, b: Num}
+Obj ::= {a: Num, b: Num}
+Obj = #{ {a: Num, b: Num}
+
+Arr = [Num, Num]
+Arr ::= [Num, Num]
+Arr = #{ [Num, Num] }

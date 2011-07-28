@@ -119,3 +119,7 @@ test "arrays, nested", ->
   same a[1][0], "foo", "nested array get abides by contract"
   raises (-> a[1][0] = 42), "nested array set violates contract"
 
+
+# test "construct your own contracts", ->
+#   NumId ::= (Num) -> Num
+#   # Neg = !(x) -> x < 0
