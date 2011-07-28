@@ -386,7 +386,7 @@ exports.OptionalContract = class OptionalContract extends Base
   #   ' "' + @value + '"'
 
 exports.FunctionContract = class FunctionContract extends Base
-  constructor: (@dom, @rng) ->
+  constructor: (@dom, @rng, @tags) ->
 
   children: ['dom', 'rng']
 
@@ -411,7 +411,15 @@ exports.FunctionContract = class FunctionContract extends Base
   compileNode: (o) ->
     params = @dom.compile o
     range = @rng.compile o
-    code = "Contracts.combinators.fun(#{params}, #{range})"
+    options = if @tags is 'callOnly'
+      '{ callOnly: true }'
+    else if @tags is 'newOnly'
+      '{ newOnly: true }'
+    else if @tags is 'newSafe'
+      '{ newSafe: true }'
+    else
+      '{}'
+    code = "Contracts.combinators.fun(#{params}, #{range}, #{options})"
     if @isStatement() then "#{@tab}#{code};" else code
 
   # toString: ->

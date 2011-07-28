@@ -18,7 +18,7 @@ test "function, first order", ->
 
   raises (-> opt 42, 42), "violates optional argument"
 
-  even :: ( ~(x) -> (x % 2) == 0 ) -> Num
+  even :: ( !(x) -> (x % 2) == 0 ) -> Num
   even = (x) -> x
 
   same (even 4), 4, "abides by contract"
@@ -45,6 +45,28 @@ test "function, higher order", ->
     "foo"
 
   raises (-> bad_ho_rng giveTrue), "bad_ho_range violates its range"
+
+test "function, call/new only", ->
+  callOnly :: (Num) --> Num
+  callOnly = (x) -> x
+
+  same (callOnly 4), 4, "abides by contract"
+  raises (-> new callOnly 4), "violates contract by calling new"
+
+  newOnly :: (Num) ==> { a: Num }
+  newOnly = (x) -> @.a = x
+
+  x = new newOnly 42
+  same x.a, 42, "abides by contract"
+  raises (-> newOnly 42), "violates contract by not calling new"
+
+  newSafe :: (Num) -=> { a: Num }
+  newSafe = (x) -> @.a = x
+
+  withnew = new newSafe 42
+  without = newSafe 42
+  same without.a, 42, "abides by contract"
+  same withnew.a, 42, "abides by contract"
 
 
 test "objects, simple properties", ->
