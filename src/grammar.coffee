@@ -144,6 +144,12 @@ grammar =
     o 'Identifier', -> new Value $1
     o 'ContractExpression ?', -> new OptionalContract $1
     o '( ContractExpression )', -> $2
+    o 'UNARY Code', ->
+        if $1.charAt(0) is '!'
+          new FlatContract $2
+        else
+          # todo: doesn't actually give a good error message...fix the grammar
+          throw "Parse error"
     o 'PARAM_START ContractList PARAM_END ->
          INDENT ContractExpression OUTDENT', -> new FunctionContract (new Arr $2), $6
     o '{ ContractAssignList OptComma }',     -> new ObjectContract new Obj $2

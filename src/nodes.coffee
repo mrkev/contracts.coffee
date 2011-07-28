@@ -326,6 +326,35 @@ exports.Literal = class Literal extends Base
   toString: ->
     ' "' + @value + '"'
 
+exports.FlatContract = class FlatContract extends Base
+  constructor: (@pred) ->
+
+  children: ['pred']
+
+  makeReturn: ->
+    if @isStatement() then this else new Return this
+
+  isAssignable: ->
+    IDENTIFIER.test @value
+
+  isStatement: ->
+    @value in ['break', 'continue', 'debugger']
+
+  isComplex: NO
+
+  assigns: (name) ->
+    name is @value
+
+  jumps: (o) ->
+    return no unless @isStatement()
+    if not (o and (o.loop or o.block and (@value isnt 'continue'))) then this else no
+
+  compileNode: (o) ->
+    code = "Contracts.combinators.check(#{@pred.compile o})"
+    if @isStatement() then "#{@tab}#{code};" else code
+
+  # toString: ->
+  #   ' "' + @value + '"'
 exports.OptionalContract = class OptionalContract extends Base
   constructor: (@value) ->
 

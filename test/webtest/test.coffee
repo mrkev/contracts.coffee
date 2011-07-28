@@ -18,6 +18,12 @@ test "function, first order", ->
 
   raises (-> opt 42, 42), "violates optional argument"
 
+  even :: ( ~(x) -> (x % 2) == 0 ) -> Num
+  even = (x) -> x
+
+  same (even 4), 4, "abides by contract"
+  raises (-> even 3), "violates flat contract"
+
 test "function, higher order", ->
   ho :: ( (Str) -> Bool ) -> Bool
   ho = (f) -> f "foo"
