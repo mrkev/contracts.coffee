@@ -443,9 +443,7 @@ exports.ContractValue = class ContractValue extends Base
 
   compileNode: (o) ->
     if o.contracts
-      code = "Contracts.combinators.guard(
-              #{@contract.compile(o, LEVEL_PAREN)},
-              #{@value.compile(o, LEVEL_PAREN)})"
+      code = "Contracts.combinators.guard(#{@contract.compile(o, LEVEL_PAREN)},#{@value.compile(o, LEVEL_PAREN)})"
     else
       code = @value.compile o, LEVEL_PAREN
     if @isStatement() then "#{@tab}#{code};" else code

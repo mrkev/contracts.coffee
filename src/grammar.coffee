@@ -144,11 +144,36 @@ grammar =
     o 'Identifier', -> new Value $1
     o '( ContractExpression )', -> $2
     o 'PARAM_START ContractList PARAM_END ->
-          INDENT ContractExpression OUTDENT', -> new FunctionContract (new Arr $2), $6
-    o 'Object', -> new ObjectContract $1
-    o 'Array', -> new ArrayContract $1
+         INDENT ContractExpression OUTDENT', -> new FunctionContract (new Arr $2), $6
+    o '{ ContractAssignList OptComma }',     -> new ObjectContract new Obj $2
+    # o 'Array', -> new ArrayContract $1
+    o '[ ]',                                    -> new ArrayContract new Arr []
+    o '[ ContractArgList OptComma ]',           -> new ArrayContract new Arr $2
   ]
 
+  ContractArgList: [
+    o 'ContractExpression',                                     -> [$1]
+    o 'ContractArgList , ContractExpression',                   -> $1.concat $3
+    o 'ContractArgList OptComma TERMINATOR ContractExpression', -> $1.concat $4
+  ]
+
+  ContractAssignList: [
+    o '',                                                          -> []
+    o 'ContractAssignObj',                                         -> [$1]
+    o 'ContractAssignList , ContractAssignObj',                    -> $1.concat $3
+    o 'ContractAssignList OptComma TERMINATOR ContractAssignObj',  -> $1.concat $4
+    o 'ContractAssignList OptComma INDENT
+       ContractAssignList OptComma OUTDENT',                       -> $1.concat $4
+  ]
+
+  ContractAssignObj: [
+    o 'ObjAssignable',                      -> new Value $1
+    o 'ObjAssignable : ContractExpression', -> new Assign new Value($1), $3, 'object'
+    o 'ObjAssignable :
+       INDENT ContractExpression OUTDENT',  -> new Assign new Value($1), $4, 'object'
+    o 'Comment'
+
+  ]
 
   ContractList: [
     o '',                                       -> []
