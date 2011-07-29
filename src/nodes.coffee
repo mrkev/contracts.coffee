@@ -335,8 +335,6 @@ exports.FlatContract = class FlatContract extends Base
     code = "Contracts.combinators.check(#{@pred.compile o})"
     if @isStatement() then "#{@tab}#{code};" else code
 
-  # toString: ->
-  #   ' "' + @value + '"'
 exports.OptionalContract = class OptionalContract extends Base
   constructor: (@value) ->
 
@@ -346,8 +344,6 @@ exports.OptionalContract = class OptionalContract extends Base
     code = "Contracts.combinators.opt(#{@value.compile o})"
     if @isStatement() then "#{@tab}#{code};" else code
 
-  # toString: ->
-  #   ' "' + @value + '"'
 
 exports.FunctionContract = class FunctionContract extends Base
   constructor: (@dom, @rng, @tags) ->
@@ -371,8 +367,6 @@ exports.FunctionContract = class FunctionContract extends Base
     code = "Contracts.combinators.fun(#{params}, #{range}, #{options})"
     if @isStatement() then "#{@tab}#{code};" else code
 
-  # toString: ->
-  #   ' "' + @value + '"'
 exports.RestContract = class RestContract extends Base
   constructor: (@contract) ->
 
@@ -381,9 +375,6 @@ exports.RestContract = class RestContract extends Base
   compileNode: (o) ->
     code = "Contracts.combinators.___(#{@contract.compile o})"
     if @isStatement() then "#{@tab}#{code};" else code
-
-  # toString: ->
-  #   ' "' + @value + '"'
 
 
 exports.ObjectContract = class ObjectContract extends Base
@@ -395,8 +386,6 @@ exports.ObjectContract = class ObjectContract extends Base
     code = "Contracts.combinators.object(#{@oc.compile o})"
     if @isStatement() then "#{@tab}#{code};" else code
 
-  # toString: ->
-  #   ' "' + @value + '"'
 
 exports.ArrayContract = class ArrayContract extends Base
   constructor: (@arc) ->
@@ -406,9 +395,6 @@ exports.ArrayContract = class ArrayContract extends Base
   compileNode: (o) ->
     code = "Contracts.combinators.arr(#{@arc.compile o})"
     if @isStatement() then "#{@tab}#{code};" else code
-
-  # toString: ->
-  #   ' "' + @value + '"'
 
 exports.ContractValue = class ContractValue extends Base
   constructor: (@contract, @value) ->
@@ -422,9 +408,6 @@ exports.ContractValue = class ContractValue extends Base
     else
       code = @value.compile o, LEVEL_PAREN
     if @isStatement() then "#{@tab}#{code};" else code
-
-  # toString: ->
-  #   ' "' + @value + '"'
 
 
 #### Return
