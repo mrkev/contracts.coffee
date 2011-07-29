@@ -182,6 +182,10 @@ test "arrays, with rest operator", ->
   raises (-> b[0] = 42), "set violates contract"
   raises (-> b[2] = "foo"), "set violates contract"
 
+  raises (->
+    c :: [...Bool, Str]
+    c = ["foo", 42]), "cannot construct a contract with ... in anything other than the last position of the array"
+
 
 # test "construct your own contracts", ->
 #   NumId ::= (Num) -> Num
