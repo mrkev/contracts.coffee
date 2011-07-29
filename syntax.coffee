@@ -76,7 +76,7 @@ o =
   f: (x) -> x
 
 
-# external
+
 o :: { a : Num, b: Str, f: ((any) -> any) }
 o ::
   a: Num
