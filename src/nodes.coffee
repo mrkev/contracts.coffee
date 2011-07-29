@@ -331,24 +331,6 @@ exports.FlatContract = class FlatContract extends Base
 
   children: ['pred']
 
-  makeReturn: ->
-    if @isStatement() then this else new Return this
-
-  isAssignable: ->
-    IDENTIFIER.test @value
-
-  isStatement: ->
-    @value in ['break', 'continue', 'debugger']
-
-  isComplex: NO
-
-  assigns: (name) ->
-    name is @value
-
-  jumps: (o) ->
-    return no unless @isStatement()
-    if not (o and (o.loop or o.block and (@value isnt 'continue'))) then this else no
-
   compileNode: (o) ->
     code = "Contracts.combinators.check(#{@pred.compile o})"
     if @isStatement() then "#{@tab}#{code};" else code
@@ -359,24 +341,6 @@ exports.OptionalContract = class OptionalContract extends Base
   constructor: (@value) ->
 
   children: ['value']
-
-  makeReturn: ->
-    if @isStatement() then this else new Return this
-
-  isAssignable: ->
-    IDENTIFIER.test @value
-
-  isStatement: ->
-    @value in ['break', 'continue', 'debugger']
-
-  isComplex: NO
-
-  assigns: (name) ->
-    name is @value
-
-  jumps: (o) ->
-    return no unless @isStatement()
-    if not (o and (o.loop or o.block and (@value isnt 'continue'))) then this else no
 
   compileNode: (o) ->
     code = "Contracts.combinators.opt(#{@value.compile o})"
@@ -389,24 +353,6 @@ exports.FunctionContract = class FunctionContract extends Base
   constructor: (@dom, @rng, @tags) ->
 
   children: ['dom', 'rng']
-
-  makeReturn: ->
-    if @isStatement() then this else new Return this
-
-  isAssignable: ->
-    IDENTIFIER.test @value
-
-  isStatement: ->
-    @value in ['break', 'continue', 'debugger']
-
-  isComplex: NO
-
-  assigns: (name) ->
-    name is @value
-
-  jumps: (o) ->
-    return no unless @isStatement()
-    if not (o and (o.loop or o.block and (@value isnt 'continue'))) then this else no
 
   compileNode: (o) ->
     params = @dom.compile o
@@ -432,24 +378,6 @@ exports.RestContract = class RestContract extends Base
 
   children: ['contract']
 
-  makeReturn: ->
-    if @isStatement() then this else new Return this
-
-  isAssignable: ->
-    IDENTIFIER.test @value
-
-  isStatement: ->
-    @value in ['break', 'continue', 'debugger']
-
-  isComplex: NO
-
-  assigns: (name) ->
-    name is @value
-
-  jumps: (o) ->
-    return no unless @isStatement()
-    if not (o and (o.loop or o.block and (@value isnt 'continue'))) then this else no
-
   compileNode: (o) ->
     code = "Contracts.combinators.___(#{@contract.compile o})"
     if @isStatement() then "#{@tab}#{code};" else code
@@ -463,24 +391,6 @@ exports.ObjectContract = class ObjectContract extends Base
 
   children: ['oc']
 
-  makeReturn: ->
-    if @isStatement() then this else new Return this
-
-  isAssignable: ->
-    IDENTIFIER.test @value
-
-  isStatement: ->
-    @value in ['break', 'continue', 'debugger']
-
-  isComplex: NO
-
-  assigns: (name) ->
-    name is @value
-
-  jumps: (o) ->
-    return no unless @isStatement()
-    if not (o and (o.loop or o.block and (@value isnt 'continue'))) then this else no
-
   compileNode: (o) ->
     code = "Contracts.combinators.object(#{@oc.compile o})"
     if @isStatement() then "#{@tab}#{code};" else code
@@ -492,24 +402,6 @@ exports.ArrayContract = class ArrayContract extends Base
   constructor: (@arc) ->
 
   children: ['arc']
-
-  makeReturn: ->
-    if @isStatement() then this else new Return this
-
-  isAssignable: ->
-    IDENTIFIER.test @value
-
-  isStatement: ->
-    @value in ['break', 'continue', 'debugger']
-
-  isComplex: NO
-
-  assigns: (name) ->
-    name is @value
-
-  jumps: (o) ->
-    return no unless @isStatement()
-    if not (o and (o.loop or o.block and (@value isnt 'continue'))) then this else no
 
   compileNode: (o) ->
     code = "Contracts.combinators.arr(#{@arc.compile o})"
@@ -523,23 +415,6 @@ exports.ContractValue = class ContractValue extends Base
 
   children: ['contract', 'value']
 
-  makeReturn: ->
-    if @isStatement() then this else new Return this
-
-  isAssignable: ->
-    IDENTIFIER.test @value
-
-  isStatement: ->
-    @value in ['break', 'continue', 'debugger']
-
-  isComplex: NO
-
-  assigns: (name) ->
-    name is @value
-
-  jumps: (o) ->
-    return no unless @isStatement()
-    if not (o and (o.loop or o.block and (@value isnt 'continue'))) then this else no
 
   compileNode: (o) ->
     if o.contracts
