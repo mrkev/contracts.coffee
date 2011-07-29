@@ -411,6 +411,9 @@ exports.FunctionContract = class FunctionContract extends Base
   compileNode: (o) ->
     params = @dom.compile o
     range = @rng.compile o
+    if @rng instanceof FlatContract
+      depargs = ("$#{n}" for n in [1..@dom.objects.length]).join(", ")
+      range = "function(#{depargs}) { return #{range}; }"
     options = if @tags is 'callOnly'
       '{ callOnly: true }'
     else if @tags is 'newOnly'

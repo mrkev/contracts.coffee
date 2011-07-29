@@ -69,6 +69,22 @@ test "function, call/new only", ->
   same withnew.a, 42, "abides by contract"
 
 
+test "function, dependent", ->
+  inc :: (Num) -> !(result) -> result > $1
+  inc = (x) -> x + 1
+
+  same (inc 42), 43, "abides by contract"
+
+  bad_inc :: (Num) -> !(result) -> result > $1
+  bad_inc = (x) -> x - 1
+
+  raises (-> bad_inc 42), "violates dependent contract"
+
+  bad_inc :: (Str, Num) -> !(result) -> result > $2
+  bad_inc = (x, y) -> y - 1
+
+  raises (-> bad_inc "foo", 42), "violates multi arg dependent contract"
+
 test "objects, simple properties", ->
   o :: { a: Str, b: Num }
   o =
