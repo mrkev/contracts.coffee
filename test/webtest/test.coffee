@@ -97,6 +97,10 @@ test "objects, simple properties", ->
   ok o.a = "bar", "set abides by contract"
   raises (-> o.a = 42), "set violates contract"
 
+  raises (->
+    o_construct_bad :: { a: Num, b: Bool }
+    o_construct_bad = a: 42 ), "missing property guarenteed in contract"
+
   o :: { a: Str, b: Num? }
   o =
     a: "foo"
@@ -121,9 +125,6 @@ test "objects, props with functions", ->
 
   raises (-> o_bad.a "foo"), "violates contract in range"
 
-  raises (->
-    o_construct_bad :: { a: ((Str) -> Num), b: Bool }
-    o_construct_bad =  { a: (s) -> s }), "missing property guarenteed in contract"
 
 
 test "objects, nested", ->
