@@ -172,6 +172,16 @@ test "arrays, with rest operator", ->
   same a[0], 42, "array get abides by contract"
   raises (-> a[0] = "foo"), "array set violates contract"
 
+  b :: [Str, Num, ...Bool]
+  b = ["foo", 42, false, true, false]
+
+  same b[0], "foo", "get abides by contract"
+  same b[2], false, "get abides by contract"
+  ok (b[0] = "bar"), "set abides by contract"
+  ok (b[2] = true), "set abides by contract"
+  raises (-> b[0] = 42), "set violates contract"
+  raises (-> b[2] = "foo"), "set violates contract"
+
 
 # test "construct your own contracts", ->
 #   NumId ::= (Num) -> Num
