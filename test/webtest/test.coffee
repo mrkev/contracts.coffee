@@ -165,6 +165,13 @@ test "arrays, nested", ->
   same a[1][0], "foo", "nested array get abides by contract"
   raises (-> a[1][0] = 42), "nested array set violates contract"
 
+test "arrays, with rest operator", ->
+  a :: [...Num]
+  a = [42, 22, 24]
+
+  same a[0], 42, "array get abides by contract"
+  raises (-> a[0] = "foo"), "array set violates contract"
+
 
 # test "construct your own contracts", ->
 #   NumId ::= (Num) -> Num

@@ -166,9 +166,14 @@ grammar =
   ]
 
   ContractArgList: [
-    o 'ContractExpression',                                     -> [$1]
-    o 'ContractArgList , ContractExpression',                   -> $1.concat $3
-    o 'ContractArgList OptComma TERMINATOR ContractExpression', -> $1.concat $4
+    o 'ContractArrExpression',                                     -> [$1]
+    o 'ContractArgList , ContractArrExpression',                   -> $1.concat $3
+    o 'ContractArgList OptComma TERMINATOR ContractArrExpression', -> $1.concat $4
+  ]
+
+  ContractArrExpression: [
+    o 'ContractExpression', -> $1
+    o '... ContractExpression', -> new RestContract $2
   ]
 
   ContractAssignList: [

@@ -427,6 +427,36 @@ exports.FunctionContract = class FunctionContract extends Base
 
   # toString: ->
   #   ' "' + @value + '"'
+exports.RestContract = class RestContract extends Base
+  constructor: (@contract) ->
+
+  children: ['contract']
+
+  makeReturn: ->
+    if @isStatement() then this else new Return this
+
+  isAssignable: ->
+    IDENTIFIER.test @value
+
+  isStatement: ->
+    @value in ['break', 'continue', 'debugger']
+
+  isComplex: NO
+
+  assigns: (name) ->
+    name is @value
+
+  jumps: (o) ->
+    return no unless @isStatement()
+    if not (o and (o.loop or o.block and (@value isnt 'continue'))) then this else no
+
+  compileNode: (o) ->
+    code = "Contracts.combinators.___(#{@contract.compile o})"
+    if @isStatement() then "#{@tab}#{code};" else code
+
+  # toString: ->
+  #   ' "' + @value + '"'
+
 
 exports.ObjectContract = class ObjectContract extends Base
   constructor: (@oc) ->
