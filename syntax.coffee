@@ -40,7 +40,7 @@ o = { a: Str, b: Bool }
 # - other values (42, "foo") are errors (could also implicitly wrap as typeof contracts, but I prefer an error)
 
 # dependent
-inc :: x:Num -> (result > x) # explicit name in the contract
+inc :: (Num) -> !(result) -> result > $1 )
 inc = (x) -> x + 1
 
 # possibilities...
