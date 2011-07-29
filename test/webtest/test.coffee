@@ -97,6 +97,13 @@ test "objects, simple properties", ->
   ok o.a = "bar", "set abides by contract"
   raises (-> o.a = 42), "set violates contract"
 
+  o :: { a: Str, b: Num? }
+  o =
+    a: "foo"
+
+  same o.a, "foo", "get abides by contract"
+  ok (o.b = 42), "set abides by contract"
+  raises (-> o.b = "foo"), "set violates contract"
 
 test "objects, props with functions", ->
   o :: { a: ((Str) -> Num), b: Bool }
