@@ -135,9 +135,9 @@ grammar =
 
   AssignContract: [
     o 'SimpleAssignable CONTRACT_SIG ContractExpression
-          TERMINATOR SimpleAssign', -> new Assign $5.variable, new ContractValue $3, $5.value
+          TERMINATOR SimpleAssign', -> new Assign $5.variable, new ContractValue $3, $5.value, $1, $5.variable
     o 'SimpleAssignable CONTRACT_SIG INDENT ContractExpression OUTDENT
-          TERMINATOR SimpleAssign', -> new Assign $7.variable, new ContractValue $4, $7.value
+          TERMINATOR SimpleAssign', -> new Assign $7.variable, new ContractValue $4, $7.value, $1, $7.variable
   ]
 
   ContractExpression: [

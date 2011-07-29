@@ -351,7 +351,7 @@ exports.FunctionContract = class FunctionContract extends Base
   compileNode: (o) ->
     params = @dom.compile o
     range = @rng.compile o
-    if @rng instanceof FlatContract
+    if @rng instanceof FlatContract # dependent function contract case
       depargs = ("$#{n}" for n in [1..@dom.objects.length]).join(", ")
       range = "function(#{depargs}) { return #{range}; }"
     options = if @tags is 'callOnly'
@@ -391,11 +391,13 @@ exports.ArrayContract = class ArrayContract extends Base
 
 
 exports.ContractValue = class ContractValue extends Base
-  constructor: (@contract, @value) ->
+  constructor: (@contract, @value, @contract_var, @value_var) ->
 
   children: ['contract', 'value']
 
   compileNode: (o) ->
+    if not (@contract_var.base.value is @value_var.base.value) 
+      throw new SyntaxError "Variable name differs between value (#{@value_var.base.value}) and contract (#{@contract_var.base.value})"
     if o.contracts
       "Contracts.combinators.guard(#{@contract.compile(o, LEVEL_PAREN)},#{@value.compile(o, LEVEL_PAREN)})"
     else
