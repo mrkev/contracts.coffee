@@ -332,8 +332,7 @@ exports.FlatContract = class FlatContract extends Base
   children: ['pred']
 
   compileNode: (o) ->
-    code = "Contracts.combinators.check(#{@pred.compile o})"
-    if @isStatement() then "#{@tab}#{code};" else code
+   "Contracts.combinators.check(#{@pred.compile o})"   
 
 exports.OptionalContract = class OptionalContract extends Base
   constructor: (@value) ->
@@ -341,8 +340,7 @@ exports.OptionalContract = class OptionalContract extends Base
   children: ['value']
 
   compileNode: (o) ->
-    code = "Contracts.combinators.opt(#{@value.compile o})"
-    if @isStatement() then "#{@tab}#{code};" else code
+    "Contracts.combinators.opt(#{@value.compile o})"
 
 
 exports.FunctionContract = class FunctionContract extends Base
@@ -364,8 +362,8 @@ exports.FunctionContract = class FunctionContract extends Base
       '{ newSafe: true }'
     else
       '{}'
-    code = "Contracts.combinators.fun(#{params}, #{range}, #{options})"
-    if @isStatement() then "#{@tab}#{code};" else code
+    "Contracts.combinators.fun(#{params}, #{range}, #{options})"
+    
 
 exports.RestContract = class RestContract extends Base
   constructor: (@contract) ->
@@ -373,9 +371,7 @@ exports.RestContract = class RestContract extends Base
   children: ['contract']
 
   compileNode: (o) ->
-    code = "Contracts.combinators.___(#{@contract.compile o})"
-    if @isStatement() then "#{@tab}#{code};" else code
-
+    "Contracts.combinators.___(#{@contract.compile o})"
 
 exports.ObjectContract = class ObjectContract extends Base
   constructor: (@oc) ->
@@ -383,9 +379,7 @@ exports.ObjectContract = class ObjectContract extends Base
   children: ['oc']
 
   compileNode: (o) ->
-    code = "Contracts.combinators.object(#{@oc.compile o})"
-    if @isStatement() then "#{@tab}#{code};" else code
-
+    "Contracts.combinators.object(#{@oc.compile o})"
 
 exports.ArrayContract = class ArrayContract extends Base
   constructor: (@arc) ->
@@ -393,22 +387,19 @@ exports.ArrayContract = class ArrayContract extends Base
   children: ['arc']
 
   compileNode: (o) ->
-    code = "Contracts.combinators.arr(#{@arc.compile o})"
-    if @isStatement() then "#{@tab}#{code};" else code
+    "Contracts.combinators.arr(#{@arc.compile o})"
+
 
 exports.ContractValue = class ContractValue extends Base
   constructor: (@contract, @value) ->
 
   children: ['contract', 'value']
 
-
   compileNode: (o) ->
     if o.contracts
-      code = "Contracts.combinators.guard(#{@contract.compile(o, LEVEL_PAREN)},#{@value.compile(o, LEVEL_PAREN)})"
+      "Contracts.combinators.guard(#{@contract.compile(o, LEVEL_PAREN)},#{@value.compile(o, LEVEL_PAREN)})"
     else
-      code = @value.compile o, LEVEL_PAREN
-    if @isStatement() then "#{@tab}#{code};" else code
-
+      @value.compile o, LEVEL_PAREN
 
 #### Return
 
