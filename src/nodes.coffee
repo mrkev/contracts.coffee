@@ -342,11 +342,14 @@ exports.OptionalContract = class OptionalContract extends Base
   compileNode: (o) ->
     "Contracts.combinators.opt(#{@value.compile o})"
 
+makeObjectProp = (name, value) ->
+  new Assign new Value(new Literal name), new Value(new Literal value), 'object'
 
 exports.FunctionContract = class FunctionContract extends Base
-  constructor: (@dom, @rng, @tags) ->
+  constructor: (@dom, @rng, @tags, opts) ->
+    @options = opts or new Obj []
 
-  children: ['dom', 'rng']
+  children: ['dom', 'rng', 'options']
 
   compileNode: (o) ->
     params = @dom.compile o
@@ -354,15 +357,14 @@ exports.FunctionContract = class FunctionContract extends Base
     if @rng instanceof FlatContract # dependent function contract case
       depargs = ("$#{n}" for n in [1..@dom.objects.length]).join(", ")
       range = "function(#{depargs}) { return #{range}; }"
-    options = if @tags is 'callOnly'
-      '{ callOnly: true }'
+    if @tags is 'callOnly'
+      @options.properties.push(makeObjectProp "callOnly", "true")
     else if @tags is 'newOnly'
-      '{ newOnly: true }'
+      console.log @options
+      @options.properties.push(makeObjectProp "newOnly", "true")
     else if @tags is 'newSafe'
-      '{ newSafe: true }'
-    else
-      '{}'
-    "Contracts.combinators.fun(#{params}, #{range}, #{options})"
+      @options.properties.push(makeObjectProp "newSafe", "true")
+    "Contracts.combinators.fun(#{params}, #{range}, #{@options.compile o})"
     
 
 exports.RestContract = class RestContract extends Base

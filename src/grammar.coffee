@@ -151,13 +151,18 @@ grammar =
           # todo: doesn't actually give a good error message...fix the grammar
           throw "Parse error"
     o 'PARAM_START ContractList PARAM_END ContractFunGlyph
-         INDENT ContractExpression OUTDENT', -> new FunctionContract (new Arr $2), $6, $4
+         INDENT ContractExpression FunctionOptions OUTDENT', -> new FunctionContract (new Arr $2), $6, $4, $7
     o '{ ContractAssignList OptComma }',     -> new ObjectContract new Obj $2
     # o 'Array', -> new ArrayContract $1
     o '[ ]',                                    -> new ArrayContract new Arr []
     o '[ ContractArgList OptComma ]',           -> new ArrayContract new Arr $2
   ]
 
+  FunctionOptions: [
+    o '', -> new Obj []
+    o 'LOGIC { ContractAssignObj }', -> new Obj [$3]
+
+  ]
   ContractFunGlyph: [
     o '->',  -> 'func'
     o '-->', -> 'callOnly'

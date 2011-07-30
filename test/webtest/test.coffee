@@ -85,6 +85,24 @@ test "function, dependent", ->
 
   raises (-> bad_inc "foo", 42), "violates multi arg dependent contract"
 
+test "function, this contract", ->
+  f :: (Str) -> Str | this: {name: Str}
+  f = (x) -> @.name + x
+
+  o = 
+    name: "Bob"
+    append: f
+
+  same (o.append ", Hiya!"), "Bob, Hiya!", "abides by contract"
+  raises (-> f "foo"), "violates this contract"
+
+  bad_o = 
+    name: 42
+    append: f
+
+  raises (-> bad_o.append "foo"), "violates this contract"
+
+
 test "objects, simple properties", ->
   o :: { a: Str, b: Num }
   o =
@@ -149,6 +167,7 @@ test "objects, nested", ->
 
   same o.a, 42, "newline syntax works fine for get"
   raises (-> o.a = "foo"), "newline syntax works fine for set"
+
 
 test "arrays, basic", ->
   a :: [Num, Str]
