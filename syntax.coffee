@@ -117,7 +117,10 @@ o ::
 o ::
   a : Num,
   b: Str,
-  f: (any) -> any {pre: (obj) -> ...}
+  f: (any) -> any 
+      | pre: (obj) -> ...
+      | post: (obj) -> ...
+      | @: {name: Str, age: Num}
   # or
   f: (any, pre: (obj) -> ...) -> any
 
