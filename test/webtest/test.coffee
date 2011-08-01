@@ -176,6 +176,12 @@ test "arrays, basic", ->
   same a[0], 42, "array get abides by contract"
   raises (-> a[0] = "foo"), "array set violates contract"
 
+  a:: [Num, Str] # since space is meaningful make sure this also is array contract not prototype
+  a = [42, "foo"]
+
+  same a[0], 42, "array get abides by contract"
+  raises (-> a[0] = "foo"), "array set violates contract"
+
 
 test "arrays, nested", ->
   a :: [Num, [Str, Bool]]
