@@ -1,7 +1,7 @@
 # note that these tests are really just checking
 # the grammar. Can't actually test that the contracts are working
 # beause we depend on Proxy which node (aka V8) doesn't have yet.
-# Actual contract functionality tests are found elsewhere.
+# Actual contract functionality tests are found in webtests/.
 
 test "function, simple first order", ->
   id :: (Num) -> Num
@@ -15,7 +15,7 @@ test "function, higher order in params", ->
   eq (id 4), 4
 
 # test "function, higher order in params, implicit parens", ->
-#   id <::> ( (Num) -> Str, Bool ) -> Num
+#   id :: ( (Num) -> Str, Bool ) -> Num
 #   id = (x) -> x
 
 #   eq (id 4), 4

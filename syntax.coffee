@@ -89,10 +89,13 @@ o ::
   a: Num
   b: Num? # optional
   c: Str
-  d: {value: Str, writable: false}
+  d: Str | writable: false
   e: Self # or self
-  {frozen: true}
+  f: Num
+  | frozen: true
+    sealed: true 
 # so last property can be an options object for the contract...
+o :: {a: Num, b: Str | writable: false, c: Num | ennumerable: true} | sealed: true
 
 o ::
   a: Num
@@ -125,14 +128,16 @@ o ::
   f: (any, pre: (obj) -> ...) -> any
 
 
+
+
 o ::
   f: (pre:Num, Bool, this: {a:Bool}, pre: ((obj) -> ...), post: ((obj) -> ...))
      -> ( pre > res)
 # can disambiguate named contract arguments from pre/post/this based on
 # position...this/pre/post contracts must come at the end
 
-ar :: (Str, Num, Bool)
-ar :: [Str, Num, Bool]
+ar :: (Str, Num, Bool)  
+ar :: [Str, Num, Bool]  
 ar = ["foo", 42, false]
 
 fst :: ((Str, Num)) -> Str
@@ -146,17 +151,21 @@ tup :: (Str, Num, ...Bool)
 tup :: (...Bool) # immutable...unlike array
 arr :: [Str, Num, ...Bool]
 
-
-
 # naming contracts
-NumId = (Num) -> Num # ambiguous!
-NumId ::= (Num) -> Num
-NumId = #{ (Num) -> Num }
+NumId = ?(Num) -> Num
+Obj   = ?{a: Num, b: Num}
+Arr   = ?[Num, Num]
 
-Obj = {a: Num, b: Num}
-Obj ::= {a: Num, b: Num}
-Obj = #{ {a: Num, b: Num}
+retPrim :: (Num) -> !isPrime
+retPrime = ...
 
-Arr = [Num, Num]
-Arr ::= [Num, Num]
-Arr = #{ [Num, Num] }
+f :: (Num, !(x) -> isPrime x) -> Bool
+f :: (Num, !if b then Prime else Even) -> !if b then Prime else Even
+
+
+
+
+
+
+
+
