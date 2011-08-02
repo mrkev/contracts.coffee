@@ -324,15 +324,7 @@ exports.Literal = class Literal extends Base
     if @isStatement() then "#{@tab}#{code};" else code
 
   toString: ->
-    ' "' + @value + '"'
-
-exports.FlatContract = class FlatContract extends Base
-  constructor: (@pred) ->
-
-  children: ['pred']
-
-  compileNode: (o) ->
-   "Contracts.combinators.check(#{@pred.compile o})"   
+    ' "' + @value + '"' 
 
 exports.OptionalContract = class OptionalContract extends Base
   constructor: (@value) ->
@@ -341,6 +333,14 @@ exports.OptionalContract = class OptionalContract extends Base
 
   compileNode: (o) ->
     "Contracts.combinators.opt(#{@value.compile o})"
+
+exports.WrapContract = class WrapContract extends Base
+  constructor: (@contract) ->
+
+  children: ['contract']
+
+  compileNode: (o) ->
+    "(#{@contract.compile o}).toContract()"   
 
 makeObjectProp = (name, value) ->
   new Assign new Value(new Literal name), new Value(new Literal value), 'object'
@@ -354,7 +354,7 @@ exports.FunctionContract = class FunctionContract extends Base
   compileNode: (o) ->
     params = @dom.compile o
     range = @rng.compile o
-    if @rng instanceof FlatContract # dependent function contract case
+    if @rng instanceof WrapContract # dependent function contract case
       depargs = ("$#{n}" for n in [1..@dom.objects.length]).join(", ")
       range = "function(#{depargs}) { return #{range}; }"
     if @tags is 'callOnly'

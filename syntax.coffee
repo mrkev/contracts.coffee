@@ -160,7 +160,21 @@ retPrim :: (Num) -> !isPrime
 retPrime = ...
 
 f :: (Num, !(x) -> isPrime x) -> Bool
-f :: (Num, !if b then Prime else Even) -> !if b then Prime else Even
+
+NumId = ? (Num) -> Num
+id :: !NumId
+id = (x) -> x
+
+id :: (!(x) -> typeof x is 'number') -> Num
+id = (x) -> x
+
+MyEven = ? !(x) -> x % 2 is 0
+idEven :: (MyEven) -> MyEven
+idEven = (x) -> x
+
+MyEven = (x) -> x % 2 is 0    
+idEven :: (!MyEven) -> !MyEven
+idEven = (x) -> x
 
 
 

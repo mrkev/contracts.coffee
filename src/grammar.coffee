@@ -90,8 +90,9 @@ grammar =
     o 'Value'
     o 'Invocation'
     o 'Code'
-    o 'Operation'
+    o 'EscapeContract'
     o 'AssignContract'
+    o 'Operation'
     o 'Assign'
     o 'If'
     o 'Try'
@@ -133,6 +134,10 @@ grammar =
       val
   ]
 
+  EscapeContract: [
+    o '? ContractExpression', -> $2
+  ]
+  
   AssignContract: [
     o 'SimpleAssignable CONTRACT_SIG ContractExpression
           TERMINATOR SimpleAssign', -> new Assign $5.variable, new ContractValue $3, $5.value, $1, $5.variable
@@ -144,9 +149,9 @@ grammar =
     o 'Identifier', -> new Value $1
     o 'ContractExpression ?', -> new OptionalContract $1
     o '( ContractExpression )', -> $2
-    o 'UNARY Code', ->
+    o 'UNARY Expression', ->
         if $1.charAt(0) is '!'
-          new FlatContract $2
+          new WrapContract $2
         else
           # todo: doesn't actually give a good error message...fix the grammar
           throw "Parse error"

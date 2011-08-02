@@ -70,6 +70,10 @@ test "function, call/new only", ->
 
 
 test "function, dependent", ->
+  # gt = (result) -> result > $1
+
+  # inc :: (Num) -> !gt
+
   inc :: (Num) -> !(result) -> result > $1
   inc = (x) -> x + 1
 
@@ -178,7 +182,7 @@ test "arrays, basic", ->
 
   a:: [Num, Str] # since space is meaningful make sure this also is array contract not prototype
   a = [42, "foo"]
-
+ 
   same a[0], 42, "array get abides by contract"
   raises (-> a[0] = "foo"), "array set violates contract"
 
@@ -212,6 +216,39 @@ test "arrays, with rest operator", ->
     c = ["foo", 42]), "cannot construct a contract with ... in anything other than the last position of the array"
 
 
-# test "construct your own contracts", ->
-#   NumId ::= (Num) -> Num
-#   # Neg = !(x) -> x < 0
+test "construct your own contracts", ->
+  NumId = ? (Num) -> Num
+
+  id :: !NumId
+  id = (x) -> x
+
+  same (id 42), 42, "abides by contract"
+  raises (-> id "foo"), "violates contract"
+
+  id :: (!(x) -> typeof x is 'number') -> Num
+  id = (x) -> x
+
+  same (id 42), 42, "abides by contract"
+  raises (-> id "foo"), "violates contract"
+
+  MyEven = ? !(x) -> x % 2 is 0
+
+  idEven :: (MyEven) -> MyEven
+  idEven = (x) -> x
+
+  same (idEven 4), 4, "abides by contract"
+  raises (-> idEven 3), "violates contract"
+
+  MyEven = (x) -> x % 2 is 0    
+
+  idEven :: (!MyEven) -> !MyEven
+  idEven = (x) -> x
+
+  same (idEven 4), 4, "abides by contract"
+  raises (-> idEven 3), "violates contract"
+
+
+
+
+
+
