@@ -178,6 +178,24 @@ idEven = (x) -> x
 
 
 
+# modules for browser
+
+# server.coffee
+obj ::
+  a: Str
+  b: Num
+obj = {a: "foo", b: 42}
+
+# client-browser.coffee
+obj.a # ERROR
+o = obj.use() # or provide the name explicitly: obj.use("myMod")
+
+o.a = "bar" # works fine
+o.a = 42 # contract failure
+
+# client-node.coffee
+s = require "server"
+o = s.obj
 
 
 
