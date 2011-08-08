@@ -244,10 +244,9 @@ test "arrays, with rest operator", ->
 
 
 test "construct your own contracts", ->
-  NumId = ? (Num) -> Num
+  NumId = ?(Num) -> Num
 
-  # todo get rid of !
-  id :: !NumId
+  id :: NumId
   id = (x) -> x
   id = id.use()
 
@@ -261,7 +260,7 @@ test "construct your own contracts", ->
   same (id 42), 42, "abides by contract"
   raises (-> id "foo"), "violates contract"
 
-  MyEven = ? !(x) -> x % 2 is 0
+  MyEven = ?!(x) -> x % 2 is 0
 
   idEven :: (MyEven) -> MyEven
   idEven = (x) -> x

@@ -29,6 +29,7 @@ class exports.Rewriter
     @addImplicitParentheses()
     @ensureBalance BALANCED_PAIRS
     @rewriteClosingParens()
+    @disambiguateContractSig()
     @tokens
 
   # Rewrite the token stream, looking one token ahead and behind.
@@ -269,6 +270,12 @@ class exports.Rewriter
         stack.push match
       else
         tokens.splice i, 0, val
+      1
+
+  disambiguateContractSig: ->
+    @scanTokens (token, i, tokens) ->
+      return 1 unless token[0] is '::' and token.spaced and tokens[i-1]?.spaced
+      token[0] = 'CONTRACT_SIG'
       1
 
   # Generate the indentation tokens, based on another token on the same line.
