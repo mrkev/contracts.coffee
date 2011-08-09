@@ -23,13 +23,14 @@ class exports.Rewriter
     @removeMidExpressionNewlines()
     @closeOpenCalls()
     @closeOpenIndexes()
+    @disambiguateContractSig()
     @addImplicitIndentation()
     @tagPostfixConditionals()
     @addImplicitBraces()
     @addImplicitParentheses()
     @ensureBalance BALANCED_PAIRS
     @rewriteClosingParens()
-    @disambiguateContractSig()
+
     @tokens
 
   # Rewrite the token stream, looking one token ahead and behind.
@@ -174,8 +175,11 @@ class exports.Rewriter
   # blocks, so it doesn't need to. ')' can close a single-line block,
   # but we need to make sure it's balanced.
   addImplicitIndentation: ->
+    inContractExpression = false
     @scanTokens (token, i, tokens) ->
       [tag] = token
+      inContractExpression = true if tag is 'CONTRACT_SIG'
+      inContractExpression = false if tag is 'TERMINATOR'
       if tag is 'TERMINATOR' and @tag(i + 1) is 'THEN'
         tokens.splice i, 1
         return 0
@@ -193,7 +197,8 @@ class exports.Rewriter
         indent.generated  = outdent.generated = true
         tokens.splice i + 1, 0, indent
         condition = (token, i) ->
-          token[1] isnt ';' and token[0] in SINGLE_CLOSERS and
+          # inside of contract expressions we allow ',' to be a closer
+          token[1] isnt ';' and (token[0] in SINGLE_CLOSERS or (inContractExpression and token[0] is ',')) and
           not (token[0] is 'ELSE' and starter not in ['IF', 'THEN'])
         action = (token, i) ->
           @tokens.splice (if @tag(i - 1) is ',' then i - 1 else i), 0, outdent

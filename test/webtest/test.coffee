@@ -64,6 +64,13 @@ test "function, higher order", ->
 
   raises (-> bad_ho_rng giveTrue), "bad_ho_range violates its range"
 
+  ho_paren :: ( (Num) -> Bool, Num ) -> Bool
+  ho_paren = (f, n) -> f n
+  ho_paren = ho_paren.use()
+
+  same (ho_paren ((n) -> true), 42), true, "abides by contract"
+  raises (-> ho_paren ((n) -> n), 42), "violates contract"
+
 test "function, call/new only", ->
   callOnly :: (Num) --> Num
   callOnly = (x) -> x
