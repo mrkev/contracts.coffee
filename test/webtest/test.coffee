@@ -28,6 +28,17 @@ test "function, first order", ->
   same (even 4), 4, "abides by contract"
   raises (-> even 3), "violates flat contract"
 
+  noarg :: -> Num
+  noarg = -> 42
+  noarg = noarg.use()
+
+  same noarg(), 42, "abides by contract"
+
+  noarg_bad :: -> Num
+  noarg_bad = -> "foo"
+
+  raises (-> noarg_bad()), "violates contract"
+
 test "function, higher order", ->
   ho :: ( (Str) -> Bool ) -> Bool
   ho = (f) -> f "foo"

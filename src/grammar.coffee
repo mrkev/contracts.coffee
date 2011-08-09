@@ -157,6 +157,7 @@ grammar =
           throw "Parse error"
     o 'PARAM_START ContractList PARAM_END ContractFunGlyph
          INDENT ContractExpression FunctionOptions OUTDENT', -> new FunctionContract (new Arr $2), $6, $4, $7
+    o 'ContractFunGlyph INDENT ContractExpression FunctionOptions OUTDENT', -> new FunctionContract (new Arr []), $3, $1, $4
     o '{ ContractAssignList OptComma }',     -> new ObjectContract new Obj $2
     # o 'Array', -> new ArrayContract $1
     o '[ ]',                                    -> new ArrayContract new Arr []
