@@ -212,7 +212,7 @@ test "objects, nested", ->
   raises (-> o.a = "foo"), "newline syntax works fine for set"
 
 test "objects, recursive", ->
-  obj :: { a: Num, b: @, c: (Num) -> @}
+  obj :: { a: Num, b: Self, c: (Num) -> Self}
   obj = { a: 42, b: null, c: ((x) -> {a: "foo"})}
   obj = obj.use()
 
