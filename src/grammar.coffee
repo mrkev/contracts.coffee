@@ -147,6 +147,7 @@ grammar =
 
   ContractExpression: [
     o 'Identifier', -> new Value $1
+    o '@', -> new SelfContract
     o 'ContractExpression ?', -> new OptionalContract $1
     o '( ContractExpression )', -> $2
     o 'UNARY Expression', ->

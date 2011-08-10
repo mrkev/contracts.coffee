@@ -211,6 +211,18 @@ test "objects, nested", ->
   same o.a, 42, "newline syntax works fine for get"
   raises (-> o.a = "foo"), "newline syntax works fine for set"
 
+test "objects, recursive", ->
+  obj :: { a: Num, b: @, c: (Num) -> @}
+  obj = { a: 42, b: null, c: ((x) -> {a: "foo"})}
+  obj = obj.use()
+
+  obj.b = obj
+
+  same obj.a, 42, "abides by contract"
+  same obj.b.a, 42, "abides by recursive portion of contract"
+
+  raises (-> obj.b.a = "foo"), "violates contract"
+  raises (-> obj.c().a), "violates contract"
 
 test "arrays, basic", ->
   a :: [Num, Str]

@@ -334,6 +334,12 @@ exports.OptionalContract = class OptionalContract extends Base
   compileNode: (o) ->
     "Contracts.combinators.opt(#{@value.compile o})"
 
+exports.SelfContract = class SelfContract extends Base
+  constructor: ->
+
+  compileNode: (o) ->
+    "Contracts.combinators.self"
+
 exports.WrapContract = class WrapContract extends Base
   constructor: (@contract) ->
 
