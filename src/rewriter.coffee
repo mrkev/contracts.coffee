@@ -30,6 +30,7 @@ class exports.Rewriter
     @addImplicitParentheses()
     @ensureBalance BALANCED_PAIRS
     @rewriteClosingParens()
+    @cleanContractExpr()
 
     @tokens
 
@@ -281,6 +282,15 @@ class exports.Rewriter
     @scanTokens (token, i, tokens) ->
       return 1 unless token[0] is '::' and token.spaced and tokens[i-1]?.spaced
       token[0] = 'CONTRACT_SIG'
+      1
+
+  cleanContractExpr: ->
+    inContract = false
+    @scanTokens (token, i, tokens) ->
+      inContract = true if token[0] is 'CONTRACT_SIG'
+      inContract = false if token[0] is 'TERMINATOR'
+
+      token[0] = 'THIS_CONTRACT' if token[1] is '@' and inContract and tokens[i+1][0] is "{"
       1
 
   # Generate the indentation tokens, based on another token on the same line.

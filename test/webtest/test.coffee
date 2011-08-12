@@ -121,7 +121,7 @@ test "function, dependent", ->
   raises (-> bad_inc "foo", 42), "violates multi arg dependent contract"
 
 test "function, this contract", ->
-  f :: (Str) -> Str | this: {name: Str}
+  f :: (Str, @{name: Str}) -> Str
   f = (x) -> @.name + x
   f = f.use()
 
@@ -184,7 +184,32 @@ test "objects, props with functions", ->
 
   raises (-> o_bad.a "foo"), "violates contract in range"
 
+  obj :: {
+    a: Num
+    b: Str
+    f: (Num) -> Num | 
+        pre: (o) -> o.a > 10
+        post: (o) -> o.b is "foo"
+    | invariant: ->
+      @.a > 0 and @.b is "foo"
+  }
+  obj =
+    a: 1
+    b: "foo"
+    f: (x) -> 
+      @.a = -1 if x is 44
+      @.b = "bar" if x is 22
+      x + 10
+  obj = obj.use()
 
+
+  raises (-> obj.f(11)), "precondition is violated"
+  obj.a = 11;
+  same obj.f(11), 21, "all contracts are passed"
+  raises (-> obj.b = "bar"), "violates invariant by set"
+  raises (-> obj.f(22)), "postcondition is violated"
+  obj.b = "foo"
+  raises (-> obj.f(44)), "object invariant is violated"
 
 test "objects, nested", ->
   o :: { a: {z: Num }, b: Bool }

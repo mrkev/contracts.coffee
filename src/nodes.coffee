@@ -352,8 +352,12 @@ makeObjectProp = (name, value) ->
   new Assign new Value(new Literal name), new Value(new Literal value), 'object'
 
 exports.FunctionContract = class FunctionContract extends Base
-  constructor: (@dom, @rng, @tags, opts) ->
-    @options = opts or new Obj []
+  constructor: (@dom, @rng, @tags, opts, thisContract) ->
+    opts = (opts or [])
+    if thisContract
+      tc = new Assign new Value(new Literal "this"), thisContract, 'object'
+      opts = opts.concat(tc)
+    @options = new Obj opts
 
   children: ['dom', 'rng', 'options']
 
@@ -366,7 +370,6 @@ exports.FunctionContract = class FunctionContract extends Base
     if @tags is 'callOnly'
       @options.properties.push(makeObjectProp "callOnly", "true")
     else if @tags is 'newOnly'
-      console.log @options
       @options.properties.push(makeObjectProp "newOnly", "true")
     else if @tags is 'newSafe'
       @options.properties.push(makeObjectProp "newSafe", "true")
@@ -382,12 +385,14 @@ exports.RestContract = class RestContract extends Base
     "Contracts.combinators.___(#{@contract.compile o})"
 
 exports.ObjectContract = class ObjectContract extends Base
-  constructor: (@oc) ->
+  constructor: (@oc, opts) ->
+    @options = opts or new Obj []
+
 
   children: ['oc']
 
   compileNode: (o) ->
-    "Contracts.combinators.object(#{@oc.compile o})"
+    "Contracts.combinators.object(#{@oc.compile o}, #{@options.compile o})"
 
 exports.ArrayContract = class ArrayContract extends Base
   constructor: (@arc) ->

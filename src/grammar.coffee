@@ -155,18 +155,48 @@ grammar =
         else
           # todo: doesn't actually give a good error message...fix the grammar
           throw "Parse error"
-    o 'PARAM_START ContractList PARAM_END ContractFunGlyph
-         INDENT ContractExpression FunctionOptions OUTDENT', -> new FunctionContract (new Arr $2), $6, $4, $7
-    o 'ContractFunGlyph INDENT ContractExpression FunctionOptions OUTDENT', -> new FunctionContract (new Arr []), $3, $1, $4
-    o '{ ContractAssignList OptComma }',     -> new ObjectContract new Obj $2
+    o 'FunctionContract', -> $1
+    o 'ObjectContract', -> $1
     o '[ ]',                                    -> new ArrayContract new Arr []
     o '[ ContractArgList OptComma ]',           -> new ArrayContract new Arr $2
   ]
 
-  FunctionOptions: [
-    o '', -> new Obj []
-    o 'LOGIC { ContractAssignObj }', -> new Obj [$3]
+  ObjectContract: [
+    o '{ ContractAssignList OptComma }', -> 
+      props = (prop for prop in $2 when not prop.objectOption)
+      opts = (prop.objectOption for prop in $2 when prop.objectOption)
+      new ObjectContract (new Obj props), (new Obj opts)
+  ]
+  # ObjectInvariant: [
+    # o ''
+    # o '@ Identifier OUTDENT', -> $2
+  # ]
 
+  FunctionContract: [
+    o 'PARAM_START ContractList PARAM_END ContractFunGlyph
+         INDENT ContractExpression OUTDENT', -> 
+         new FunctionContract (new Arr $2), $6, $4
+
+    o 'PARAM_START ContractList PARAM_END ContractFunGlyph
+         INDENT ContractExpression FunctionOptions OUTDENT', -> 
+         new FunctionContract (new Arr $2), $6, $4, $7
+
+    o 'PARAM_START ContractList ThisContract PARAM_END ContractFunGlyph
+         INDENT ContractExpression OUTDENT', -> 
+         new FunctionContract (new Arr $2), $7, $5, undefined, $3
+
+    o 'PARAM_START ContractList ThisContract PARAM_END ContractFunGlyph
+         INDENT ContractExpression FunctionOptions OUTDENT', -> 
+         new FunctionContract (new Arr $2), $7, $5, $8, $3
+
+    o 'ContractFunGlyph INDENT ContractExpression OUTDENT', -> 
+        new FunctionContract (new Arr []), $3, $1
+
+    o 'ContractFunGlyph INDENT ContractExpression FunctionOptions OUTDENT', -> 
+        new FunctionContract (new Arr []), $3, $1, $4
+  ]
+  FunctionOptions: [
+    o 'LOGIC INDENT { AssignList } OUTDENT', -> $4
   ]
   ContractFunGlyph: [
     o '->',  -> 'func'
@@ -196,12 +226,17 @@ grammar =
   ]
 
   ContractAssignObj: [
+    o 'LOGIC AssignObj', -> { objectOption: $2 }
     o 'ObjAssignable',                      -> new Value $1
     o 'ObjAssignable : ContractExpression', -> new Assign new Value($1), $3, 'object'
     o 'ObjAssignable :
        INDENT ContractExpression OUTDENT',  -> new Assign new Value($1), $4, 'object'
     o 'Comment'
+  ]
 
+  ThisContract: [
+    o 'THIS_CONTRACT ObjectContract', -> $2
+    o ', THIS_CONTRACT ObjectContract', -> $3
   ]
 
   ContractList: [
