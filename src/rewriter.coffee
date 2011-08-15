@@ -280,7 +280,7 @@ class exports.Rewriter
 
   disambiguateContractSig: ->
     @scanTokens (token, i, tokens) ->
-      return 1 unless token[0] is '::' and token.spaced and tokens[i-1]?.spaced
+      return 1 unless token[0] is '::' and (token.spaced or token.newLine) and tokens[i-1]?.spaced
       token[0] = 'CONTRACT_SIG'
       1
 
