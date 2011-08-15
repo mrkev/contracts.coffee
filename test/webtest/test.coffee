@@ -125,14 +125,14 @@ test "function, this contract", ->
   f = (x) -> @.name + x
   f = f.use()
 
-  o = 
+  o =
     name: "Bob"
     append: f
 
   same (o.append ", Hiya!"), "Bob, Hiya!", "abides by contract"
   raises (-> f "foo"), "violates this contract"
 
-  bad_o = 
+  bad_o =
     name: 42
     append: f
 
@@ -141,6 +141,25 @@ test "function, this contract", ->
 
 test "objects, simple properties", ->
   o :: { a: Str, b: Num }
+  o =
+    a: "foo"
+    b: 42
+  o = o.use()
+
+  same o.a, "foo", "get abides by contract"
+  same o.b, 42, "get abides by contract"
+
+  ok o.a = "bar", "set abides by contract"
+  raises (-> o.a = 42), "set violates contract"
+
+  raises (->
+    o_construct_bad :: { a: Num, b: Bool }
+    o_construct_bad = a: 42
+    o_construct_bad.use()), "missing property guarenteed in contract"
+
+  o ::
+    a: Str
+    b: Num
   o =
     a: "foo"
     b: 42
@@ -187,7 +206,7 @@ test "objects, props with functions", ->
   obj :: {
     a: Num
     b: Str
-    f: (Num) -> Num | 
+    f: (Num) -> Num |
         pre: (o) -> o.a > 10
         post: (o) -> o.b is "foo"
     | invariant: ->
@@ -196,7 +215,7 @@ test "objects, props with functions", ->
   obj =
     a: 1
     b: "foo"
-    f: (x) -> 
+    f: (x) ->
       @.a = -1 if x is 44
       @.b = "bar" if x is 22
       x + 10
@@ -324,12 +343,12 @@ test "construct your own contracts", ->
   same (idEven 4), 4, "abides by contract"
   raises (-> idEven 3), "violates contract"
 
-  MyEven = (x) -> x % 2 is 0    
+  MyEven = (x) -> x % 2 is 0
 
   idEven :: (!MyEven) -> !MyEven
   idEven = (x) -> x
   idEven = idEven.use()
-  
+
   same (idEven 4), 4, "abides by contract"
   raises (-> idEven 3), "violates contract"
 
