@@ -137,7 +137,7 @@ grammar =
   EscapeContract: [
     o '? ContractExpression', -> $2
   ]
-  
+
   AssignContract: [
     o 'SimpleAssignable CONTRACT_SIG ContractExpression
           TERMINATOR SimpleAssign', -> new Assign $5.variable, new ContractValue $3, $5.value, $1, $5.variable
@@ -150,11 +150,13 @@ grammar =
     o 'ContractExpression ?', -> new OptionalContract $1
     o '( ContractExpression )', -> $2
     o 'UNARY Expression', ->
-        if $1.charAt(0) is '!'
+        # cheating a little here...otherwise would have to tweak the lexer/rewriter
+        # to not group all UNARY expression together in contract expressions
+        if $1 is '!'
           new WrapContract $2
         else
-          # todo: doesn't actually give a good error message...fix the grammar
-          throw "Parse error"
+          parser.parseError("Parse error on line #{yylineno + 1}: expecting '!' not '#{$1}'")
+          null
     o 'FunctionContract', -> $1
     o 'ObjectContract', -> $1
     o '[ ]',                                    -> new ArrayContract new Arr []
@@ -162,7 +164,7 @@ grammar =
   ]
 
   ObjectContract: [
-    o '{ ContractAssignList OptComma }', -> 
+    o '{ ContractAssignList OptComma }', ->
       props = (prop for prop in $2 when not prop.objectOption)
       opts = (prop.objectOption for prop in $2 when prop.objectOption)
       new ObjectContract (new Obj props), (new Obj opts)
@@ -174,29 +176,36 @@ grammar =
 
   FunctionContract: [
     o 'PARAM_START ContractList PARAM_END ContractFunGlyph
-         INDENT ContractExpression OUTDENT', -> 
+         INDENT ContractExpression OUTDENT', ->
          new FunctionContract (new Arr $2), $6, $4
 
     o 'PARAM_START ContractList PARAM_END ContractFunGlyph
-         INDENT ContractExpression FunctionOptions OUTDENT', -> 
+         INDENT ContractExpression FunctionOptions OUTDENT', ->
          new FunctionContract (new Arr $2), $6, $4, $7
 
     o 'PARAM_START ContractList ThisContract PARAM_END ContractFunGlyph
-         INDENT ContractExpression OUTDENT', -> 
+         INDENT ContractExpression OUTDENT', ->
          new FunctionContract (new Arr $2), $7, $5, undefined, $3
 
     o 'PARAM_START ContractList ThisContract PARAM_END ContractFunGlyph
-         INDENT ContractExpression FunctionOptions OUTDENT', -> 
+         INDENT ContractExpression FunctionOptions OUTDENT', ->
          new FunctionContract (new Arr $2), $7, $5, $8, $3
 
-    o 'ContractFunGlyph INDENT ContractExpression OUTDENT', -> 
+    o 'ContractFunGlyph INDENT ContractExpression OUTDENT', ->
         new FunctionContract (new Arr []), $3, $1
 
-    o 'ContractFunGlyph INDENT ContractExpression FunctionOptions OUTDENT', -> 
+    o 'ContractFunGlyph INDENT ContractExpression FunctionOptions OUTDENT', ->
         new FunctionContract (new Arr []), $3, $1, $4
   ]
   FunctionOptions: [
-    o 'LOGIC INDENT { AssignList } OUTDENT', -> $4
+    o 'LOGIC INDENT { AssignList } OUTDENT', ->
+      # cheating a little here...otherwise would have to tweak the lexer/rewriter
+      # to not group all LOGIC expression together in contract expressions
+      if $1 is '|'
+        $4
+      else
+        parser.parseError "Parse error on line #{yylineno + 1}: expecting '|' not '#{$1}'"
+        null
   ]
   ContractFunGlyph: [
     o '->',  -> 'func'
