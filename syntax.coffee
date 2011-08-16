@@ -1,182 +1,106 @@
+# basic functions
 id :: (Num) -> Num
 id = (x) -> x
-
-id :: (Num) -> Num
-id = (x) -> x
-
-or :: (Num or Str) -> Bool
-or :: (Num and Str) -> Bool # not a very accepting contract :)
 
 # multi args
 adder :: (Num, Str, Bool) -> Str
 adder = (a, b, c) ->
   a + b + c
 
+# simple flat combinators
+or :: (Num or Str) -> Bool
+and :: (Num and Str) -> Bool # not a very accepting contract :)
+# want not but this conflicts with contract expression escape operator: !(x) -> x > 4
+not :: (not Num) -> Num
+~~>
+not :: (!Num) -> Num # conflict!
 
 # optional args
-opt :: (Num, Str, Str?) -> Str  # question mark already used in CS...
-opt = (a, b, c) -> a + b
+opt :: (Num, Str, Str?) -> Str
 
-app :: (((Num) -> Bool), Bool) -> Bool
-app = (f, x) -> f x
+# higher order
+app :: ((Num) -> Bool, Bool) -> Bool
 
+# call only
+f :: (Num) --> Num # can't be used with 'new'
 
-# flat predicates...want to allow arbitrary expressions
-# to define contracts
-f :: (  #{ !(x) -> typeof x == "number" }
-        #{ !(x) -> typeof x == "string" })
-     -> #{ !(x) -> typeof x == "boolean" }
-# equivalent to
-Num = !(x) -> typeof x == "number"
-Str = !(x) -> typeof x == "string"
-Bool = !(x) -> typeof x == "boolean"
-f :: (Num, Str) -> Bool
-# but then what about naming objects contracts?
-o = { a: Str, b: Bool }
-# for contract naming the names value is treated as such:
-# - functions are treated as a predicate and wrapped as a flat contract
-# - objects are treated as object contracts...all props must be contracts
-# - arrays are treated the same as objects (but for arrays)
-# - other values (42, "foo") are errors (could also implicitly wrap as typeof contracts, but I prefer an error)
+# new only
+f :: (Num) ==> Any # can't be used without 'new'
+
+# new safe
+f :: (Num) -=> Any
 
 # dependent
-inc :: (Num) -> !(result) -> result > $1
-inc = (x) -> x + 1
+inc :: (Num, Num) -> !(result) -> result > $1 and $1 > $2
 
-# possibilities...
-callonly :: (Num, Bool) -> Bool {callOnly : true}
-callonly :: (Num, Bool) -> Bool [ callOnly : true ]
-callonly :: (Num, Bool) -> Bool callOnly: true
-callonly :: (Num, Bool, {callOnly: true}) -> Bool # no...conflicts with object contract
-callonly :: (Num, Bool) > Bool # the *very* thin arrow :-)
-callonly :: (Num, Bool) >> Bool
-callonly :: (Num, Bool) --> Bool # think we're going with this one
-
-# for calling with new only
-constructor :: (Num, Bool) n-> {a: Str, b: Num}
-constructor :: (Num, Bool) => {a: Str, b: Num}
-# fat arrow is also used in CS for creating functions with this bound to the current this
-# similar ballpark meaning...too close?
-constructor :: (Num, Bool) --> {a: Str, b: Num}
-constructor :: (Num, Bool) ==> {a: Str, b: Num}
-
-callAndNew :: (Num) --> Bool             # call contract
-              (Str) ==> {a: Num, b: Str} # new contract
-# or whatever arrows work best...kinda like --> as call only and ==> as new only
-# maybe >> or >>> as safe new?
-callOnly :: (Num) --> Bool
-newOnly  :: (Num) ==> Bool
-safeNew  :: (Num) >>> {a: Num, b: Str} # conflicts with shift operator
-safeNew  :: (Num) -=> {a: Num, b: Str}
+# this contract
+f :: (Str, @{name: Str}) -> Str
 
 # objects
-o =
-  a: 42
-  b: "foo"
-  f: (x) -> x
+o :: { a : Num, b: Str, f: (Any) -> Any }
 
-
-
-o :: { a : Num, b: Str, f: ((any) -> any) }
+# implicit curlies
 o ::
   a: Num
-  b: Str
-  f: ((any) -> any)
-# and we also have named contracts which looks similar
-MyObj = { a: Num, b: Str, f: (any) -> any }
-
-o ::
-  a: Num
-  b: Num? # optional
-  c: Str
-  d: Str | writable: false
-  e: Self # or self
-  f: Num
-  | frozen: true
-    sealed: true 
-# so last property can be an options object for the contract...
-o :: {a: Num, b: Str | writable: false, c: Num | ennumerable: true} | sealed: true
-
-o ::
-  a: Num
-  b: Str
-  :: # prototype
-    c: Bool
-    d: Num
-# this says o _must_ have a and b as it's own properties (not
-# somewhere on the prototype chain) and c and d can be on the prototype
-# using :: in the last slot since cs already uses it to refer to prototype
-# in eg String::dasherize = -> this.replace /_/g, "-"
+  b: Str?
+  f: (Any) -> Any
+  oo:
+    z: Num
+    y: Str
 
 # this contract
 o ::
-  a : Num,
+  a: Num,
   b: Str,
-  f: (any) -> any {this: {a: Num, b: Str}}
-  # or
-  f: (any, this: {a: Str, b: Num}) -> any # could conflict with naming in dependent contracts...
+  f: (Any, @{a: Num, b: Str}) -> Any
 
-# pre/post
+# pre/post/invariant
 o ::
-  a : Num,
+  a: Num,
   b: Str,
-  f: (any) -> any 
-      | pre: (obj) -> ...
-      | post: (obj) -> ...
-      | @: {name: Str, age: Num}
-  # or
-  f: (any, pre: (obj) -> ...) -> any
+  f: (Any, @{name: Str, age: Num}) -> Any |
+      pre: (obj) -> obj.a > 42
+      post: (obj) -> obj.b is not "bad"
+  | invariant: ->
+      @.a > 0 and @.b is "foo"
 
-
-
-
+# recursive contracts
 o ::
-  f: (pre:Num, Bool, this: {a:Bool}, pre: ((obj) -> ...), post: ((obj) -> ...))
-     -> ( pre > res)
-# can disambiguate named contract arguments from pre/post/this based on
-# position...this/pre/post contracts must come at the end
+  a: Num
+  b: Str
+  f: (Num) -> Self
 
-ar :: (Str, Num, Bool)  
-ar :: [Str, Num, Bool]  
-ar = ["foo", 42, false]
-
-fst :: ((Str, Num)) -> Str
-fst = (tup) -> tup[0]
-# so obvious problem here is the two meanings of parens
-# though the meanings are related, at least concepturally...
-
-sort :: ([Num], (Num -> Bool)) -> [Num]
-
-tup :: (Str, Num, ...Bool)
-tup :: (...Bool) # immutable...unlike array
+# arrays
+arr :: [Str, Num, Bool, [Bool, Bool]]
+arr :: [...Bool]
 arr :: [Str, Num, ...Bool]
 
 # naming contracts
-NumId = ?(Num) -> Num
-Obj   = ?{a: Num, b: Num}
-Arr   = ?[Num, Num]
+NumId  = ?(Num) -> Num
+NumObj = ?{a: Num, b: Num}
+NumArr = ?[Num, Num]
+
+# escaping from a contract expression
+f :: (!(x) -> typeof x is 'number') -> Num
 
 retPrim :: (Num) -> !isPrime
-retPrime = ...
-
 f :: (Num, !(x) -> isPrime x) -> Bool
 
-NumId = ? (Num) -> Num
-id :: !NumId
-id = (x) -> x
+NumId = ?(Num) -> Num
+id :: NumId
 
-id :: (!(x) -> typeof x is 'number') -> Num
-id = (x) -> x
-
-MyEven = ? !(x) -> x % 2 is 0
+MyEven = ?!(x) -> x % 2 is 0
 idEven :: (MyEven) -> MyEven
-idEven = (x) -> x
 
-MyEven = (x) -> x % 2 is 0    
+MyEven = (x) -> x % 2 is 0
 idEven :: (!MyEven) -> !MyEven
-idEven = (x) -> x
 
 
+# note on combinators...racket provides a bunch of flat contracts
+# like >, <, between, etc. The only one we're providing are 'and' and 'or'.
+# I think the escape syntax is sufficient and potentially less confusing (also less
+# work for me :-). So where racket would use the flat combinators we have:
+f :: (Num and (!(x) -> x > 4)) -> (Num and (!(x) -> x < 10 and x > 1)
 
 # modules for browser
 
@@ -188,16 +112,57 @@ obj = {a: "foo", b: 42}
 
 # client-browser.coffee
 obj.a # ERROR
-o = obj.use() # or provide the name explicitly: obj.use("myMod")
+o = obj.use()
 
 o.a = "bar" # works fine
 o.a = 42 # contract failure
 
-# client-node.coffee
+# client-node.coffee (not implemented...no node with proxies yet)
 s = require "server"
 o = s.obj
 
+# some example blame messages
+# (note that a cleaned up  stack trace (contract library frames removed) is available on
+# the error object the gets thrown when a contract is violated
 
+id :: (Num) -> Num
+id "foo"
+# Error: Contract violation: expected <Number>, actual: "foo"
+# Value guarded in: blametest.js:31 -- blame is on: blametest.js:32
+# Parent contracts:
+# (Number) -> Number
 
+var idc = guard(fun(fun(Str, Str), Num), id).use();
+f :: ( (Str) -> Str ) -> Num
+f = (fun) ->
+  fun "foo"
+  42
+f (s) -> s
+# Error: Contract violation: expected <String>, actual: 42
+# Value guarded in: blametest.js:108 (server) -- blame is on: blametest.js:108 (client)
+# Parent contracts:
+# (String) -> String
+# ((String) -> String ) -> Number
 
+o :: {a: Num, b: Str}
+o = {a: 42}
+# Error: Contract violation: expected <{a : Number, b : String}>, actual: "[missing property: b]"
+# Value guarded in: blametest.js:164 (server) -- blame is on: blametest.js:164 (server)
+# Parent contracts:
+# {a : Number, b : String}
 
+o ::
+  a: Num
+  f: (Num) -> Num |
+      pre: (obj) -> obj.a > 0
+o =
+  a: -1
+  f: ...
+o.f 42
+# Error: Contract violation: expected <precondition: function (obj) {
+#     return obj.a > 0;
+# }>, actual: "[failed precondition]"
+# Value guarded in: blametest.js:282 (server) -- blame is on: blametest.js:282 (client)
+# Parent contracts:
+# (Number) -> Number
+# {f : (Number) -> Number , a : Number}
