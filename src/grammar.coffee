@@ -149,6 +149,7 @@ grammar =
     o 'Identifier', -> new Value $1
     o 'ContractExpression ?', -> new OptionalContract $1
     o '( ContractExpression )', -> $2
+    o 'ContractExpression LOGIC ContractExpression', -> new ContractOp $2, $1, $3
     o 'UNARY Expression', ->
         # cheating a little here...otherwise would have to tweak the lexer/rewriter
         # to not group all UNARY expression together in contract expressions
@@ -169,10 +170,6 @@ grammar =
       opts = (prop.objectOption for prop in $2 when prop.objectOption)
       new ObjectContract (new Obj props), (new Obj opts)
   ]
-  # ObjectInvariant: [
-    # o ''
-    # o '@ Identifier OUTDENT', -> $2
-  # ]
 
   FunctionContract: [
     o 'PARAM_START ContractList PARAM_END ContractFunGlyph

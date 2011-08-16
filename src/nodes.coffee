@@ -324,7 +324,7 @@ exports.Literal = class Literal extends Base
     if @isStatement() then "#{@tab}#{code};" else code
 
   toString: ->
-    ' "' + @value + '"' 
+    ' "' + @value + '"'
 
 exports.OptionalContract = class OptionalContract extends Base
   constructor: (@value) ->
@@ -333,6 +333,21 @@ exports.OptionalContract = class OptionalContract extends Base
 
   compileNode: (o) ->
     "Contracts.combinators.opt(#{@value.compile o})"
+
+
+exports.ContractOp = class ContractOp extends Base
+  constructor: (@op, @first, @second) ->
+
+  children: ['first', 'second']
+
+  compileNode: (o) ->
+    if @op is '||'
+      "Contracts.combinators.or(#{@first.compile o}, #{@second.compile o})"
+    else if @op is '&&'
+      "Contracts.combinators.and(#{@first.compile o}, #{@second.compile o})"
+    else
+      throw new SyntaxError "Unknown contract operator '#{@op}'"
+
 
 exports.SelfContract = class SelfContract extends Base
   constructor: ->
@@ -346,7 +361,7 @@ exports.WrapContract = class WrapContract extends Base
   children: ['contract']
 
   compileNode: (o) ->
-    "(#{@contract.compile o}).toContract()"   
+    "(#{@contract.compile o}).toContract()"
 
 makeObjectProp = (name, value) ->
   new Assign new Value(new Literal name), new Value(new Literal value), 'object'
@@ -374,7 +389,7 @@ exports.FunctionContract = class FunctionContract extends Base
     else if @tags is 'newSafe'
       @options.properties.push(makeObjectProp "newSafe", "true")
     "Contracts.combinators.fun(#{params}, #{range}, #{@options.compile o})"
-    
+
 
 exports.RestContract = class RestContract extends Base
   constructor: (@contract) ->
@@ -409,7 +424,7 @@ exports.ContractValue = class ContractValue extends Base
   children: ['contract', 'value']
 
   compileNode: (o) ->
-    if not (@contract_var.base.value is @value_var.base.value) 
+    if not (@contract_var.base.value is @value_var.base.value)
       throw new SyntaxError "Variable name differs between value (#{@value_var.base.value}) and contract (#{@contract_var.base.value})"
     if o.contracts
       "Contracts.combinators.guard(#{@contract.compile(o, LEVEL_PAREN)},#{@value.compile(o, LEVEL_PAREN)})"

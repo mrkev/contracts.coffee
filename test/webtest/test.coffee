@@ -242,11 +242,9 @@ test "objects, nested", ->
   raises (-> o.a.z = "foo"), "set violates contract"
 
 
-  # todo: need to hack the lexer to add implicit '{'
-  o :: {
+  o ::
     a: Num
     b: Str
-  }
   o =
     a: 42
     b: "foo"
@@ -352,9 +350,33 @@ test "construct your own contracts", ->
   same (idEven 4), 4, "abides by contract"
   raises (-> idEven 3), "violates contract"
 
+test "various flat combinators (and, or, etc.)", ->
+  f :: (Num) -> Num or Bool
+  f = (x) ->
+    if x is 2
+      2
+    else if x is 3
+      false
+    else
+      "bad state"
 
+  f = f.use()
 
+  same (f 2), 2, "abides by contract"
+  same (f 3), false, "abides by contract"
+  raises (-> f 4), "violates contract"
 
+  f :: ( Num and (!(x) -> x > 42) ) -> Num
+  f = (x) -> x
+  f = f.use()
 
+  same (f 43), 43, "abides by contract"
+  raises (-> f 1), "violates contract"
 
+  # f :: (not Num) -> not Num
+  # f = (x) -> x
+  # f = f.use()
+
+  # same (f "foo"), "foo", "abides by contract"
+  # raises (-> f 1), "violates contract"
 
