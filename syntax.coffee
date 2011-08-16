@@ -132,7 +132,6 @@ id "foo"
 # Parent contracts:
 # (Number) -> Number
 
-var idc = guard(fun(fun(Str, Str), Num), id).use();
 f :: ( (Str) -> Str ) -> Num
 f = (fun) ->
   fun "foo"
