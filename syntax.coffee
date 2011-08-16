@@ -123,7 +123,7 @@ o = s.obj
 
 # some example blame messages
 # (note that a cleaned up  stack trace (contract library frames removed) is available on
-# the error object the gets thrown when a contract is violated
+# the error object that gets thrown when a contract is violated
 
 id :: (Num) -> Num
 id "foo"
