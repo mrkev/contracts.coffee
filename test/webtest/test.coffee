@@ -380,3 +380,62 @@ test "various flat combinators (and, or, etc.)", ->
   # same (f "foo"), "foo", "abides by contract"
   # raises (-> f 1), "violates contract"
 
+
+test "binary search tree example", ->
+  BST = ?(Null or {
+      node: Num
+      left: (Self or Null)
+      right: (Self or Null)
+      | invariant: ->
+        console.log "invariant testing..."
+        (@.left is null or @.node > @.left.node) and
+        (@.right is null or @.node < @.right.node)
+    })
+
+  bst :: BST
+  bst =
+    node: 10
+    left:
+      node: 4
+      left: null
+      right: null
+    right:
+      node: 12
+      left: null
+      right: null
+  bst = bst.use()
+
+  findInBst :: (BST, Num) -> Bool
+  findInBst = (t, n) ->
+    if t is null
+      false
+    else
+      (t.node is n) or (findInBst t.left, n if n < t.node) or (findInBst t.right, n if n > t.node)
+  findInBst = findInBst.use()
+
+  same (findInBst bst, 10), true, "node exists and abides by contract"
+  # same (findInBst bst, 12), true, "node exists and has to go down a level"
+  # same (findInBst bst, 20), false, "node does not exist in bst"
+
+  # bst.right.node = 0 # invariant is volated but no signal yet
+  # raises (-> findInBst bst, 100), "invariant is violated"
+  # raises (-> bst.node = 0) , "invariant is violated"
+
+  # bad_bst =
+  #   node: 10
+  #   left:
+  #     node: 50
+  #     left: null
+  #     right: null
+  #   right:
+  #     node: 100
+  #     left: null
+  #     right: null
+
+  # findInBst
+
+
+
+
+
+
