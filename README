@@ -20,29 +20,30 @@
                                                         |_|
 
 
-  CoffeeScript is a little language that compiles into JavaScript.
+  Contracts.coffee is an extension to CoffeeScript that adds contracts.
+
+  Contracts allow you to write powerful runtime assertions about your code. 
+  Like types but less painful, like assert but more useful.
+
+  square :: (Num) -> Num
+  square = (x) -> x * x
 
   Install Node.js, and then the CoffeeScript compiler:
   sudo bin/cake install
 
-  Or, if you have the Node Package Manager installed:
-  npm install -g coffee-script
-  (Leave off the -g if you don't wish to install globally.)
-
   Compile a script:
-  coffee /path/to/script.coffee
+  coffee -cC /path/to/script.coffee
 
-  For documentation, usage, and examples, see:
+  The -C flag enables contracts in the generated JavaScript.
+  If you want to disable contracts simple leave off the flag.
+
+  For documentation, usage, and examples of Contracts.coffee see:
+  http://disnetdev.com/contracts.coffee/
+
+  For documentation, usage, and examples of CoffeeScript see:
   http://coffeescript.org/
 
-  To suggest a feature, report a bug, or general discussion:
-  http://github.com/jashkenas/coffee-script/issues/
-
-  If you'd like to chat, drop by #coffeescript on Freenode IRC,
-  or on webchat.freenode.net.
-
-  The source repository:
-  git://github.com/jashkenas/coffee-script.git
-
-  All contributors are listed here:
-  http://github.com/jashkenas/coffee-script/contributors
+  Note that Contracts.coffee requires some pretty new features of Javascript 
+  (in particular Proxies: https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Proxy) 
+  so it currently only works on Firefox 4+ but other JavaScript engines should
+  be adding support soon.

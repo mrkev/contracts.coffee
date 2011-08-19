@@ -241,7 +241,7 @@ exports.Block = class Block extends Base
     o.level  = LEVEL_TOP
     code     = @compileWithDeclarations o
     headerSource = ""
-    if o.contracts
+    if o.contracts and o.withLib
       headerSource = """
         #{contractsSource}
         // load all the contract identifiers into the global scope
