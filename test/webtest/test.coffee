@@ -387,7 +387,6 @@ test "binary search tree example", ->
       left: (Self or Null)
       right: (Self or Null)
       | invariant: ->
-        console.log "invariant testing..."
         (@.left is null or @.node > @.left.node) and
         (@.right is null or @.node < @.right.node)
     })
@@ -414,12 +413,12 @@ test "binary search tree example", ->
   findInBst = findInBst.use()
 
   same (findInBst bst, 10), true, "node exists and abides by contract"
-  # same (findInBst bst, 12), true, "node exists and has to go down a level"
-  # same (findInBst bst, 20), false, "node does not exist in bst"
+  same (findInBst bst, 12), true, "node exists and has to go down a level"
+  same (findInBst bst, 20), false, "node does not exist in bst"
 
-  # bst.right.node = 0 # invariant is volated but no signal yet
-  # raises (-> findInBst bst, 100), "invariant is violated"
-  # raises (-> bst.node = 0) , "invariant is violated"
+  bst.right.node = 0 # invariant is volated but no signal yet
+  raises (-> findInBst bst, 100), "invariant is violated"
+  raises (-> bst.node = 0) , "invariant is violated"
 
   # bad_bst =
   #   node: 10
