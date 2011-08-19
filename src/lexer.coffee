@@ -327,11 +327,14 @@ exports.Lexer = class Lexer
     else if value in COMPOUND_ASSIGN then tag = 'COMPOUND_ASSIGN'
     else if value in UNARY           then tag = 'UNARY'
     else if value in SHIFT           then tag = 'SHIFT'
-    else if value in LOGIC or value is '?' and prev?.spaced then tag = 'LOGIC'
+    else if value in LOGIC or value is '?' and prev?.spaced and not (prev[0] is '=') then tag = 'LOGIC'
+    # the prev.spaced here is used to disambiguate legit usages of angle brackets with prtotypes
+    else if prev and value is "[" and prev[0] is '::' and prev.spaced then prev[0] = 'CONTRACT_SIG'
     else if prev and not prev.spaced
       if value is '(' and prev[0] in CALLABLE
-        prev[0] = 'FUNC_EXIST' if prev[0] is '?'
-        tag = 'CALL_START'
+        # only a function existence check if the expression is not like `id = ?(Num) -> Num
+        prev[0] = 'FUNC_EXIST' if prev[0] is '?' and @tokens[@tokens.length - 2][0] != '='
+        tag = 'CALL_START' unless prev[0] is '?' and @tokens[@tokens.length - 2][0] is '='
       else if value is '[' and prev[0] in INDEXABLE
         tag = 'INDEX_START'
         switch prev[0]
@@ -562,7 +565,7 @@ NUMBER     = ///
 HEREDOC    = /// ^ ("""|''') ([\s\S]*?) (?:\n[^\n\S]*)? \1 ///
 
 OPERATOR   = /// ^ (
-  ?: [-=]>             # function
+  ?: [-=][-=]?>             # function
    | [-+*/%<>&|^!?=]=  # compound assign / compare
    | >>>=?             # zero-fill right shift
    | ([-+:])\1         # doubles
@@ -575,7 +578,7 @@ WHITESPACE = /^[^\n\S]+/
 
 COMMENT    = /^###([^#][\s\S]*?)(?:###[^\n\S]*|(?:###)?$)|^(?:\s*#(?!##[^#]).*)+/
 
-CODE       = /^[-=]>/
+CODE       = /^[-=][-=]?>/
 
 MULTI_DENT = /^(?:\n[^\n\S]*)+/
 
@@ -637,6 +640,7 @@ SHIFT   = ['<<', '>>', '>>>']
 
 # Comparison tokens.
 COMPARE = ['==', '!=', '<', '>', '<=', '>=']
+
 
 # Mathematical tokens.
 MATH    = ['*', '/', '%']

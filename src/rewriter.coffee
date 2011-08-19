@@ -18,16 +18,20 @@ class exports.Rewriter
   # like this. The order of these passes matters -- indentation must be
   # corrected before implicit parentheses can be wrapped around blocks of code.
   rewrite: (@tokens) ->
+    # console.log (t[0] + '/' + t[1] for t in @tokens).join ' '
     @removeLeadingNewlines()
     @removeMidExpressionNewlines()
     @closeOpenCalls()
     @closeOpenIndexes()
+    @disambiguateContractSig()
     @addImplicitIndentation()
     @tagPostfixConditionals()
     @addImplicitBraces()
     @addImplicitParentheses()
     @ensureBalance BALANCED_PAIRS
     @rewriteClosingParens()
+    @cleanContractExpr()
+
     @tokens
 
   # Rewrite the token stream, looking one token ahead and behind.
@@ -172,8 +176,11 @@ class exports.Rewriter
   # blocks, so it doesn't need to. ')' can close a single-line block,
   # but we need to make sure it's balanced.
   addImplicitIndentation: ->
+    inContractExpression = false
     @scanTokens (token, i, tokens) ->
       [tag] = token
+      inContractExpression = true if tag is 'CONTRACT_SIG'
+      inContractExpression = false if tag is 'TERMINATOR'
       if tag is 'TERMINATOR' and @tag(i + 1) is 'THEN'
         tokens.splice i, 1
         return 0
@@ -191,7 +198,8 @@ class exports.Rewriter
         indent.generated  = outdent.generated = true
         tokens.splice i + 1, 0, indent
         condition = (token, i) ->
-          token[1] isnt ';' and token[0] in SINGLE_CLOSERS and
+          # inside of contract expressions we allow ',' to be a closer
+          token[1] isnt ';' and (token[0] in SINGLE_CLOSERS or (inContractExpression and token[0] is ',')) and
           not (token[0] is 'ELSE' and starter not in ['IF', 'THEN'])
         action = (token, i) ->
           @tokens.splice (if @tag(i - 1) is ',' then i - 1 else i), 0, outdent
@@ -270,6 +278,21 @@ class exports.Rewriter
         tokens.splice i, 0, val
       1
 
+  disambiguateContractSig: ->
+    @scanTokens (token, i, tokens) ->
+      return 1 unless token[0] is '::' and (token.spaced or token.newLine) and tokens[i-1]?.spaced
+      token[0] = 'CONTRACT_SIG'
+      1
+
+  cleanContractExpr: ->
+    inContract = false
+    @scanTokens (token, i, tokens) ->
+      inContract = true if token[0] is 'CONTRACT_SIG'
+      inContract = false if token[0] is 'TERMINATOR'
+
+      token[0] = 'THIS_CONTRACT' if token[1] is '@' and inContract and tokens[i+1][0] is "{"
+      1
+
   # Generate the indentation tokens, based on another token on the same line.
   indentation: (token) ->
     [['INDENT', 2, token[2]], ['OUTDENT', 2, token[2]]]
@@ -326,7 +349,7 @@ IMPLICIT_END     = ['POST_IF', 'FOR', 'WHILE', 'UNTIL', 'WHEN', 'BY', 'LOOP', 'T
 
 # Single-line flavors of block expressions that have unclosed endings.
 # The grammar can't disambiguate them, so we insert the implicit indentation.
-SINGLE_LINERS    = ['ELSE', '->', '=>', 'TRY', 'FINALLY', 'THEN']
+SINGLE_LINERS    = ['ELSE', '->', '=>', '-->', '==>', '-=>', 'TRY', 'FINALLY', 'THEN']
 SINGLE_CLOSERS   = ['TERMINATOR', 'CATCH', 'FINALLY', 'ELSE', 'OUTDENT', 'LEADING_WHEN']
 
 # Tokens that end a line.

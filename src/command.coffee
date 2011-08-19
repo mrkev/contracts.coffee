@@ -42,6 +42,7 @@ SWITCHES = [
   [      '--nodejs [ARGS]',   'pass options through to the "node" binary']
   ['-v', '--version',         'display CoffeeScript version']
   ['-h', '--help',            'display this help message']
+  ['-C', '--contracts',       'compile with support for contracts']
 ]
 
 # Top-level objects shared by all the functions.
@@ -87,7 +88,7 @@ compileScripts = ->
       path.exists source, (exists) ->
         if topLevel and not exists and source[-7..] isnt '.coffee'
             return compile "#{source}.coffee", sourceIndex, topLevel
-                
+
         throw new Error "File not found: #{source}" if topLevel and not exists
         fs.stat source, (err, stats) ->
           throw err if err
@@ -219,7 +220,7 @@ parseOptions = ->
   sources       = o.arguments
 
 # The compile-time options to pass to the CoffeeScript compiler.
-compileOptions = (filename) -> {filename, bare: opts.bare}
+compileOptions = (filename) -> {filename, bare: opts.bare, contracts: opts.contracts}
 
 # Start up a new Node.js instance with the arguments in `--nodejs` passed to
 # the `node` binary, preserving the other options.

@@ -90,6 +90,8 @@ grammar =
     o 'Value'
     o 'Invocation'
     o 'Code'
+    o 'EscapeContract'
+    o 'AssignContract'
     o 'Operation'
     o 'Assign'
     o 'If'
@@ -130,6 +132,130 @@ grammar =
       val = new Literal $1
       val.isUndefined = yes if $1 is 'undefined'
       val
+  ]
+
+  EscapeContract: [
+    o '? ContractExpression', -> $2
+  ]
+
+  AssignContract: [
+    o 'SimpleAssignable CONTRACT_SIG ContractExpression
+          TERMINATOR SimpleAssign', -> new Assign $5.variable, new ContractValue $3, $5.value, $1, $5.variable
+    o 'SimpleAssignable CONTRACT_SIG INDENT ContractExpression OUTDENT
+          TERMINATOR SimpleAssign', -> new Assign $7.variable, new ContractValue $4, $7.value, $1, $7.variable
+  ]
+
+  ContractExpression: [
+    o 'Identifier', -> new Value $1
+    o 'ContractExpression ?', -> new OptionalContract $1
+    o '( ContractExpression )', -> $2
+    o 'ContractExpression LOGIC ContractExpression', -> new ContractOp $2, $1, $3
+    o 'UNARY Expression', ->
+        # cheating a little here...otherwise would have to tweak the lexer/rewriter
+        # to not group all UNARY expression together in contract expressions
+        if $1 is '!'
+          new WrapContract $2
+        else
+          parser.parseError("Parse error on line #{yylineno + 1}: expecting '!' not '#{$1}'")
+          null
+    o 'FunctionContract', -> $1
+    o 'ObjectContract', -> $1
+    o '[ ]',                                    -> new ArrayContract new Arr []
+    o '[ ContractArgList OptComma ]',           -> new ArrayContract new Arr $2
+  ]
+
+  ObjectContract: [
+    o '{ ContractAssignList OptComma }', ->
+      props = (prop for prop in $2 when not prop.objectOption)
+      opts = (prop.objectOption for prop in $2 when prop.objectOption)
+      new ObjectContract (new Obj props), (new Obj opts)
+  ]
+
+  FunctionContract: [
+    o 'PARAM_START ContractList PARAM_END ContractFunGlyph
+         INDENT ContractExpression OUTDENT', ->
+         new FunctionContract (new Arr $2), $6, $4
+
+    o 'PARAM_START ContractList PARAM_END ContractFunGlyph
+         INDENT ContractExpression FunctionOptions OUTDENT', ->
+         new FunctionContract (new Arr $2), $6, $4, $7
+
+    o 'PARAM_START ContractList ThisContract PARAM_END ContractFunGlyph
+         INDENT ContractExpression OUTDENT', ->
+         new FunctionContract (new Arr $2), $7, $5, undefined, $3
+
+    o 'PARAM_START ContractList ThisContract PARAM_END ContractFunGlyph
+         INDENT ContractExpression FunctionOptions OUTDENT', ->
+         new FunctionContract (new Arr $2), $7, $5, $8, $3
+
+    o 'ContractFunGlyph INDENT ContractExpression OUTDENT', ->
+        new FunctionContract (new Arr []), $3, $1
+
+    o 'ContractFunGlyph INDENT ContractExpression FunctionOptions OUTDENT', ->
+        new FunctionContract (new Arr []), $3, $1, $4
+  ]
+  FunctionOptions: [
+    o 'LOGIC INDENT { AssignList } OUTDENT', ->
+      # cheating a little here...otherwise would have to tweak the lexer/rewriter
+      # to not group all LOGIC expression together in contract expressions
+      if $1 is '|'
+        $4
+      else
+        parser.parseError "Parse error on line #{yylineno + 1}: expecting '|' not '#{$1}'"
+        null
+  ]
+  ContractFunGlyph: [
+    o '->',  -> 'func'
+    o '-->', -> 'callOnly'
+    o '==>', -> 'newOnly'
+    o '-=>', -> 'newSafe'
+  ]
+
+  ContractArgList: [
+    o 'ContractArrExpression',                                     -> [$1]
+    o 'ContractArgList , ContractArrExpression',                   -> $1.concat $3
+    o 'ContractArgList OptComma TERMINATOR ContractArrExpression', -> $1.concat $4
+  ]
+
+  ContractArrExpression: [
+    o 'ContractExpression', -> $1
+    o '... ContractExpression', -> new RestContract $2
+  ]
+
+  ContractAssignList: [
+    o '',                                                          -> []
+    o 'ContractAssignObj',                                         -> [$1]
+    o 'ContractAssignList , ContractAssignObj',                    -> $1.concat $3
+    o 'ContractAssignList OptComma TERMINATOR ContractAssignObj',  -> $1.concat $4
+    o 'ContractAssignList OptComma INDENT
+       ContractAssignList OptComma OUTDENT',                       -> $1.concat $4
+  ]
+
+  ContractAssignObj: [
+    o 'LOGIC AssignObj', -> { objectOption: $2 }
+    o 'ObjAssignable',                      -> new Value $1
+    o 'ObjAssignable : ContractExpression', -> new Assign new Value($1), $3, 'object'
+    o 'ObjAssignable :
+       INDENT ContractExpression OUTDENT',  -> new Assign new Value($1), $4, 'object'
+    o 'Comment'
+  ]
+
+  ThisContract: [
+    o 'THIS_CONTRACT ObjectContract', -> $2
+    o ', THIS_CONTRACT ObjectContract', -> $3
+  ]
+
+  ContractList: [
+    o '',                                       -> []
+    o 'ContractExpression',                                  -> [$1]
+    o 'ContractList , ContractExpression',                      -> $1.concat $3
+  ]
+
+
+  # Assignment to SimpleAssignable things (aka not array/object lits)
+  SimpleAssign: [
+    o 'SimpleAssignable = Expression',                -> new Assign $1, $3
+    o 'SimpleAssignable = INDENT Expression OUTDENT', -> new Assign $1, $4
   ]
 
   # Assignment of a variable, property, or index to a value.

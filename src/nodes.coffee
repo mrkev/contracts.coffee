@@ -5,6 +5,8 @@
 
 {Scope} = require './scope'
 
+{contractsSource} = require './contracts'
+
 # Import the helpers we plan to use.
 {compact, flatten, extend, merge, del, starts, ends, last} = require './helpers'
 
@@ -238,7 +240,22 @@ exports.Block = class Block extends Base
     o.scope  = new Scope null, this, null
     o.level  = LEVEL_TOP
     code     = @compileWithDeclarations o
-    if o.bare then code else "(function() {\n#{code}\n}).call(this);\n"
+    headerSource = ""
+    if o.contracts
+      headerSource = """
+        #{contractsSource}
+        // load all the contract identifiers into the global scope
+        function load(obj) {
+          var name;
+          for(name in obj) {
+            if(obj.hasOwnProperty(name)) {
+              window[name] = obj[name];
+            }
+          }
+        }
+        load(Contracts.contracts);
+                     """
+    if o.bare then code else "(function() {#{headerSource}\n#{code}\n}).call(this);\n"
 
   # Compile the expressions body for the contents of a function, with
   # declarations of all inner variables pushed up to the top.
@@ -308,6 +325,111 @@ exports.Literal = class Literal extends Base
 
   toString: ->
     ' "' + @value + '"'
+
+exports.OptionalContract = class OptionalContract extends Base
+  constructor: (@value) ->
+
+  children: ['value']
+
+  compileNode: (o) ->
+    "Contracts.combinators.opt(#{@value.compile o})"
+
+
+exports.ContractOp = class ContractOp extends Base
+  constructor: (@op, @first, @second) ->
+
+  children: ['first', 'second']
+
+  compileNode: (o) ->
+    if @op is '||'
+      "Contracts.combinators.or(#{@first.compile o}, #{@second.compile o})"
+    else if @op is '&&'
+      "Contracts.combinators.and(#{@first.compile o}, #{@second.compile o})"
+    else
+      throw new SyntaxError "Unknown contract operator '#{@op}'"
+
+
+exports.SelfContract = class SelfContract extends Base
+  constructor: ->
+
+  compileNode: (o) ->
+    "Contracts.combinators.self"
+
+exports.WrapContract = class WrapContract extends Base
+  constructor: (@contract) ->
+
+  children: ['contract']
+
+  compileNode: (o) ->
+    "(#{@contract.compile o}).toContract()"
+
+makeObjectProp = (name, value) ->
+  new Assign new Value(new Literal name), new Value(new Literal value), 'object'
+
+exports.FunctionContract = class FunctionContract extends Base
+  constructor: (@dom, @rng, @tags, opts, thisContract) ->
+    opts = (opts or [])
+    if thisContract
+      tc = new Assign new Value(new Literal "this"), thisContract, 'object'
+      opts = opts.concat(tc)
+    @options = new Obj opts
+
+  children: ['dom', 'rng', 'options']
+
+  compileNode: (o) ->
+    params = @dom.compile o
+    range = @rng.compile o
+    if @rng instanceof WrapContract # dependent function contract case
+      depargs = ("$#{n}" for n in [1..@dom.objects.length]).join(", ")
+      range = "function(#{depargs}) { return #{range}; }"
+    if @tags is 'callOnly'
+      @options.properties.push(makeObjectProp "callOnly", "true")
+    else if @tags is 'newOnly'
+      @options.properties.push(makeObjectProp "newOnly", "true")
+    else if @tags is 'newSafe'
+      @options.properties.push(makeObjectProp "newSafe", "true")
+    "Contracts.combinators.fun(#{params}, #{range}, #{@options.compile o})"
+
+
+exports.RestContract = class RestContract extends Base
+  constructor: (@contract) ->
+
+  children: ['contract']
+
+  compileNode: (o) ->
+    "Contracts.combinators.___(#{@contract.compile o})"
+
+exports.ObjectContract = class ObjectContract extends Base
+  constructor: (@oc, opts) ->
+    @options = opts or new Obj []
+
+
+  children: ['oc']
+
+  compileNode: (o) ->
+    "Contracts.combinators.object(#{@oc.compile o}, #{@options.compile o})"
+
+exports.ArrayContract = class ArrayContract extends Base
+  constructor: (@arc) ->
+
+  children: ['arc']
+
+  compileNode: (o) ->
+    "Contracts.combinators.arr(#{@arc.compile o})"
+
+
+exports.ContractValue = class ContractValue extends Base
+  constructor: (@contract, @value, @contract_var, @value_var) ->
+
+  children: ['contract', 'value']
+
+  compileNode: (o) ->
+    if not (@contract_var.base.value is @value_var.base.value)
+      throw new SyntaxError "Variable name differs between value (#{@value_var.base.value}) and contract (#{@contract_var.base.value})"
+    if o.contracts
+      "Contracts.combinators.guard(#{@contract.compile(o, LEVEL_PAREN)},#{@value.compile(o, LEVEL_PAREN)})"
+    else
+      @value.compile o, LEVEL_PAREN
 
 #### Return
 
