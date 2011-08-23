@@ -8,7 +8,7 @@ contracts to the language.
 Contracts let you to clearly (even beautifully) express how your code
 must and will behave and frees you from writing tons of defensive
 boilerplate code. You can think of contracts a little like `assert`
-statements on steroids.
+on steroids.
 
 Basics
 ------
@@ -199,7 +199,7 @@ that can be inspected to show exactly where the violation occurred
 (IdClient:6). 
 
 In general it is considered best practice to only put contracts on
-modules boundaries but if you want to use them in the same module
+module boundaries but if you want to use them in the same module
 simply call `use` immediately:
 
 {% highlight coffeescript linenos %}
@@ -290,7 +290,7 @@ the test is run after the function has completed so if any of the
 arguments were mutated during the function's execution the test could
 give spurious results.
 
-This contract:
+The `this` contract:
 
 {% highlight coffeescript %}
 f :: (Str, @{name: Str}) -> Str
@@ -432,12 +432,12 @@ o = { a: 42 }
 
 The a property must abide by the `Num` or the `Str` contract. Note
 that since higher-order contracts like function and object have
-deferred checking they cannot be use with the `or` contract. Or to be
+deferred checking they cannot be used with the `or` contract. Or to be
 more precise only *one* higher-order contract can be used with
 `or`. So you could have `Num or (Num) -> Num` but not
 `((Num) -> Num) or ((Str) -> Str)`. If you combine first-order and
 higher-order contracts with `or` all the first-order contracts will be
-checked and then the higher-order contract will be applied.
+checked first and then the higher-order contract will be applied.
 
 The `and` contract:
 
