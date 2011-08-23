@@ -410,22 +410,6 @@ coffee -C MyContractedScript.coffee
 </code></pre>
 </div>
 <p>But now we must prefix <code>Num</code> and <code>Str</code> with <code>!</code> to convert the expression to a contract.</p>
-<!-- 
-<div class="highlight"><pre><code class="coffeescript"> <span class="o">--&gt;</span>
-<span class="o">&lt;!--</span> <span class="nv">BST = </span><span class="o">?</span><span class="p">(</span><span class="nx">Null</span> <span class="o">or</span> <span class="p">{</span> <span class="o">--&gt;</span>
-<span class="o">&lt;!--</span>     <span class="nv">node: </span><span class="nx">Num</span> <span class="o">--&gt;</span>
-<span class="o">&lt;!--</span>     <span class="nv">left: </span><span class="p">(</span><span class="nx">Self</span> <span class="o">or</span> <span class="nx">Null</span><span class="p">)</span> <span class="o">--&gt;</span>
-<span class="o">&lt;!--</span>     <span class="nv">right: </span><span class="p">(</span><span class="nx">Self</span> <span class="o">or</span> <span class="nx">Null</span><span class="p">)</span> <span class="o">--&gt;</span>
-<span class="o">&lt;!--</span>     <span class="o">|</span>
-<span class="o">&lt;!--</span>         <span class="p">(</span><span class="err">@</span><span class="p">.</span><span class="nx">left</span> <span class="o">is</span> <span class="kc">null</span> <span class="o">or</span> <span class="err">@</span><span class="p">.</span><span class="nx">node</span> <span class="o">&gt;</span> <span class="err">@</span><span class="p">.</span><span class="nx">left</span><span class="p">.</span><span class="nx">node</span><span class="p">)</span> <span class="o">and</span> <span class="o">--&gt;</span>
-<span class="o">&lt;!--</span>         <span class="p">(</span><span class="err">@</span><span class="p">.</span><span class="nx">right</span> <span class="o">is</span> <span class="kc">null</span> <span class="o">or</span> <span class="err">@</span><span class="p">.</span><span class="nx">node</span> <span class="o">&lt;</span> <span class="err">@</span><span class="p">.</span><span class="nx">right</span><span class="p">.</span><span class="nx">node</span><span class="p">)</span> <span class="o">--&gt;</span>
-<span class="o">&lt;!--</span>     <span class="p">})</span> <span class="o">--&gt;</span>
-<span class="o">&lt;!--</span> 
-</code></pre>
-</div>
-
- --><!-- square :: (Num) -> Num  --><!-- square = (x) -> x * x  --><!-- # Objects: --><!-- person :: --><!--   name: Str  --><!--   age: Num  --><!-- person = --><!--   name: "Bob Smith" --><!--   age: 42 --><!-- # Arrays: --><!-- scores :: [...Num] --><!-- scores = [98, 80, 97, 70, 100] --><!-- # Combined: --><!-- person :: --><!--   name: Str  --><!--   age: Num  --><!--   scores: [...Num] --><!--   grade: (@{scores: [...Num]}) - Num | --><!--          pre: (obj) -> obj.scores.length > 0  --><!--   | invariant: -> @.scores.every (s) - s > 0 && s < 100  --><!-- person =  --><!--   name: "Bob Smith" --><!--   age: 42 --><!--   scores: [98, 80, 97, 70, 100] --><!--   grade = ->   -->
-<p><!--     @.scores.reduce((s1, s2) - s1 + s2) / @.scores.length --></p>
 
     <div class="footer">
       get the source code on GitHub : <a href="http://github.com/disnet/contracts.coffee">disnet/contracts.coffee</a>
