@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset='utf-8'>
+
+  <title>disnet/contracts.coffee @ GitHub</title>
+  <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,400italic' rel='stylesheet' type='text/css'>
+
+  <link href='documentation/contracts/styles/default.css' rel='stylesheet' type='text/css'>
+
+  <style type="text/css">
+    body {
+      margin-top: 1.0em;
+      background-color: white;
+      font-family: 'Open Sans', sans-serif;
+      font-size: 16pt;
+      /* font-family: Helvetica, Arial, FreeSans, san-serif; */
+      color: black;
+    }
+
+    #container {
+      margin: 0 auto;
+      width: 700px;
+    }
+
+    pre {
+      background-color: #F0F3F3;
+      padding: 6px;
+    }
+    h1 { text-align: center; font-size: 3.8em; color: black; margin-bottom: 3px; }
+    h1 .small { font-size: 0.4em; }
+    h1 a { text-decoration: none }
+    h2 { font-size: 1.5em; color: black; }
+    h3 { text-align: center; color: black; }
+    a { color: black; }
+    .description { font-size: 1.2em; margin-bottom: 30px; margin-top: 30px; font-style: italic;}
+    .download { float: right; }
+    /* pre { background: #000; color: #fff; padding: 15px;} */
+    hr { border: 0; width: 80%; border-bottom: 1px solid #aaa}
+    .footer { text-align:center; padding-top:30px; font-style: italic; }
+  </style>
+</head>
+
+<body>
+  <a href="http://github.com/disnet/contracts.coffee"><img style="position: absolute; top: 0; right: 0; border: 0;" src="http://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub" /></a>
+
+  <div id="container">
+
+    <!-- <div class="download"> -->
+    <!--   <a href="http://github.com/disnet/contracts.coffee/zipball/master"> -->
+    <!--     <img border="0" width="90" src="http://github.com/images/modules/download/zip.png"></a> -->
+    <!--   <a href="http://github.com/disnet/contracts.coffee/tarball/master"> -->
+    <!--     <img border="0" width="90" src="http://github.com/images/modules/download/tar.png"></a> -->
+    <!-- </div> -->
+
+    <h1><a href="http://github.com/disnet/contracts.coffee">Contracts.coffee</a>
+    </h1>
+
+    <p>Contracts.coffee is an experimental fork of CoffeeScript that adds contracts to the language.</p>
+
+<p>Contracts let you to clearly (even beautifully) express how your code must and will behave and frees you from writing tons of defensive boilerplate code. You can think of contracts a little like <code>assert</code> statements on steroids.</p>
+
+<h2 id='basics'>Basics</h2>
+
+<p>Here&#8217;s a simple example of a contract on a function:</p>
+<div class='highlight'><pre><code class='coffeescript'><span class='nx'>id</span> <span class='o'>::</span> <span class='nf'>(Num) -&gt;</span> <span class='nx'>Num</span>
+<span class='nv'>id = </span><span class='nf'>(x) -&gt;</span> <span class='nx'>x</span>
+</code></pre>
+</div>
+<p>This says that the <code>id</code> function should always be called with a <code>number</code> and will always return a <code>number</code>. It looks a lot like types (in fact the syntax looks a <em>lot</em> like haskell) but this is completely enforced at runtime in pure JavaScript.</p>
+
+<p>If we attempt to use <code>id</code> incorrectly:</p>
+<div class='highlight'><pre><code class='coffeescript'><span class='nx'>id</span> <span class='s2'>&quot;foo&quot;</span>
+</code></pre>
+</div>
+<p>The program will halt and display lots of nice information informing us what we did wrong:</p>
+<pre style='color: red'>
+Error: Contract violation: expected &lt;Number&gt;,
+actual: "foo"
+Value guarded in: id_module.js:42 -- blame is
+on: client_code.js:104
+Parent contracts:
+(Number) -> Number 
+</pre>
+<p>You can also put contracts on objects.</p>
+<div class='highlight'><pre><code class='coffeescript'><span class='nx'>person</span> <span class='o'>::</span>
+    <span class='nv'>name: </span><span class='nx'>Str</span>
+    <span class='nv'>age: </span><span class='nx'>Num</span>
+<span class='nv'>person =</span>
+    <span class='nv'>name: </span><span class='s2'>&quot;Bertrand Meyer&quot;</span>
+    <span class='nv'>age: </span><span class='mi'>42</span>
+</code></pre>
+</div>
+<p>And arrays.</p>
+<div class='highlight'><pre><code class='coffeescript'><span class='nx'>loc</span> <span class='o'>::</span> <span class='p'>[...</span><span class='nx'>Num</span><span class='p'>]</span>
+<span class='nv'>loc = </span><span class='p'>[</span><span class='mi'>99332</span><span class='p'>,</span> <span class='mi'>23452</span><span class='p'>,</span> <span class='mi'>123</span><span class='p'>,</span> <span class='mi'>2</span><span class='p'>,</span> <span class='mi'>5000</span><span class='p'>]</span>
+</code></pre>
+</div>
+<p>And various combinations thereof.</p>
+<div class='highlight'><pre><code class='coffeescript'><span class='nx'>average</span> <span class='o'>::</span> <span class='nf'>({name: Str, age: Num}, [...Num]) -&gt;</span> <span class='nx'>Str</span>
+<span class='nv'>average = </span><span class='nf'>(person, loc) -&gt;</span>
+    <span class='nv'>sum = </span><span class='nx'>loc</span><span class='p'>.</span><span class='nx'>reduce</span> <span class='nf'>(s1, s2) -&gt;</span> <span class='nx'>s1</span> <span class='o'>+</span> <span class='nx'>s2</span>
+    <span class='s2'>&quot;#{person.name} wrote on average </span>
+<span class='s2'>     #{sum / loc.length} lines of code.&quot;</span>
+</code></pre>
+</div>
+<p>Under the covers contracts are really just normal functions that return true or false so it&#8217;s really easy to roll your own.</p>
+<div class='highlight'><pre><code class='coffeescript'><span class='nx'>addEvens</span> <span class='o'>::</span> <span class='p'>(</span><span class='o'>!</span><span class='nf'>(x) -&gt;</span> <span class='nx'>x</span> <span class='o'>%</span> <span class='mi'>2</span> <span class='o'>is</span> <span class='mi'>0</span><span class='p'>)</span> <span class='o'>-&gt;</span>
+    <span class='o'>!</span><span class='nf'>(x) -&gt;</span> <span class='k'>typeof</span> <span class='nx'>x</span> <span class='o'>is</span> <span class='s1'>&#39;number&#39;</span>
+<span class='nv'>addEvens = </span><span class='nf'>(x) -&gt;</span> <span class='nx'>x</span> <span class='o'>+</span> <span class='mi'>1</span>
+</code></pre>
+</div>
+<p>In fact, since contracts are checked at runtime, they can enforce properties that static type systems can only dream of.</p>
+<div class='highlight'><pre><code class='coffeescript'><span class='nx'>f</span> <span class='o'>::</span> <span class='p'>(</span><span class='o'>!</span><span class='nf'>(x) -&gt;</span> <span class='nx'>isPrime</span> <span class='nx'>x</span><span class='p'>)</span> <span class='o'>-&gt;</span> <span class='o'>!</span><span class='nf'>(x) -&gt;</span> <span class='nx'>isPrime</span> <span class='nx'>x</span>
+<span class='nv'>f = </span><span class='nf'>(x) -&gt;</span> <span class='nx'>x</span>
+</code></pre>
+</div>
+<p>Eat your heart out Haskell :)</p>
+
+<h2 id='quick_start'>Quick Start</h2>
+
+<p>Here&#8217;s what you need to actually start working with contracts.coffee.</p>
+
+<p>First, grab the source from github.</p>
+<div class='highlight'><pre><code class='bash'>git clone git://github.com/disnet/contracts.coffee.git
+<span class='nb'>cd </span>contracts.coffee
+git submodule init
+git submodule update
+</code></pre>
+</div>
+<p>Install <a href='https://github.com/joyent/node/wiki/Installation'>Node.js</a> and then contracts.coffee.</p>
+<div class='highlight'><pre><code class='bash'>sudo bin/cake install
+</code></pre>
+</div>
+<p>Now, compile some coffee with contracts!</p>
+<div class='highlight'><pre><code class='bash'>coffee -cC MyContractedScript.coffee
+</code></pre>
+</div>
+<p>Note the <code>-cC</code> flag. The <code>-c</code> says to compile to JavaScript and <code>-C</code> enables contracts in the compiled JavaScript. If you don&#8217;t want contracts enabled (say in production) simply don&#8217;t include the <code>-C</code> flag.</p>
+
+<p>You will also need to include <code>loadContracts.js</code>, which is found in the root of contracts.coffee. So the header of your HTML file will look something like:</p>
+<div class='highlight'><pre><code class='html'>...
+<span class='nt'>&lt;script </span><span class='na'>src=</span><span class='s'>&quot;loadContracts.js&quot;</span>
+    <span class='na'>type=</span><span class='s'>&quot;application/javascript&quot;</span><span class='nt'>&gt;&lt;/script&gt;</span>
+<span class='nt'>&lt;script </span><span class='na'>src=</span><span class='s'>&quot;MyContractedScript.js&quot;</span>
+    <span class='na'>type=</span><span class='s'>&quot;application/javascript&quot;</span><span class='nt'>&gt;&lt;/script&gt;</span>
+...
+</code></pre>
+</div>
+<p>Note that if you have an existing install of CoffeeScript, installing contracts.coffee will replace it. If you don&#8217;t want to give up the old CoffeeScript compiler you can just run contracts.coffee from its own directory:</p>
+<div class='highlight'><pre><code class='bash'>bin/coffee -cC MyContractedScript.coffee
+</code></pre>
+</div>
+<p>And finally, note that contracts.coffee requires some pretty new features of JavaScript to get its job done (in particular <a href='https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Proxy'>Proxies</a>) so it currently only works on Firefox 4+. Support for other JavaScript engines is coming soon.</p>
+
+<p>This means that if you attempt to run your contracted CoffeeScript under node/V8:</p>
+<div class='highlight'><pre><code class='bash'><span class='c'># note the -c flag is missing</span>
+coffee -C MyContractedScript.coffee
+<span class='c'># Compile error!!!</span>
+</code></pre>
+</div>
+<p>You will get a bunch of errors. So just compile to JavaScript and run it in Firefox for now.</p>
+
+<h2 id='a_word_on_modules'>A word on modules</h2>
+
+<p>In order to provide good error messages when things go wrong, contracts.coffee attempts to enforce a kind of module separation in your code. To see what this means, consider this simple example:</p>
+<div class='highlight'><pre><code class='coffeescript'><span class='lineno'>1</span> <span class='c1'># IdServer.coffee</span>
+<span class='lineno'>2</span> <span class='nb'>window</span><span class='p'>.</span><span class='nx'>id</span> <span class='o'>::</span> <span class='nf'>(Num) -&gt;</span> <span class='nx'>Num</span>
+<span class='lineno'>3</span> <span class='nb'>window</span><span class='p'>.</span><span class='nv'>id = </span><span class='nf'>(x) -&gt;</span> <span class='nx'>x</span>
+</code></pre>
+</div><div class='highlight'><pre><code class='coffeescript'><span class='lineno'>1</span> <span class='c1'># IdClient.coffee</span>
+<span class='lineno'>2</span> <span class='nv'>id = </span><span class='nb'>window</span><span class='p'>.</span><span class='nx'>id</span><span class='p'>.</span><span class='nx'>use</span><span class='p'>()</span>
+<span class='lineno'>3</span> 
+<span class='lineno'>4</span> <span class='nv'>x = </span><span class='nx'>id</span> <span class='mi'>42</span>
+<span class='lineno'>5</span> <span class='nx'>x</span> <span class='o'>+</span> <span class='mi'>1</span>     <span class='c1'># 43</span>
+<span class='lineno'>6</span> <span class='nx'>id</span> <span class='s2'>&quot;foo&quot;</span>  <span class='c1'># error on value guarded in IdServer:3 --</span>
+<span class='lineno'>7</span>           <span class='c1'># blame is on IdClient:2</span>
+</code></pre>
+</div>
+<p>When we apply a contract to a value, it is first wrapped up in an object that has a single <code>use</code> method that must be called before the value can be used. Calling <code>use</code> lets the contract library set up useful information to help track down the problem when a contract is violated such as which module provided the contracted value and which module was to blame for the failure.</p>
+
+<p>In this example the error message tells us where the value was first guarded (IdServer:3) and where is was first &#8220;imported&#8221; into the client (IdClient:2). In addition the error that gets thrown has a stacktrace that can be inspected to show exactly where the violation occurred (IdClient:6).</p>
+
+<p>In general it is considered best practice to only put contracts on modules boundaries but if you want to use them in the same module simply call <code>use</code> immediately:</p>
+<div class='highlight'><pre><code class='coffeescript'><span class='lineno'>1</span> <span class='nx'>id</span> <span class='o'>::</span> <span class='nf'>(Num) -&gt;</span> <span class='nx'>Num</span>
+<span class='lineno'>2</span> <span class='nv'>id = </span><span class='nf'>(x) -&gt;</span> <span class='nx'>x</span>
+<span class='lineno'>3</span> <span class='nv'>id = </span><span class='nx'>id</span><span class='p'>.</span><span class='nx'>use</span><span class='p'>()</span>
+<span class='lineno'>4</span> 
+<span class='lineno'>5</span> <span class='nx'>id</span> <span class='s2'>&quot;foo&quot;</span>
+</code></pre>
+</div>
+<h2 id='functions'>Functions</h2>
+
+<p>Basic functions:</p>
+<div class='highlight'><pre><code class='coffeescript'><span class='nx'>f</span> <span class='o'>::</span> <span class='nf'>(Num) -&gt;</span> <span class='nx'>Num</span>
+<span class='nv'>f = </span><span class='nf'>(x) -&gt;</span> <span class='nx'>x</span>
+</code></pre>
+</div>
+<p>Multiple arguments:</p>
+<div class='highlight'><pre><code class='coffeescript'><span class='nx'>f</span> <span class='o'>::</span> <span class='nf'>(Num, Str, Bool) -&gt;</span> <span class='nx'>Num</span>
+<span class='nv'>f = </span><span class='nf'>(n, s, b) -&gt;</span> <span class='c1'># ...</span>
+</code></pre>
+</div>
+<p>Optional arguments:</p>
+<div class='highlight'><pre><code class='coffeescript'><span class='nx'>f</span> <span class='o'>::</span> <span class='nf'>(Num, Str, Bool?) -&gt;</span> <span class='nx'>Num</span>
+<span class='nv'>f = </span><span class='nf'>(n, s, b) -&gt;</span> <span class='c1'># ...</span>
+</code></pre>
+</div>
+<p>All optional arguments must come at the end of the arguments list.</p>
+
+<p>Higher order functions:</p>
+<div class='highlight'><pre><code class='coffeescript'><span class='nx'>f</span> <span class='o'>::</span> <span class='p'>(</span><span class='nf'>(Num) -&gt;</span> <span class='nx'>Bool</span><span class='p'>,</span> <span class='nx'>Num</span><span class='p'>)</span> <span class='o'>-&gt;</span> <span class='nx'>Bool</span>
+<span class='nv'>f = </span><span class='nf'>(g, n) -&gt;</span> <span class='c1'># ...</span>
+</code></pre>
+</div>
+<p>Functions that <em>cannot</em> be called with the <code>new</code> keyword:</p>
+<div class='highlight'><pre><code class='coffeescript'><span class='nx'>f</span> <span class='o'>::</span> <span class='p'>(</span><span class='nx'>Num</span><span class='p'>)</span> <span class='o'>--&gt;</span> <span class='nx'>Num</span>
+<span class='nv'>f = </span><span class='nf'>(n) -&gt;</span> <span class='c1'># ...</span>
+<span class='c1'>#...</span>
+
+<span class='nv'>g = </span><span class='nx'>f</span> <span class='mi'>42</span>      <span class='c1'># ok</span>
+<span class='nv'>g = </span><span class='k'>new</span> <span class='nx'>f</span> <span class='mi'>42</span>  <span class='c1'># error!</span>
+</code></pre>
+</div>
+<p>Functions that can <em>only</em> be called with the <code>new</code> keyword:</p>
+<div class='highlight'><pre><code class='coffeescript'><span class='nx'>f</span> <span class='o'>::</span> <span class='p'>(</span><span class='nx'>Num</span><span class='p'>)</span> <span class='o'>==&gt;</span> <span class='nx'>Num</span>
+<span class='nv'>f = </span><span class='nf'>(n) -&gt;</span> <span class='c1'># ...</span>
+<span class='c1'>#...</span>
+
+<span class='nv'>g = </span><span class='nx'>f</span> <span class='mi'>42</span>      <span class='c1'># error!</span>
+<span class='nv'>g = </span><span class='k'>new</span> <span class='nx'>f</span> <span class='mi'>42</span>  <span class='c1'># ok</span>
+</code></pre>
+</div>
+<p>Functions that get <code>new</code> inserted automatically if it was left out.</p>
+<div class='highlight'><pre><code class='coffeescript'><span class='nx'>f</span> <span class='o'>::</span> <span class='p'>(</span><span class='nx'>Num</span><span class='p'>)</span> <span class='o'>-=&gt;</span> <span class='nx'>Num</span>
+<span class='nv'>f = </span><span class='nf'>(n) -&gt;</span> <span class='c1'># ...</span>
+<span class='c1'>#...</span>
+
+<span class='nv'>g = </span><span class='nx'>f</span> <span class='mi'>42</span>      <span class='c1'># ok: converted to g = new f 42</span>
+<span class='nv'>g = </span><span class='k'>new</span> <span class='nx'>f</span> <span class='mi'>42</span>  <span class='c1'># ok</span>
+</code></pre>
+</div>
+<p>Dependent functions:</p>
+<div class='highlight'><pre><code class='coffeescript'><span class='nx'>inc</span> <span class='o'>::</span> <span class='nf'>(Num) -&gt;</span> <span class='o'>!</span><span class='nf'>(result) -&gt;</span> <span class='nx'>result</span> <span class='o'>&gt;</span> <span class='nx'>$1</span>
+<span class='nv'>inc = </span><span class='nf'>(n) -&gt;</span> <span class='nx'>n</span> <span class='o'>+</span> <span class='mi'>1</span>
+</code></pre>
+</div>
+<p>The variable <code>$1</code> is the first argument passed to the function (<code>$2</code> would be the second argument, <code>$3</code> the third, and so on). This allows us to compare the result of the function to its arguments. Note that the test is run after the function has completed so if any of the arguments were mutated during the function&#8217;s execution the test could give spurious results.</p>
+
+<p>This contract:</p>
+<div class='highlight'><pre><code class='coffeescript'><span class='nx'>f</span> <span class='o'>::</span> <span class='nf'>(Str, @{name: Str}) -&gt;</span> <span class='nx'>Str</span>
+<span class='nv'>f = </span><span class='nf'>(s) -&gt;</span> <span class='c1'>#...</span>
+
+<span class='nv'>o = </span><span class='p'>{</span> <span class='nv'>name: </span><span class='s2'>&quot;foo&quot;</span><span class='p'>,</span> <span class='nv'>f: </span><span class='nx'>f</span><span class='p'>}</span>
+<span class='nx'>o</span><span class='p'>.</span><span class='nx'>f</span><span class='p'>()</span>
+</code></pre>
+</div>
+<p>Checks that <code>this</code> matches the given object contract.</p>
+
+<h2 id='objects'>Objects</h2>
+
+<p>Simple properties:</p>
+<div class='highlight'><pre><code class='coffeescript'><span class='nx'>o</span> <span class='o'>::</span>
+  <span class='nv'>a: </span><span class='nx'>Str</span>
+  <span class='nv'>b: </span><span class='nx'>Num</span>
+  <span class='nv'>f: </span><span class='nf'>(Num) -&gt;</span> <span class='nx'>Num</span>
+<span class='nv'>o =</span>
+  <span class='nv'>a: </span><span class='s2'>&quot;foo&quot;</span>
+  <span class='nv'>b: </span><span class='mi'>42</span>
+  <span class='nv'>f: </span><span class='nf'>(x) -&gt;</span> <span class='nx'>x</span>
+</code></pre>
+</div>
+<p>Optional properties:</p>
+<div class='highlight'><pre><code class='coffeescript'><span class='nx'>o</span> <span class='o'>::</span>
+  <span class='nv'>a: </span><span class='nx'>Str</span>
+  <span class='nv'>b: </span><span class='nx'>Num</span><span class='o'>?</span>
+  <span class='nv'>f: </span><span class='nf'>(Num) -&gt;</span> <span class='nx'>Num</span>
+<span class='nv'>o =</span>
+  <span class='nv'>a: </span><span class='s2'>&quot;foo&quot;</span>
+  <span class='nv'>f: </span><span class='nf'>(x) -&gt;</span> <span class='nx'>x</span>
+</code></pre>
+</div>
+<p>Nested objects:</p>
+<div class='highlight'><pre><code class='coffeescript'><span class='nx'>o</span> <span class='o'>::</span>
+  <span class='nv'>oo: </span><span class='p'>{</span> <span class='nv'>a: </span><span class='nx'>Str</span> <span class='p'>}</span>
+  <span class='nv'>b: </span><span class='nx'>Num</span>
+<span class='nv'>o =</span>
+  <span class='nv'>oo: </span><span class='p'>{</span> <span class='nv'>a: </span><span class='s2'>&quot;foo&quot;</span> <span class='p'>}</span>
+  <span class='nv'>b: </span><span class='mi'>42</span>
+</code></pre>
+</div>
+<p>Recursive objects:</p>
+<div class='highlight'><pre><code class='coffeescript'><span class='nx'>o</span> <span class='o'>::</span>
+  <span class='nv'>a: </span><span class='nx'>Num</span>
+  <span class='nv'>b: </span><span class='nx'>Self</span>
+  <span class='nv'>c: </span><span class='nf'>(Num) -&gt;</span> <span class='nx'>Self</span>
+<span class='nv'>o = </span><span class='c1'>#...</span>
+</code></pre>
+</div>
+<p>Objects with functions that have pre and post conditions:</p>
+<div class='highlight'><pre><code class='coffeescript'><span class='nx'>o</span> <span class='o'>::</span>
+  <span class='nv'>a: </span><span class='nx'>Num</span>
+  <span class='nv'>f: </span><span class='nf'>(Num) -&gt;</span> <span class='nx'>Num</span> <span class='o'>|</span>
+      <span class='nv'>pre: </span><span class='nf'>(o) -&gt;</span> <span class='nx'>o</span><span class='p'>.</span><span class='nx'>a</span> <span class='o'>&gt;</span> <span class='mi'>10</span>
+      <span class='nv'>post: </span><span class='nf'>(o) -&gt;</span> <span class='nx'>o</span><span class='p'>.</span><span class='nx'>a</span> <span class='o'>&gt;</span> <span class='mi'>20</span>
+<span class='nv'>o =</span>
+  <span class='nv'>a: </span><span class='mi'>12</span>
+  <span class='nv'>f: </span><span class='nf'>(x) -&gt;</span> <span class='err'>@</span><span class='p'>.</span><span class='nv'>a = </span><span class='err'>@</span><span class='p'>.</span><span class='nx'>a</span> <span class='o'>+</span> <span class='nx'>x</span>
+</code></pre>
+</div>
+<p>The pre and post condition functions are called with the object that <code>f</code> is a member of. As their names imply, <code>pre</code> is called before the function <code>f</code> is invoked and <code>post</code> is called after.</p>
+
+<p>Object invariants:</p>
+<div class='highlight'><pre><code class='coffeescript'><span class='nx'>o</span> <span class='o'>::</span>
+  <span class='nv'>a: </span><span class='nx'>Num</span>
+  <span class='nv'>f: </span><span class='nf'>(Num) -&gt;</span> <span class='nx'>Num</span> <span class='o'>|</span>
+      <span class='nv'>pre: </span><span class='nf'>(o) -&gt;</span> <span class='nx'>o</span><span class='p'>.</span><span class='nx'>a</span> <span class='o'>&gt;</span> <span class='mi'>10</span>
+      <span class='nv'>post: </span><span class='nf'>(o) -&gt;</span> <span class='nx'>o</span><span class='p'>.</span><span class='nx'>a</span> <span class='o'>&gt;</span> <span class='mi'>20</span>
+  <span class='o'>|</span> <span class='nv'>invariant: </span><span class='o'>-&gt;</span>
+    <span class='err'>@</span><span class='p'>.</span><span class='nx'>a</span> <span class='o'>&gt;</span> <span class='mi'>0</span> <span class='o'>and</span> <span class='err'>@</span><span class='p'>.</span><span class='nx'>a</span> <span class='o'>&lt;</span> <span class='mi'>100</span>
+<span class='nv'>o =</span>
+  <span class='nv'>a: </span><span class='mi'>12</span>
+  <span class='nv'>f: </span><span class='nf'>(x) -&gt;</span> <span class='err'>@</span><span class='p'>.</span><span class='nv'>a = </span><span class='err'>@</span><span class='p'>.</span><span class='nx'>a</span> <span class='o'>+</span> <span class='nx'>x</span>
+</code></pre>
+</div>
+<p>The invariant is checked whenever there is a possibility of <code>o</code> mutating (on property sets, delete, etc.).</p>
+
+<h2 id='arrays'>Arrays</h2>
+
+<p>Basic arrays:</p>
+<div class='highlight'><pre><code class='coffeescript'><span class='nx'>a</span> <span class='o'>::</span> <span class='p'>[</span><span class='nx'>Num</span><span class='p'>,</span> <span class='nx'>Str</span><span class='p'>,</span> <span class='p'>[</span><span class='nx'>Bool</span><span class='p'>,</span> <span class='nx'>Num</span><span class='p'>]]</span>
+<span class='nv'>a = </span><span class='p'>[</span><span class='mi'>42</span><span class='p'>,</span> <span class='s2'>&quot;foo&quot;</span><span class='p'>,</span> <span class='p'>[</span><span class='kc'>true</span><span class='p'>,</span> <span class='mi'>24</span><span class='p'>]</span>
+</code></pre>
+</div>
+<p>This says the array must have three elements, the first being a <code>Num</code>, the second being a <code>Str</code>, and the third being another array.</p>
+
+<p>Multiple elements:</p>
+<div class='highlight'><pre><code class='coffeescript'><span class='nx'>a</span> <span class='o'>::</span> <span class='p'>[...</span><span class='nx'>Num</span><span class='p'>]</span>
+<span class='nv'>a = </span><span class='p'>[</span><span class='mi'>42</span><span class='p'>,</span> <span class='mi'>24</span><span class='p'>,</span> <span class='mi'>432</span><span class='p'>,</span> <span class='mi'>854</span><span class='p'>,</span> <span class='mi'>21</span><span class='p'>]</span>
+</code></pre>
+</div>
+<p>The <code>...</code> operator says that the array will only contain <code>Num</code>s.</p>
+
+<p>Mixing arrays</p>
+<div class='highlight'><pre><code class='coffeescript'><span class='nx'>a</span> <span class='o'>::</span> <span class='p'>[</span><span class='nx'>Bool</span><span class='p'>,</span> <span class='nx'>Str</span><span class='p'>,</span> <span class='p'>...</span><span class='nx'>Num</span><span class='p'>]</span>
+<span class='nv'>a = </span><span class='p'>[</span><span class='kc'>false</span><span class='p'>,</span> <span class='s2'>&quot;foo&quot;</span><span class='p'>,</span> <span class='mi'>432</span><span class='p'>,</span> <span class='mi'>854</span><span class='p'>,</span> <span class='mi'>21</span><span class='p'>]</span>
+</code></pre>
+</div>
+<p>The <code>...</code> operator can be mixed with single contracts. This says that the array&#8217;s first and second positions must abide by the first two contracts and the remaining array positions must abide by <code>Num</code>. The <code>...</code> operator must be in the last position of the array contract.</p>
+
+<h2 id='andor'>And/Or</h2>
+
+<p>The <code>or</code> contract:</p>
+<div class='highlight'><pre><code class='coffeescript'><span class='nx'>o</span> <span class='o'>::</span> <span class='p'>{</span> <span class='nv'>a: </span><span class='nx'>Num</span> <span class='o'>or</span> <span class='nx'>Str</span> <span class='p'>}</span>
+<span class='nv'>o = </span><span class='p'>{</span> <span class='nv'>a: </span><span class='mi'>42</span> <span class='p'>}</span>
+</code></pre>
+</div>
+<p>The a property must abide by the <code>Num</code> or the <code>Str</code> contract. Note that since higher-order contracts like function and object have deferred checking they cannot be use with the <code>or</code> contract. Or to be more precise only <em>one</em> higher-order contract can be used with <code>or</code>. So you could have <code>Num or (Num) -&gt; Num</code> but not <code>((Num) -&gt; Num) or ((Str) -&gt; Str)</code>. If you combine first-order and higher-order contracts with <code>or</code> all the first-order contracts will be checked and then the higher-order contract will be applied.</p>
+
+<p>The <code>and</code> contract:</p>
+<div class='highlight'><pre><code class='coffeescript'><span class='nx'>o</span> <span class='o'>::</span> <span class='p'>{</span> <span class='nv'>a: </span><span class='nx'>Num</span> <span class='o'>and</span> <span class='nx'>Even</span> <span class='p'>}</span>
+<span class='nv'>o = </span><span class='p'>{</span> <span class='nv'>a: </span><span class='mi'>42</span> <span class='p'>}</span>
+</code></pre>
+</div>
+<p>The <code>a</code> property must abide by both the <code>Num</code> and <code>Even</code> contracts. Just like <code>or</code> you cannot use multiple higher-order contracts with <code>and</code>.</p>
+
+<h2 id='naming_your_own_contracts'>Naming your own contracts</h2>
+
+<p>You can bind a contract to a variable just like normal expressions:</p>
+<div class='highlight'><pre><code class='coffeescript'><span class='nv'>NumId = </span><span class='o'>?</span><span class='nf'>(Num) -&gt;</span> <span class='nx'>Num</span>
+
+<span class='nx'>f</span> <span class='o'>::</span> <span class='nx'>NumId</span>
+<span class='nv'>f = </span><span class='nf'>(x) -&gt;</span> <span class='nx'>x</span>
+</code></pre>
+</div>
+<p>The <code>?</code> operator allows you to escape out of the normal expression language and into the contract language.</p>
+
+<p>You can also escape from the contract language to the normal expression language:</p>
+<div class='highlight'><pre><code class='coffeescript'><span class='nx'>takesEvens</span> <span class='o'>::</span> <span class='p'>(</span><span class='o'>!</span><span class='nf'>(x) -&gt;</span> <span class='nx'>x</span> <span class='o'>%</span> <span class='mi'>2</span> <span class='o'>is</span> <span class='mi'>0</span><span class='p'>)</span> <span class='o'>-&gt;</span> <span class='nx'>Num</span>
+<span class='nv'>takesEvens = </span><span class='nf'>(x) -&gt;</span> <span class='nx'>x</span>
+</code></pre>
+</div>
+<p>The result of the expression in the <code>!</code> escape must be a function that returns a boolean. It is converted to a contract the checks its value against the provided predicate.</p>
+
+<p>The standard <code>Num</code> and <code>Str</code> contracts you have seen are implemented as:</p>
+<div class='highlight'><pre><code class='coffeescript'><span class='nv'>Num = </span><span class='o'>?!</span><span class='nf'>(x) -&gt;</span> <span class='k'>typeof</span> <span class='nx'>x</span> <span class='o'>is</span> <span class='s1'>&#39;number&#39;</span>
+<span class='nv'>Str = </span><span class='o'>?!</span><span class='nf'>(x) -&gt;</span> <span class='k'>typeof</span> <span class='nx'>x</span> <span class='o'>is</span> <span class='s1'>&#39;string&#39;</span>
+</code></pre>
+</div>
+<p>The syntax is a little kludgy by it can be read as &#8220;assign to Num the contract that is generated when we convert the predicate <code>(x) -&gt; ...</code> to a contract&#8221;.</p>
+
+<p>It could also be written:</p>
+<div class='highlight'><pre><code class='coffeescript'><span class='nv'>Num = </span><span class='nf'>(x) -&gt;</span> <span class='k'>typeof</span> <span class='nx'>x</span> <span class='o'>is</span> <span class='s1'>&#39;number&#39;</span>
+<span class='nv'>Str = </span><span class='nf'>(x) -&gt;</span> <span class='k'>typeof</span> <span class='nx'>x</span> <span class='o'>is</span> <span class='s1'>&#39;string&#39;</span>
+
+<span class='nv'>f = </span><span class='nf'>(!Num) -&gt;</span> <span class='o'>!</span><span class='nx'>Str</span>
+</code></pre>
+</div>
+<p>But now we must prefix <code>Num</code> and <code>Str</code> with <code>!</code> to convert the expression to a contract.</p>
+<!-- 
+<div class="highlight"><pre><code class="coffeescript"> <span class="o">--&gt;</span>
+<span class="o">&lt;!--</span> <span class="nv">BST = </span><span class="o">?</span><span class="p">(</span><span class="nx">Null</span> <span class="o">or</span> <span class="p">{</span> <span class="o">--&gt;</span>
+<span class="o">&lt;!--</span>     <span class="nv">node: </span><span class="nx">Num</span> <span class="o">--&gt;</span>
+<span class="o">&lt;!--</span>     <span class="nv">left: </span><span class="p">(</span><span class="nx">Self</span> <span class="o">or</span> <span class="nx">Null</span><span class="p">)</span> <span class="o">--&gt;</span>
+<span class="o">&lt;!--</span>     <span class="nv">right: </span><span class="p">(</span><span class="nx">Self</span> <span class="o">or</span> <span class="nx">Null</span><span class="p">)</span> <span class="o">--&gt;</span>
+<span class="o">&lt;!--</span>     <span class="o">|</span>
+<span class="o">&lt;!--</span>         <span class="p">(</span><span class="err">@</span><span class="p">.</span><span class="nx">left</span> <span class="o">is</span> <span class="kc">null</span> <span class="o">or</span> <span class="err">@</span><span class="p">.</span><span class="nx">node</span> <span class="o">&gt;</span> <span class="err">@</span><span class="p">.</span><span class="nx">left</span><span class="p">.</span><span class="nx">node</span><span class="p">)</span> <span class="o">and</span> <span class="o">--&gt;</span>
+<span class="o">&lt;!--</span>         <span class="p">(</span><span class="err">@</span><span class="p">.</span><span class="nx">right</span> <span class="o">is</span> <span class="kc">null</span> <span class="o">or</span> <span class="err">@</span><span class="p">.</span><span class="nx">node</span> <span class="o">&lt;</span> <span class="err">@</span><span class="p">.</span><span class="nx">right</span><span class="p">.</span><span class="nx">node</span><span class="p">)</span> <span class="o">--&gt;</span>
+<span class="o">&lt;!--</span>     <span class="p">})</span> <span class="o">--&gt;</span>
+<span class="o">&lt;!--</span> 
+</code></pre>
+</div>
+
+ --><!-- square :: (Num) -> Num  --><!-- square = (x) -> x * x  --><!-- # Objects: --><!-- person :: --><!--   name: Str  --><!--   age: Num  --><!-- person = --><!--   name: "Bob Smith" --><!--   age: 42 --><!-- # Arrays: --><!-- scores :: [...Num] --><!-- scores = [98, 80, 97, 70, 100] --><!-- # Combined: --><!-- person :: --><!--   name: Str  --><!--   age: Num  --><!--   scores: [...Num] --><!--   grade: (@{scores: [...Num]}) - Num | --><!--          pre: (obj) -> obj.scores.length > 0  --><!--   | invariant: -> @.scores.every (s) - s > 0 && s < 100  --><!-- person =  --><!--   name: "Bob Smith" --><!--   age: 42 --><!--   scores: [98, 80, 97, 70, 100] --><!--   grade = ->   -->
+<p><!--     @.scores.reduce((s1, s2) - s1 + s2) / @.scores.length --></p>
+
+    <div class="footer">
+      get the source code on GitHub : <a href="http://github.com/disnet/contracts.coffee">disnet/contracts.coffee</a>
+    </div>
+
+  </div>
+
+  
+</body>
+</html>
