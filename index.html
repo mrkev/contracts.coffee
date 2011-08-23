@@ -58,7 +58,7 @@
 
     <p>Contracts.coffee is an experimental fork of CoffeeScript that adds contracts to the language.</p>
 
-<p>Contracts let you to clearly (even beautifully) express how your code must and will behave and frees you from writing tons of defensive boilerplate code. You can think of contracts a little like <code>assert</code> statements on steroids.</p>
+<p>Contracts let you to clearly (even beautifully) express how your code must and will behave and frees you from writing tons of defensive boilerplate code. You can think of contracts a little like <code>assert</code> on steroids.</p>
 
 <h2 id='basics'>Basics</h2>
 
@@ -181,7 +181,7 @@ coffee -C MyContractedScript.coffee
 
 <p>In this example the error message tells us where the value was first guarded (IdServer:3) and where is was first &#8220;imported&#8221; into the client (IdClient:2). In addition the error that gets thrown has a stacktrace that can be inspected to show exactly where the violation occurred (IdClient:6).</p>
 
-<p>In general it is considered best practice to only put contracts on modules boundaries but if you want to use them in the same module simply call <code>use</code> immediately:</p>
+<p>In general it is considered best practice to only put contracts on module boundaries but if you want to use them in the same module simply call <code>use</code> immediately:</p>
 <div class='highlight'><pre><code class='coffeescript'><span class='lineno'>1</span> <span class='nx'>id</span> <span class='o'>::</span> <span class='nf'>(Num) -&gt;</span> <span class='nx'>Num</span>
 <span class='lineno'>2</span> <span class='nv'>id = </span><span class='nf'>(x) -&gt;</span> <span class='nx'>x</span>
 <span class='lineno'>3</span> <span class='nv'>id = </span><span class='nx'>id</span><span class='p'>.</span><span class='nx'>use</span><span class='p'>()</span>
@@ -247,7 +247,7 @@ coffee -C MyContractedScript.coffee
 </div>
 <p>The variable <code>$1</code> is the first argument passed to the function (<code>$2</code> would be the second argument, <code>$3</code> the third, and so on). This allows us to compare the result of the function to its arguments. Note that the test is run after the function has completed so if any of the arguments were mutated during the function&#8217;s execution the test could give spurious results.</p>
 
-<p>This contract:</p>
+<p>The <code>this</code> contract:</p>
 <div class='highlight'><pre><code class='coffeescript'><span class='nx'>f</span> <span class='o'>::</span> <span class='nf'>(Str, @{name: Str}) -&gt;</span> <span class='nx'>Str</span>
 <span class='nv'>f = </span><span class='nf'>(s) -&gt;</span> <span class='c1'>#...</span>
 
@@ -355,7 +355,7 @@ coffee -C MyContractedScript.coffee
 <span class='nv'>o = </span><span class='p'>{</span> <span class='nv'>a: </span><span class='mi'>42</span> <span class='p'>}</span>
 </code></pre>
 </div>
-<p>The a property must abide by the <code>Num</code> or the <code>Str</code> contract. Note that since higher-order contracts like function and object have deferred checking they cannot be use with the <code>or</code> contract. Or to be more precise only <em>one</em> higher-order contract can be used with <code>or</code>. So you could have <code>Num or (Num) -&gt; Num</code> but not <code>((Num) -&gt; Num) or ((Str) -&gt; Str)</code>. If you combine first-order and higher-order contracts with <code>or</code> all the first-order contracts will be checked and then the higher-order contract will be applied.</p>
+<p>The a property must abide by the <code>Num</code> or the <code>Str</code> contract. Note that since higher-order contracts like function and object have deferred checking they cannot be used with the <code>or</code> contract. Or to be more precise only <em>one</em> higher-order contract can be used with <code>or</code>. So you could have <code>Num or (Num) -&gt; Num</code> but not <code>((Num) -&gt; Num) or ((Str) -&gt; Str)</code>. If you combine first-order and higher-order contracts with <code>or</code> all the first-order contracts will be checked first and then the higher-order contract will be applied.</p>
 
 <p>The <code>and</code> contract:</p>
 <div class='highlight'><pre><code class='coffeescript'><span class='nx'>o</span> <span class='o'>::</span> <span class='p'>{</span> <span class='nv'>a: </span><span class='nx'>Num</span> <span class='o'>and</span> <span class='nx'>Even</span> <span class='p'>}</span>
