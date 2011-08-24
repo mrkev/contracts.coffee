@@ -22,6 +22,15 @@
       display: none;
     }
 
+    /* override the pygments error style for syntax highlighting */
+    .err {
+      border: 0 none;
+    }
+
+    code {
+      background-color: #F0F3F3;
+    }
+
     #repl_container.active {
       border-radius: 3px 3px 3px 3px;
       display: block;
@@ -238,7 +247,7 @@ id "foo"
   <div id="container">
 
 
-    <h1><a href="http://github.com/disnet/contracts.coffee">Contracts.coffee</a>
+    <h1><a href="http://github.com/disnet/contracts.coffee">contracts.coffee</a>
     </h1>
 
     {{content}}

@@ -2,13 +2,15 @@
 layout: default
 ---
 
-Contracts.coffee is an experimental fork of CoffeeScript that adds
-contracts to the language.
+Contracts.coffee is a dialect of CoffeeScript with built-in
+support for contracts.
 
-Contracts let you to clearly (even beautifully) express how your code
-must and will behave and frees you from writing tons of defensive
-boilerplate code. You can think of contracts a little like `assert`
-on steroids.
+Contracts let you to clearly&mdash;even beautifully&mdash;express how
+your code behaves, and free you from writing tons of boilerplate,
+defensive code.
+
+You can think of contracts as `assert` on
+steroids.
 
 <span id="basics"></span>
 Basics
@@ -21,19 +23,19 @@ id :: (Num) -> Num
 id = (x) -> x
 {% endhighlight %}
 
-This says that the `id` function should always be called with a `number`
-and will always return a `number`. It looks a lot like types (in fact
-the syntax looks a *lot* like haskell) but this is completely enforced
-at runtime in pure JavaScript.
+This says that the `id` function should always be called with a number
+and will always return a number. It looks a lot like types (in fact
+the syntax looks a *lot* like Haskell) but unlike types,
+contracts are enforced at runtime in pure JavaScript.
 
-If we attempt to use `id` incorrectly: 
+If we try to use `id` incorrectly: 
 
 {% highlight coffeescript %}
 id "foo"
 {% endhighlight %}
 
-The program will halt and display lots of nice information informing us
-what we did wrong:
+the program throws an error, which displays lots of nice information
+telling us what we did wrong:
 
 <pre style="color: red">
 Error: Contract violation: expected &lt;Number&gt;,
@@ -62,7 +64,7 @@ loc :: [...Num]
 loc = [99332, 23452, 123, 2, 5000]
 {% endhighlight %}
 
-And various combinations thereof.
+And various combinations.
 
 {% highlight coffeescript %}
 average :: ({name: Str, age: Num}, [...Num]) -> Str
@@ -72,12 +74,14 @@ average = (person, loc) ->
      #{sum / loc.length} lines of code."
 {% endhighlight %}
 
-Under the covers contracts are really just normal functions that
-return true or false so it's really easy to roll your own.
+Under the covers, contracts are really just normal functions that
+return `true` or `false`, so it's really easy to roll your own.
 
 {% highlight coffeescript %}
-addEvens :: (!(x) -> x % 2 is 0) ->
-    !(x) -> typeof x is 'number'
+isEven = (x) -> x % 2 is 0
+isOdd = (x) -> x % 2 isnt 0
+
+addEvens :: (!isEven) -> !isOdd
 addEvens = (x) -> x + 1
 {% endhighlight %}
 
@@ -85,11 +89,13 @@ In fact, since contracts are checked at runtime, they can enforce
 properties that static type systems can only dream of.
 
 {% highlight coffeescript %}
-f :: (!(x) -> isPrime x) -> !(x) -> isPrime x
+isPrime = (x) -> # ...
+
+f :: (!isPrime) -> !isPrime
 f = (x) -> x
 {% endhighlight %}
 
-Eat your heart out Haskell :)
+Eat your heart out, Haskell :)
 
 <span id="quickstart"></span>
 Quick Start
@@ -437,14 +443,14 @@ o :: { a: Num or Str }
 o = { a: 42 }
 {% endhighlight %}
 
-The a property must abide by the `Num` or the `Str` contract. Note
-that since higher-order contracts like function and object have
-deferred checking they cannot be used with the `or` contract. Or to be
-more precise only *one* higher-order contract can be used with
+Here, the `a` property must pass either the `Num` or `Str` contract. Note
+that since contracts like function and object have
+deferred checking, they cannot be used with the `or` contract. Or to be
+more precise only *one* function/object contract can be used with
 `or`. So you could have `Num or (Num) -> Num` but not
-`((Num) -> Num) or ((Str) -> Str)`. If you combine first-order and
-higher-order contracts with `or` all the first-order contracts will be
-checked first and then the higher-order contract will be applied.
+`((Num) -> Num) or ((Str) -> Str)`. If you combine normal contracts and
+function/object contracts with `or` all the normal contracts will be
+checked first and then the function/object contract will be applied.
 
 The `and` contract:
 
@@ -454,8 +460,8 @@ o = { a: 42 }
 {% endhighlight %}
 
 The `a` property must abide by both the `Num` and `Even`
-contracts. Just like `or` you cannot use multiple higher-order
-contracts with `and`.
+contracts. Just like `or` you cannot use multiple function/object
+with `and`.
 
 
 <span id="naming"></span>
@@ -483,8 +489,8 @@ takesEvens = (x) -> x
 {% endhighlight %}
 
 The result of the expression in the `!` escape must be a function that
-returns a boolean. It is converted to a contract the checks its value
-against the provided predicate.
+returns a boolean. It is converted to a contract that checks its value
+against the function.
 
 The standard `Num` and `Str` contracts you have seen are
 implemented as:
@@ -494,9 +500,9 @@ Num = ?!(x) -> typeof x is 'number'
 Str = ?!(x) -> typeof x is 'string'
 {% endhighlight %}
 
-The syntax is a little kludgy by it can be read as "assign to Num the
-contract that is generated when we convert the predicate `(x) -> ...` to
-a contract". 
+The syntax may look a little strange at first, but it can be read as
+"assign to `Num` the contract generated from the function `(x) ->
+...`
 
 It could also be written:
 
@@ -506,6 +512,3 @@ Str = (x) -> typeof x is 'string'
 
 f = (!Num) -> !Str
 {% endhighlight %}
-
-But now we must prefix `Num` and `Str` with `!` to convert the expression
-to a contract.
