@@ -5,7 +5,7 @@
 
 {Scope} = require './scope'
 
-{contractsSource} = require './contracts'
+c = require './contracts'
 
 # Import the helpers we plan to use.
 {compact, flatten, extend, merge, del, starts, ends, last} = require './helpers'
@@ -17,6 +17,8 @@ YES     = -> yes
 NO      = -> no
 THIS    = -> this
 NEGATE  = -> @negated = not @negated; this
+
+CONTRACT_PREFIX = "Contracts.combinators."
 
 #### Base
 
@@ -332,7 +334,7 @@ exports.OptionalContract = class OptionalContract extends Base
   children: ['value']
 
   compileNode: (o) ->
-    "Contracts.combinators.opt(#{@value.compile o})"
+    "#{if o.contractPrefix then CONTRACT_PREFIX else ''}opt(#{@value.compile o})"
 
 
 exports.ContractOp = class ContractOp extends Base
@@ -342,9 +344,9 @@ exports.ContractOp = class ContractOp extends Base
 
   compileNode: (o) ->
     if @op is '||'
-      "Contracts.combinators.or(#{@first.compile o}, #{@second.compile o})"
+      "#{if o.contractPrefix then CONTRACT_PREFIX else ''}or(#{@first.compile o}, #{@second.compile o})"
     else if @op is '&&'
-      "Contracts.combinators.and(#{@first.compile o}, #{@second.compile o})"
+      "#{if o.contractPrefix then CONTRACT_PREFIX else ''}and(#{@first.compile o}, #{@second.compile o})"
     else
       throw new SyntaxError "Unknown contract operator '#{@op}'"
 
@@ -353,7 +355,7 @@ exports.SelfContract = class SelfContract extends Base
   constructor: ->
 
   compileNode: (o) ->
-    "Contracts.combinators.self"
+    "#{if o.contractPrefix then CONTRACT_PREFIX else ''}self"
 
 exports.WrapContract = class WrapContract extends Base
   constructor: (@contract) ->
@@ -388,7 +390,7 @@ exports.FunctionContract = class FunctionContract extends Base
       @options.properties.push(makeObjectProp "newOnly", "true")
     else if @tags is 'newSafe'
       @options.properties.push(makeObjectProp "newSafe", "true")
-    "Contracts.combinators.fun(#{params}, #{range}, #{@options.compile o})"
+    "#{if o.contractPrefix then CONTRACT_PREFIX else ''}fun(#{params}, #{range}, #{@options.compile o})"
 
 
 exports.RestContract = class RestContract extends Base
@@ -397,7 +399,7 @@ exports.RestContract = class RestContract extends Base
   children: ['contract']
 
   compileNode: (o) ->
-    "Contracts.combinators.___(#{@contract.compile o})"
+    "#{if o.contractPrefix then CONTRACT_PREFIX else ''}___(#{@contract.compile o})"
 
 exports.ObjectContract = class ObjectContract extends Base
   constructor: (@oc, opts) ->
@@ -407,7 +409,7 @@ exports.ObjectContract = class ObjectContract extends Base
   children: ['oc']
 
   compileNode: (o) ->
-    "Contracts.combinators.object(#{@oc.compile o}, #{@options.compile o})"
+    "#{if o.contractPrefix then CONTRACT_PREFIX else ''}object(#{@oc.compile o}, #{@options.compile o})"
 
 exports.ArrayContract = class ArrayContract extends Base
   constructor: (@arc) ->
@@ -415,7 +417,7 @@ exports.ArrayContract = class ArrayContract extends Base
   children: ['arc']
 
   compileNode: (o) ->
-    "Contracts.combinators.arr(#{@arc.compile o})"
+    "#{if o.contractPrefix then CONTRACT_PREFIX else ''}arr(#{@arc.compile o})"
 
 
 exports.ContractValue = class ContractValue extends Base
@@ -427,7 +429,7 @@ exports.ContractValue = class ContractValue extends Base
     if not (@contract_var.base.value is @value_var.base.value)
       throw new SyntaxError "Variable name differs between value (#{@value_var.base.value}) and contract (#{@contract_var.base.value})"
     if o.contracts
-      "Contracts.combinators.guard(#{@contract.compile(o, LEVEL_PAREN)},#{@value.compile(o, LEVEL_PAREN)})"
+      "#{if o.contractPrefix then CONTRACT_PREFIX else ''}guard(#{@contract.compile(o, LEVEL_PAREN)},#{@value.compile(o, LEVEL_PAREN)})"
     else
       @value.compile o, LEVEL_PAREN
 
@@ -1039,7 +1041,7 @@ exports.Assign = class Assign extends Base
   children: ['variable', 'value']
 
   isStatement: (o) ->
-    o?.level is LEVEL_TOP and "?" in @context
+    o?.level is LEVEL_TOP and @context and "?" in @context
 
   assigns: (name) ->
     @[if @context is 'object' then 'value' else 'variable'].assigns name
