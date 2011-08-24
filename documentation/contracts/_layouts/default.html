@@ -18,15 +18,146 @@
       color: black;
     }
 
+    #repl_container {
+      display: none;
+    }
+
+    #repl_container.active {
+      border-radius: 3px 3px 3px 3px;
+      display: block;
+      position: fixed;
+      top: 50px;
+      left: 200px;
+      right: 40px;
+      bottom: 200px;
+      width: auto;
+      height: auto;
+      opacity: .95;
+      background-color: lightgray;
+      border: 1px solid black;
+    }
+
+    #repl_source_wrap, #repl_source {
+      bottom: 15px;
+      height: auto;
+      left: 10px;
+      margin-bottom: 0;
+      position: absolute;
+      right: 10px;
+      top: 10px;
+      width: auto;
+    }
+
+    #repl_source_wrap {
+      float: left;
+      right: 50%;
+      padding: 4px;
+      margin: 2px;
+      width: 46%;
+    }
+
+    #repl_source {
+      border: 0 none;
+      height: 100%;
+      width: 100%;
+      font-size: 14px;
+      resize: none;
+      overflow-y: auto;
+      background-color: lightgray;
+      z-index: 1;
+    }
+
+
+    #repl_result_wrap, #repl_results {
+      bottom: 15px;
+      height: auto;
+      left: 10px;
+      margin-bottom: 0;
+      position: absolute;
+      right: 10px;
+      top: 10px;
+      width: auto;
+    }
+
+    #repl_result_wrap {
+      white-space:pre;
+      cursor: text;
+      z-index: -1;
+    /*
+      float: left;
+      padding: 4px;
+      margin: 2px;
+      height: 100%;
+    */
+    }
+
+    #repl_results {
+      left: 50%;
+      height: auto;
+      overflow-y: auto;
+      font-size: 14px;
+      background-color: lightgray;
+
+      margin: 0;
+      padding: 0;
+      width: auto;
+    }
+
+    #run_button {
+      border: 1px solid black;
+      border-radius: 3px 3px 3px 3px;
+      background-color: green;
+      font-size: 14px;
+      float: right;
+      margin-top: 6px;
+      margin-right: 6px;
+      color: white;
+      padding-left: 6px;
+      padding-right: 6px;
+      cursor: pointer;
+      z-index: 1;
+    }
+
+    #blame {
+      position: absolute;
+      bottom: -170px;
+      border-radius: 3px 3px 3px 3px;
+      background: lightgray;
+      border: 1px solid black;
+      height: 150px;
+      width: 100%;
+    }
+
+    #blame pre {
+      background-color: lightgray;
+      font-size: 14px;
+      color: red;
+    }
+
     #container {
       margin: 0 auto;
       width: 700px;
     }
 
+    div.navigation {
+      padding-top: 120px;
+      position: fixed;
+      font-size: 14pt;
+    }
+
+    .navigation li {
+      list-style-type: none;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+
     pre {
       background-color: #F0F3F3;
       padding: 6px;
+      word-wrap: break-word;
+      white-space: pre-wrap;
     }
+
     h1 { text-align: center; font-size: 3.8em; color: black; margin-bottom: 3px; }
     h1 .small { font-size: 0.4em; }
     h1 a { text-decoration: none }
@@ -57,14 +188,55 @@
 <body>
   <a href="http://github.com/disnet/contracts.coffee"><img style="position: absolute; top: 0; right: 0; border: 0;" src="http://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub" /></a>
 
+
+  <div class="navigation">
+    <ul>
+      <li><a href="#basics">Basics</a></li>
+      <li><a href="#quickstart">Quick Start</a></li>
+      <li><a href="#modules">Modules</a></li>
+      <li><a href="#functions">Functions</a></li>
+      <li><a href="#objects">Objects</a></li>
+      <li><a href="#arrays">Arrays</a></li>
+      <li><a href="#andor">And/Or</a></li>
+      <li><a href="#naming">Naming</a></li>
+      <li style="text-decoration: none;">&nbsp;</li>
+      <li><span id="try_button">Try it now!</span></li>
+    </ul>
+  </div>
+
+  <div id="repl_container">
+    <div id="repl_editor">
+      <div id="repl_source_wrap">
+        <textarea id="repl_source"># Wrap the function in a contract that
+# expects to be called with a number
+# and will return a number as the result.
+
+id :: (Num) -> Num
+id = (x) -> x          
+
+# Call "use" to initialize the contract.
+# See the module section of the docs
+# for more details about "use".
+
+id = id.use()
+
+# Violates the contract by calling id
+# with a string instead of a number.
+
+id "foo"          
+</textarea>
+      </div>
+      <div id="repl_result_wrap">
+        <pre id="repl_results"></pre>
+      </div>
+      <div id="run_button">Run</div>
+      <div style="clear: both"></div>
+    </div>
+    <div id="blame"><pre></pre></div>
+  </div>
+
   <div id="container">
 
-    <!-- <div class="download"> -->
-    <!--   <a href="http://github.com/disnet/contracts.coffee/zipball/master"> -->
-    <!--     <img border="0" width="90" src="http://github.com/images/modules/download/zip.png"></a> -->
-    <!--   <a href="http://github.com/disnet/contracts.coffee/tarball/master"> -->
-    <!--     <img border="0" width="90" src="http://github.com/images/modules/download/tar.png"></a> -->
-    <!-- </div> -->
 
     <h1><a href="http://github.com/disnet/contracts.coffee">Contracts.coffee</a>
     </h1>
@@ -78,5 +250,61 @@
   </div>
 
   
+  <script type="text/coffeescript">
+    compileSource = ->
+      source = $('#repl_source').val()
+      window.compiledJS = ''
+      try
+        window.compiledJS = CoffeeScript.compile source, { bare: on, contracts: on, contractPrefix: off}
+        el = $('#repl_results')[0]
+        if el.innerText
+          el.innerText = window.compiledJS
+        else
+          $(el).text window.compiledJS
+        $('#blame pre').text("")
+      catch error
+        $('#blame pre').text(error.message)
+
+    closeMenu = ->
+      $("#repl_container").removeClass "active"
+
+    $("#try_button").click ->
+      if $("#repl_container").hasClass('active')
+        closeMenu()
+      else
+        closeMenu()
+        $("#repl_container").addClass 'active'
+      false
+
+    # Eval the compiled js.
+    evalJS = ->
+      try
+        eval window.compiledJS
+      catch error
+        $('#blame pre').text(error.message)
+
+    # Listen for keypresses and recompile.
+    $('#repl_source').keyup -> compileSource()
+
+    $('#run_button').click evalJS
+
+    # Dismiss console if Escape pressed or click falls outside console
+    # Trigger Run button on Ctrl-Enter
+    $(document.body)
+      .keydown (e) ->
+        closeMenu() if e.which == 27
+        evalJS() if e.which == 13 and (e.metaKey or e.ctrlKey) # and $('.minibutton.run:visible').length
+      .click (e) ->
+        return false if $(e.target).closest("#repl_container").length > 0
+        closeMenu()
+
+    $(document).ready ->
+      compileSource()
+
+  </script>
+
+  <script src="documentation/vendor/jquery-1.4.2.js"></script>
+  <script src="extras/coffee-script.js"></script>
+  <script src="loadContracts.js"></script>
 </body>
 </html>

@@ -10,6 +10,7 @@ must and will behave and frees you from writing tons of defensive
 boilerplate code. You can think of contracts a little like `assert`
 on steroids.
 
+<span id="basics"></span>
 Basics
 ------
 
@@ -90,6 +91,7 @@ f = (x) -> x
 
 Eat your heart out Haskell :)
 
+<span id="quickstart"></span>
 Quick Start
 -----------
 
@@ -162,6 +164,7 @@ coffee -C MyContractedScript.coffee
 You will get a bunch of errors. So just compile to JavaScript and run
 it in Firefox for now.
 
+<span id="modules"></span>
 A word on modules
 -----------------
 
@@ -210,6 +213,7 @@ id = id.use()
 id "foo"
 {% endhighlight %}
 
+<span id="functions"></span>
 Functions
 ---------
 
@@ -302,6 +306,7 @@ o.f()
 
 Checks that `this` matches the given object contract.
 
+<span id="objects"></span>
 Objects
 -------
 
@@ -386,6 +391,7 @@ o =
 The invariant is checked whenever there is a possibility of `o`
 mutating (on property sets, delete, etc.).
 
+<span id="arrays"></span>
 Arrays
 ------
 
@@ -420,6 +426,7 @@ the array's first and second positions must abide by the first two
 contracts and the remaining array positions must abide by `Num`. The
 `...` operator must be in the last position of the array contract.
 
+<span id="andor"></span>
 And/Or
 ------
 
@@ -451,6 +458,7 @@ contracts. Just like `or` you cannot use multiple higher-order
 contracts with `and`.
 
 
+<span id="naming"></span>
 Naming your own contracts
 -------------------------
 
