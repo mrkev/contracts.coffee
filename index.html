@@ -22,6 +22,15 @@
       display: none;
     }
 
+    /* override the pygments error style for syntax highlighting */
+    .err {
+      border: 0 none;
+    }
+
+    code {
+      background-color: #F0F3F3;
+    }
+
     #repl_container.active {
       border-radius: 3px 3px 3px 3px;
       display: block;
@@ -238,12 +247,14 @@ id "foo"
   <div id="container">
 
 
-    <h1><a href="http://github.com/disnet/contracts.coffee">Contracts.coffee</a>
+    <h1><a href="http://github.com/disnet/contracts.coffee">contracts.coffee</a>
     </h1>
 
-    <p>Contracts.coffee is an experimental fork of CoffeeScript that adds contracts to the language.</p>
+    <p>Contracts.coffee is a dialect of CoffeeScript with built-in support for contracts.</p>
 
-<p>Contracts let you to clearly (even beautifully) express how your code must and will behave and frees you from writing tons of defensive boilerplate code. You can think of contracts a little like <code>assert</code> on steroids.</p>
+<p>Contracts let you to clearly&#8212;even beautifully&#8212;express how your code behaves, and free you from writing tons of boilerplate, defensive code.</p>
+
+<p>You can think of contracts as <code>assert</code> on steroids.</p>
 <span id='basics' />
 <h2 id='basics'>Basics</h2>
 
@@ -252,18 +263,18 @@ id "foo"
 <span class='nv'>id = </span><span class='nf'>(x) -&gt;</span> <span class='nx'>x</span>
 </code></pre>
 </div>
-<p>This says that the <code>id</code> function should always be called with a <code>number</code> and will always return a <code>number</code>. It looks a lot like types (in fact the syntax looks a <em>lot</em> like haskell) but this is completely enforced at runtime in pure JavaScript.</p>
+<p>This says that the <code>id</code> function should always be called with a number and will always return a number. It looks a lot like types (in fact the syntax looks a <em>lot</em> like Haskell) but unlike types, contracts are enforced at runtime in pure JavaScript.</p>
 
-<p>If we attempt to use <code>id</code> incorrectly:</p>
+<p>If we try to use <code>id</code> incorrectly:</p>
 <div class='highlight'><pre><code class='coffeescript'><span class='nx'>id</span> <span class='s2'>&quot;foo&quot;</span>
 </code></pre>
 </div>
-<p>The program will halt and display lots of nice information informing us what we did wrong:</p>
+<p>The program throws an error, which displays lots of nice information telling us what we did wrong:</p>
 <pre style='color: red'>
 Error: Contract violation: expected &lt;Number&gt;,
 actual: "foo"
-Value guarded in: id_module.js:42 -- blame is
-on: client_code.js:104
+Value guarded in: id_module.js:42
+  -- blame is on: client_code.js:104
 Parent contracts:
 (Number) -> Number 
 </pre>
@@ -281,7 +292,7 @@ Parent contracts:
 <span class='nv'>loc = </span><span class='p'>[</span><span class='mi'>99332</span><span class='p'>,</span> <span class='mi'>23452</span><span class='p'>,</span> <span class='mi'>123</span><span class='p'>,</span> <span class='mi'>2</span><span class='p'>,</span> <span class='mi'>5000</span><span class='p'>]</span>
 </code></pre>
 </div>
-<p>And various combinations thereof.</p>
+<p>And various combinations.</p>
 <div class='highlight'><pre><code class='coffeescript'><span class='nx'>average</span> <span class='o'>::</span> <span class='nf'>({name: Str, age: Num}, [...Num]) -&gt;</span> <span class='nx'>Str</span>
 <span class='nv'>average = </span><span class='nf'>(person, loc) -&gt;</span>
     <span class='nv'>sum = </span><span class='nx'>loc</span><span class='p'>.</span><span class='nx'>reduce</span> <span class='nf'>(s1, s2) -&gt;</span> <span class='nx'>s1</span> <span class='o'>+</span> <span class='nx'>s2</span>
@@ -289,18 +300,22 @@ Parent contracts:
 <span class='s2'>     #{sum / loc.length} lines of code.&quot;</span>
 </code></pre>
 </div>
-<p>Under the covers contracts are really just normal functions that return true or false so it&#8217;s really easy to roll your own.</p>
-<div class='highlight'><pre><code class='coffeescript'><span class='nx'>addEvens</span> <span class='o'>::</span> <span class='p'>(</span><span class='o'>!</span><span class='nf'>(x) -&gt;</span> <span class='nx'>x</span> <span class='o'>%</span> <span class='mi'>2</span> <span class='o'>is</span> <span class='mi'>0</span><span class='p'>)</span> <span class='o'>-&gt;</span>
-    <span class='o'>!</span><span class='nf'>(x) -&gt;</span> <span class='k'>typeof</span> <span class='nx'>x</span> <span class='o'>is</span> <span class='s1'>&#39;number&#39;</span>
+<p>Under the covers, contracts are really just normal functions that return <code>true</code> or <code>false</code>, so it&#8217;s really easy to roll your own.</p>
+<div class='highlight'><pre><code class='coffeescript'><span class='nv'>isEven = </span><span class='nf'>(x) -&gt;</span> <span class='nx'>x</span> <span class='o'>%</span> <span class='mi'>2</span> <span class='o'>is</span> <span class='mi'>0</span>
+<span class='nv'>isOdd = </span><span class='nf'>(x) -&gt;</span> <span class='nx'>x</span> <span class='o'>%</span> <span class='mi'>2</span> <span class='o'>isnt</span> <span class='mi'>0</span>
+
+<span class='nx'>addEvens</span> <span class='o'>::</span> <span class='nf'>(!isEven) -&gt;</span> <span class='o'>!</span><span class='nx'>isOdd</span>
 <span class='nv'>addEvens = </span><span class='nf'>(x) -&gt;</span> <span class='nx'>x</span> <span class='o'>+</span> <span class='mi'>1</span>
 </code></pre>
 </div>
 <p>In fact, since contracts are checked at runtime, they can enforce properties that static type systems can only dream of.</p>
-<div class='highlight'><pre><code class='coffeescript'><span class='nx'>f</span> <span class='o'>::</span> <span class='p'>(</span><span class='o'>!</span><span class='nf'>(x) -&gt;</span> <span class='nx'>isPrime</span> <span class='nx'>x</span><span class='p'>)</span> <span class='o'>-&gt;</span> <span class='o'>!</span><span class='nf'>(x) -&gt;</span> <span class='nx'>isPrime</span> <span class='nx'>x</span>
+<div class='highlight'><pre><code class='coffeescript'><span class='nv'>isPrime = </span><span class='nf'>(x) -&gt;</span> <span class='c1'># ...</span>
+
+<span class='nx'>f</span> <span class='o'>::</span> <span class='nf'>(!isPrime) -&gt;</span> <span class='o'>!</span><span class='nx'>isPrime</span>
 <span class='nv'>f = </span><span class='nf'>(x) -&gt;</span> <span class='nx'>x</span>
 </code></pre>
 </div>
-<p>Eat your heart out Haskell :)</p>
+<p>Eat your heart out, Haskell :)</p>
 <span id='quickstart' />
 <h2 id='quick_start'>Quick Start</h2>
 
@@ -348,32 +363,53 @@ coffee -C MyContractedScript.coffee
 <span id='modules' />
 <h2 id='a_word_on_modules'>A word on modules</h2>
 
-<p>In order to provide good error messages when things go wrong, contracts.coffee attempts to enforce a kind of module separation in your code. To see what this means, consider this simple example:</p>
-<div class='highlight'><pre><code class='coffeescript'><span class='lineno'>1</span> <span class='c1'># IdServer.coffee</span>
-<span class='lineno'>2</span> <span class='nb'>window</span><span class='p'>.</span><span class='nx'>id</span> <span class='o'>::</span> <span class='nf'>(Num) -&gt;</span> <span class='nx'>Num</span>
-<span class='lineno'>3</span> <span class='nb'>window</span><span class='p'>.</span><span class='nv'>id = </span><span class='nf'>(x) -&gt;</span> <span class='nx'>x</span>
-</code></pre>
-</div><div class='highlight'><pre><code class='coffeescript'><span class='lineno'>1</span> <span class='c1'># IdClient.coffee</span>
-<span class='lineno'>2</span> <span class='nv'>id = </span><span class='nb'>window</span><span class='p'>.</span><span class='nx'>id</span><span class='p'>.</span><span class='nx'>use</span><span class='p'>()</span>
-<span class='lineno'>3</span> 
-<span class='lineno'>4</span> <span class='nv'>x = </span><span class='nx'>id</span> <span class='mi'>42</span>
-<span class='lineno'>5</span> <span class='nx'>x</span> <span class='o'>+</span> <span class='mi'>1</span>     <span class='c1'># 43</span>
-<span class='lineno'>6</span> <span class='nx'>id</span> <span class='s2'>&quot;foo&quot;</span>  <span class='c1'># error on value guarded in IdServer:3 --</span>
-<span class='lineno'>7</span>           <span class='c1'># blame is on IdClient:2</span>
+<p>In order to provide good error messages when things go wrong, contracts.coffee attempts to enforce a kind of module separation in your code. What this means practically is that before you can use a value that has a contract on it, you must first <code>use()</code> it:</p>
+<div class='highlight'><pre><code class='coffeescript'><span class='nx'>id</span> <span class='o'>::</span> <span class='nf'>(Num) -&gt;</span> <span class='nx'>Num</span>
+<span class='nv'>id = </span><span class='nf'>(x) -&gt;</span> <span class='nx'>x</span>
+<span class='nv'>id = </span><span class='nx'>id</span><span class='p'>.</span><span class='nx'>use</span><span class='p'>()</span>
+
+<span class='nx'>id</span> <span class='mi'>4</span>     <span class='c1'># ok</span>
+<span class='nx'>id</span> <span class='s2'>&quot;foo&quot;</span> <span class='c1'># Contract Violation...</span>
 </code></pre>
 </div>
-<p>When we apply a contract to a value, it is first wrapped up in an object that has a single <code>use</code> method that must be called before the value can be used. Calling <code>use</code> lets the contract library set up useful information to help track down the problem when a contract is violated such as which module provided the contracted value and which module was to blame for the failure.</p>
+<p>The <code>use()</code> function does the work of dynamically setting up the right names (for things like modules) that get used in error messages.</p>
 
-<p>In this example the error message tells us where the value was first guarded (IdServer:3) and where is was first &#8220;imported&#8221; into the client (IdClient:2). In addition the error that gets thrown has a stacktrace that can be inspected to show exactly where the violation occurred (IdClient:6).</p>
+<p>This is an unfortunate bit of syntax that we hope to do implicitly in the future with better compiler and module support.</p>
 
-<p>In general it is considered best practice to only put contracts on module boundaries but if you want to use them in the same module simply call <code>use</code> immediately:</p>
-<div class='highlight'><pre><code class='coffeescript'><span class='lineno'>1</span> <span class='nx'>id</span> <span class='o'>::</span> <span class='nf'>(Num) -&gt;</span> <span class='nx'>Num</span>
-<span class='lineno'>2</span> <span class='nv'>id = </span><span class='nf'>(x) -&gt;</span> <span class='nx'>x</span>
-<span class='lineno'>3</span> <span class='nv'>id = </span><span class='nx'>id</span><span class='p'>.</span><span class='nx'>use</span><span class='p'>()</span>
-<span class='lineno'>4</span> 
-<span class='lineno'>5</span> <span class='nx'>id</span> <span class='s2'>&quot;foo&quot;</span>
+<p>To see what recording the right names with <code>use()</code> gives us, consider this example:</p>
+<div class='highlight'><pre><code class='coffeescript'><span class='lineno'>1</span> <span class='c1'># StringLibrary.coffee</span>
+<span class='lineno'>2</span> <span class='nb'>window</span><span class='p'>.</span><span class='nx'>concat</span> <span class='o'>::</span> <span class='nf'>(Str, Str) -&gt;</span> <span class='nx'>Str</span>
+<span class='lineno'>3</span> <span class='nb'>window</span><span class='p'>.</span><span class='nv'>concat = </span><span class='nf'>(x, y) -&gt;</span> <span class='nx'>x</span> <span class='o'>+</span> <span class='nx'>y</span>
 </code></pre>
-</div><span id='functions' />
+</div><div class='highlight'><pre><code class='coffeescript'><span class='lineno'>1</span> <span class='c1'># Server.coffee</span>
+<span class='lineno'>2</span> <span class='nb'>window</span><span class='p'>.</span><span class='nx'>doStuff</span> <span class='o'>::</span> <span class='p'>(</span><span class='nf'>(Num, Num) -&gt;</span> <span class='nx'>Num</span><span class='p'>,</span> <span class='nx'>Num</span><span class='p'>)</span> <span class='o'>-&gt;</span> <span class='nx'>Num</span>
+<span class='lineno'>3</span> <span class='nb'>window</span><span class='p'>.</span><span class='nv'>doStuff = </span><span class='nf'>(callback, n) -&gt;</span>
+<span class='lineno'>4</span>   <span class='nx'>callback</span> <span class='mi'>42</span><span class='p'>,</span> <span class='nx'>n</span>   <span class='c1'># failure is here</span>
+</code></pre>
+</div><div class='highlight'><pre><code class='coffeescript'><span class='lineno'>1</span> <span class='c1'># Main.coffee</span>
+<span class='lineno'>2</span> <span class='nv'>concat = </span><span class='nb'>window</span><span class='p'>.</span><span class='nx'>concat</span><span class='p'>.</span><span class='nx'>use</span><span class='p'>()</span>
+<span class='lineno'>3</span> <span class='nv'>doStuff = </span><span class='nb'>window</span><span class='p'>.</span><span class='nx'>doStuff</span><span class='p'>.</span><span class='nx'>use</span><span class='p'>()</span>
+<span class='lineno'>4</span> 
+<span class='lineno'>5</span> <span class='c1'># concat takes Str but doStuff expects Num!</span>
+<span class='lineno'>6</span> <span class='nx'>doStuff</span> <span class='nx'>concat</span><span class='p'>,</span> <span class='mi'>24</span>  
+</code></pre>
+</div>
+<p>We get this contract violation:</p>
+<pre style='color: red'>
+Contract violation: expected &lt;String&gt;, actual: 42
+Value guarded in: StringLibrary.js:2
+  -- blame is on: Main.js:3
+Parent contracts:
+(String,String) -> String 
+</pre>
+<p>Here we have a library that provides some string manipulation functions and a server that expects to be given a callback that performs operations on numbers. The <code>Main</code> module <code>uses()</code> the string library and the server and then incorrectly calls the server with a string function.</p>
+
+<p>Notice that the violation happens at <code>Server.coffee:4</code> when the callback is called with two numbers but the module at fault is actually <code>Main.coffee</code> (since it was responsible for providing <code>Server.coffee</code> with the correct callback). And, in fact, the error message gets this right!</p>
+
+<p>It gets it right because <code>use()</code> records the module name where the contracted values were used and we correctly track all the module names through all the contract checks.</p>
+
+<p>In general it is considered best practice to only put contracts on module boundaries but if you want to use them in the same module simply call <code>use()</code> immediately as shown above.</p>
+<span id='functions' />
 <h2 id='functions'>Functions</h2>
 
 <p>Basic functions:</p>
@@ -531,7 +567,7 @@ coffee -C MyContractedScript.coffee
 <span class='nv'>a = </span><span class='p'>[</span><span class='kc'>false</span><span class='p'>,</span> <span class='s2'>&quot;foo&quot;</span><span class='p'>,</span> <span class='mi'>432</span><span class='p'>,</span> <span class='mi'>854</span><span class='p'>,</span> <span class='mi'>21</span><span class='p'>]</span>
 </code></pre>
 </div>
-<p>The <code>...</code> operator can be mixed with single contracts. This says that the array&#8217;s first and second positions must abide by the first two contracts and the remaining array positions must abide by <code>Num</code>. The <code>...</code> operator must be in the last position of the array contract.</p>
+<p>The <code>...</code> operator can be mixed with single contracts. This says that the array&#8217;s first and second positions must pass the first two contracts and the remaining array positions must pass <code>Num</code>. The <code>...</code> operator must be in the last position of the array contract.</p>
 <span id='andor' />
 <h2 id='andor'>And/Or</h2>
 
@@ -540,14 +576,14 @@ coffee -C MyContractedScript.coffee
 <span class='nv'>o = </span><span class='p'>{</span> <span class='nv'>a: </span><span class='mi'>42</span> <span class='p'>}</span>
 </code></pre>
 </div>
-<p>The a property must abide by the <code>Num</code> or the <code>Str</code> contract. Note that since higher-order contracts like function and object have deferred checking they cannot be used with the <code>or</code> contract. Or to be more precise only <em>one</em> higher-order contract can be used with <code>or</code>. So you could have <code>Num or (Num) -&gt; Num</code> but not <code>((Num) -&gt; Num) or ((Str) -&gt; Str)</code>. If you combine first-order and higher-order contracts with <code>or</code> all the first-order contracts will be checked first and then the higher-order contract will be applied.</p>
+<p>Here, the <code>a</code> property must pass either the <code>Num</code> or <code>Str</code> contract. Note that since contracts like function and object have deferred checking, they cannot be used with the <code>or</code> contract. Or to be more precise only <em>one</em> function/object contract can be used with <code>or</code>. So you could have <code>Num or (Num) -&gt; Num</code> but not <code>((Num) -&gt; Num) or ((Str) -&gt; Str)</code>. If you combine normal contracts and function/object contracts with <code>or</code> all the normal contracts will be checked first and then the function/object contract will be applied.</p>
 
 <p>The <code>and</code> contract:</p>
 <div class='highlight'><pre><code class='coffeescript'><span class='nx'>o</span> <span class='o'>::</span> <span class='p'>{</span> <span class='nv'>a: </span><span class='nx'>Num</span> <span class='o'>and</span> <span class='nx'>Even</span> <span class='p'>}</span>
 <span class='nv'>o = </span><span class='p'>{</span> <span class='nv'>a: </span><span class='mi'>42</span> <span class='p'>}</span>
 </code></pre>
 </div>
-<p>The <code>a</code> property must abide by both the <code>Num</code> and <code>Even</code> contracts. Just like <code>or</code> you cannot use multiple higher-order contracts with <code>and</code>.</p>
+<p>The <code>a</code> property must pass both the <code>Num</code> and <code>Even</code> contracts. Just like <code>or</code> you cannot use multiple function/object with <code>and</code>.</p>
 <span id='naming' />
 <h2 id='naming_your_own_contracts'>Naming your own contracts</h2>
 
@@ -565,14 +601,15 @@ coffee -C MyContractedScript.coffee
 <span class='nv'>takesEvens = </span><span class='nf'>(x) -&gt;</span> <span class='nx'>x</span>
 </code></pre>
 </div>
-<p>The result of the expression in the <code>!</code> escape must be a function that returns a boolean. It is converted to a contract the checks its value against the provided predicate.</p>
+<p>The result of the expression in the <code>!</code> escape must be a function that returns a boolean. It is converted to a contract that checks its value against the function.</p>
 
 <p>The standard <code>Num</code> and <code>Str</code> contracts you have seen are implemented as:</p>
 <div class='highlight'><pre><code class='coffeescript'><span class='nv'>Num = </span><span class='o'>?!</span><span class='nf'>(x) -&gt;</span> <span class='k'>typeof</span> <span class='nx'>x</span> <span class='o'>is</span> <span class='s1'>&#39;number&#39;</span>
 <span class='nv'>Str = </span><span class='o'>?!</span><span class='nf'>(x) -&gt;</span> <span class='k'>typeof</span> <span class='nx'>x</span> <span class='o'>is</span> <span class='s1'>&#39;string&#39;</span>
 </code></pre>
 </div>
-<p>The syntax is a little kludgy by it can be read as &#8220;assign to Num the contract that is generated when we convert the predicate <code>(x) -&gt; ...</code> to a contract&#8221;.</p>
+<p>The syntax may look a little strange at first, but it can be read as &#8220;assign to <code>Num</code> the contract generated from the function <code>(x) -&gt;
+...</code></p>
 
 <p>It could also be written:</p>
 <div class='highlight'><pre><code class='coffeescript'><span class='nv'>Num = </span><span class='nf'>(x) -&gt;</span> <span class='k'>typeof</span> <span class='nx'>x</span> <span class='o'>is</span> <span class='s1'>&#39;number&#39;</span>
@@ -581,7 +618,6 @@ coffee -C MyContractedScript.coffee
 <span class='nv'>f = </span><span class='nf'>(!Num) -&gt;</span> <span class='o'>!</span><span class='nx'>Str</span>
 </code></pre>
 </div>
-<p>But now we must prefix <code>Num</code> and <code>Str</code> with <code>!</code> to convert the expression to a contract.</p>
 
     <div class="footer">
       get the source code on GitHub : <a href="http://github.com/disnet/contracts.coffee">disnet/contracts.coffee</a>

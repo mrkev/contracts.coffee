@@ -34,14 +34,14 @@ If we try to use `id` incorrectly:
 id "foo"
 {% endhighlight %}
 
-the program throws an error, which displays lots of nice information
+The program throws an error, which displays lots of nice information
 telling us what we did wrong:
 
 <pre style="color: red">
 Error: Contract violation: expected &lt;Number&gt;,
 actual: "foo"
-Value guarded in: id_module.js:42 -- blame is
-on: client_code.js:104
+Value guarded in: id_module.js:42
+  -- blame is on: client_code.js:104
 Parent contracts:
 (Number) -> Number 
 </pre>
@@ -176,48 +176,79 @@ A word on modules
 
 In order to provide good error messages when things go wrong,
 contracts.coffee attempts to enforce a kind of module separation in
-your code. To see what this means, consider this simple example:
+your code. What this means practically is that before you can use a value
+that has a contract on it, you must first `use()` it:
 
-{% highlight coffeescript linenos %}
-# IdServer.coffee
-window.id :: (Num) -> Num
-window.id = (x) -> x
-{% endhighlight %}
-
-{% highlight coffeescript linenos %}
-# IdClient.coffee
-id = window.id.use()
-
-x = id 42
-x + 1     # 43
-id "foo"  # error on value guarded in IdServer:3 --
-          # blame is on IdClient:2
-{% endhighlight %}
-
-When we apply a contract to a value, it is first wrapped up in an
-object that has a single `use` method that must be called before the
-value can be used. Calling `use` lets the contract library set up
-useful information to help track down the problem when a contract is
-violated such as which module provided the contracted
-value and which module was to blame for the failure.
-
-In this example the error message tells us where the value was first
-guarded (IdServer:3) and where is was first "imported" into the client
-(IdClient:2). In addition the error that gets thrown has a stacktrace
-that can be inspected to show exactly where the violation occurred
-(IdClient:6). 
-
-In general it is considered best practice to only put contracts on
-module boundaries but if you want to use them in the same module
-simply call `use` immediately:
-
-{% highlight coffeescript linenos %}
+{% highlight coffeescript %}
 id :: (Num) -> Num
 id = (x) -> x
 id = id.use()
 
-id "foo"
+id 4     # ok
+id "foo" # Contract Violation...
 {% endhighlight %}
+
+The `use()` function does the work of dynamically setting up the right names (for things
+like modules) that get used in error messages.
+
+This is an unfortunate bit of syntax that we hope to do implicitly in
+the future with better compiler and module support.
+
+To see what recording the right names with `use()` gives us, consider
+this example:
+
+{% highlight coffeescript linenos %}
+# StringLibrary.coffee
+window.concat :: (Str, Str) -> Str
+window.concat = (x, y) -> x + y
+{% endhighlight %}
+
+{% highlight coffeescript linenos %}
+# Server.coffee
+window.doStuff :: ((Num, Num) -> Num, Num) -> Num
+window.doStuff = (callback, n) ->
+  callback 42, n   # failure is here
+{% endhighlight %}
+
+{% highlight coffeescript linenos %}
+# Main.coffee
+concat = window.concat.use()
+doStuff = window.doStuff.use()
+
+# concat takes Str but doStuff expects Num!
+doStuff concat, 24  
+{% endhighlight %}
+
+We get this contract violation:
+
+<pre style="color: red">
+Contract violation: expected &lt;String&gt;, actual: 42
+Value guarded in: StringLibrary.js:2
+  -- blame is on: Main.js:3
+Parent contracts:
+(String,String) -> String 
+</pre>
+
+Here we have a library that provides some string manipulation functions 
+and a server that expects to be given a callback that
+performs operations on numbers. The `Main` module `uses()` the string
+library and the server and then incorrectly calls the server with a
+string function.
+
+Notice that the violation happens at `Server.coffee:4` when the
+callback is called with two numbers but the module at fault is actually
+`Main.coffee` (since it was responsible for providing `Server.coffee`
+with the correct callback). And, in fact, the error message gets this
+right!
+
+It gets it right because `use()` records the module name where the
+contracted values were used and we correctly track all the module
+names through all the contract checks.
+
+In general it is considered best practice to only put contracts on
+module boundaries but if you want to use them in the same module
+simply call `use()` immediately as shown above.
+
 
 <span id="functions"></span>
 Functions
@@ -428,8 +459,8 @@ a = [false, "foo", 432, 854, 21]
 {% endhighlight %}
 
 The `...` operator can be mixed with single contracts. This says that
-the array's first and second positions must abide by the first two
-contracts and the remaining array positions must abide by `Num`. The
+the array's first and second positions must pass the first two
+contracts and the remaining array positions must pass `Num`. The
 `...` operator must be in the last position of the array contract.
 
 <span id="andor"></span>
@@ -459,7 +490,7 @@ o :: { a: Num and Even }
 o = { a: 42 }
 {% endhighlight %}
 
-The `a` property must abide by both the `Num` and `Even`
+The `a` property must pass both the `Num` and `Even`
 contracts. Just like `or` you cannot use multiple function/object
 with `and`.
 
