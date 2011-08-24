@@ -8,7 +8,7 @@
 
 fs               = require 'fs'
 path             = require 'path'
-{Script}         = require 'vm'
+vm         = require 'vm'
 Module           = require 'module'
 {Lexer,RESERVED} = require './lexer'
 {parser}         = require './parser'
@@ -79,7 +79,7 @@ exports.run = (code, options) ->
 # The CoffeeScript REPL uses this to run the input.
 exports.eval = (code, options = {}) ->
   return unless code = code.trim()
-  sandbox = Script.createContext()
+  sandbox = vm.Script.createContext()
   sandbox.global = sandbox.root = sandbox.GLOBAL = sandbox
   if options.sandbox?
     if options.sandbox instanceof sandbox.constructor
@@ -102,7 +102,7 @@ exports.eval = (code, options = {}) ->
   o[k] = v for own k, v of options
   o.bare = on # ensure return value
   js = compile code, o
-  Script.runInContext js, sandbox
+  vm.Script.runInContext js, sandbox
 
 # Instantiate a Lexer for our use here.
 lexer = new Lexer
