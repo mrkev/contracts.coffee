@@ -1,9 +1,8 @@
 body {
     margin-top: 1.0em;
     background-color: white;
-    font-family: 'Open Sans', sans-serif;
-    font-size: 16pt;
-    /* font-family: Helvetica, Arial, FreeSans, san-serif; */
+    font-family: 'Gentium Book Basic', sans-serif;
+    font-size: 18pt;
     color: black;
 }
 
@@ -30,13 +29,6 @@ code {
     width: 800px;
     height: auto;
     margin: 0 auto;
-
-/*
-  opacity: .95;
-  border-radius: 3px 3px 3px 3px;
-  background-color: lightgray;
-  border: 1px solid black;
-  */
 }
 
 #repl_source_wrap, #repl_source {
@@ -90,12 +82,6 @@ code {
     white-space:pre;
     cursor: text;
     z-index: 0;
-/*
-  float: left;
-  padding: 4px;
-  margin: 2px;
-  height: 100%;
-  */
 }
 
 #repl_results {
@@ -208,7 +194,7 @@ code {
 div.navigation {
     padding-top: 120px;
     position: fixed;
-    font-size: 14pt;
+    font-size: 16pt;
 }
 
 .navigation li {
@@ -222,9 +208,13 @@ pre {
     padding: 6px;
     word-wrap: break-word;
     white-space: pre-wrap;
+    font-size: 16pt;
 }
 
-h1 { text-align: center; font-size: 3.8em; color: black; margin-bottom: 3px; }
+h1 {
+    font-family: 'Lobster', sans-serif;
+    text-align: center; font-size: 3.8em; color: black; margin-bottom: 3px;
+}
 h1 .small { font-size: 0.4em; }
 h1 a { text-decoration: none }
 h2 { font-size: 1.5em; color: black; }
