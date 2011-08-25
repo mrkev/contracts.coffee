@@ -203,6 +203,8 @@
       <li><a href="#basics">Basics</a></li>
       <li><a href="#quickstart">Quick Start</a></li>
       <li><a href="#modules">Modules</a></li>
+      <li style="text-decoration: none;">&nbsp;</li>
+      <li><a href="#simple">Simple</a></li>
       <li><a href="#functions">Functions</a></li>
       <li><a href="#objects">Objects</a></li>
       <li><a href="#arrays">Arrays</a></li>
@@ -409,6 +411,10 @@ Parent contracts:
 <p>It gets it right because <code>use()</code> records the module name where the contracted values were used and we correctly track all the module names through all the contract checks.</p>
 
 <p>In general it is considered best practice to only put contracts on module boundaries but if you want to use them in the same module simply call <code>use()</code> immediately as shown above.</p>
+<span id='simple' />
+<h2 id='simple_contracts'>Simple Contracts</h2>
+
+<p>In addition to the <code>Num</code> contract that checks for numbers, we also have <code>Str</code>, <code>Bool</code>, <code>Null</code>, <code>Undefined</code>, and <code>Pos</code> (for numbers greater than 0).</p>
 <span id='functions' />
 <h2 id='functions'>Functions</h2>
 
