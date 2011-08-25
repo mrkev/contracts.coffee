@@ -7,178 +7,8 @@
   <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,400italic' rel='stylesheet' type='text/css'>
 
   <link href='documentation/contracts/styles/default.css' rel='stylesheet' type='text/css'>
+  <link href='documentation/contracts/styles/main.css' rel='stylesheet' type='text/css'>
 
-  <style type="text/css">
-    body {
-      margin-top: 1.0em;
-      background-color: white;
-      font-family: 'Open Sans', sans-serif;
-      font-size: 16pt;
-      /* font-family: Helvetica, Arial, FreeSans, san-serif; */
-      color: black;
-    }
-
-    #repl_container {
-      display: none;
-    }
-
-    /* override the pygments error style for syntax highlighting */
-    .err {
-      border: 0 none;
-    }
-
-    code {
-      background-color: #F0F3F3;
-    }
-
-    #repl_container.active {
-      border-radius: 3px 3px 3px 3px;
-      display: block;
-      position: fixed;
-      top: 50px;
-      left: 200px;
-      right: 40px;
-      bottom: 200px;
-      width: auto;
-      height: auto;
-      opacity: .95;
-      background-color: lightgray;
-      border: 1px solid black;
-    }
-
-    #repl_source_wrap, #repl_source {
-      bottom: 15px;
-      height: auto;
-      left: 10px;
-      margin-bottom: 0;
-      position: absolute;
-      right: 10px;
-      top: 10px;
-      width: auto;
-    }
-
-    #repl_source_wrap {
-      float: left;
-      right: 50%;
-      padding: 4px;
-      margin: 2px;
-      width: 46%;
-    }
-
-    #repl_source {
-      border: 0 none;
-      height: 100%;
-      width: 100%;
-      font-size: 14px;
-      resize: none;
-      overflow-y: auto;
-      background-color: lightgray;
-      z-index: 1;
-    }
-
-
-    #repl_result_wrap, #repl_results {
-      bottom: 15px;
-      height: auto;
-      left: 10px;
-      margin-bottom: 0;
-      position: absolute;
-      right: 10px;
-      top: 10px;
-      width: auto;
-    }
-
-    #repl_result_wrap {
-      white-space:pre;
-      cursor: text;
-      z-index: -1;
-    /*
-      float: left;
-      padding: 4px;
-      margin: 2px;
-      height: 100%;
-    */
-    }
-
-    #repl_results {
-      left: 50%;
-      height: auto;
-      overflow-y: auto;
-      font-size: 14px;
-      background-color: lightgray;
-
-      margin: 0;
-      padding: 0;
-      width: auto;
-    }
-
-    #run_button {
-      border: 1px solid black;
-      border-radius: 3px 3px 3px 3px;
-      background-color: green;
-      font-size: 14px;
-      float: right;
-      margin-top: 6px;
-      margin-right: 6px;
-      color: white;
-      padding-left: 6px;
-      padding-right: 6px;
-      cursor: pointer;
-      z-index: 1;
-    }
-
-    #blame {
-      position: absolute;
-      bottom: -170px;
-      border-radius: 3px 3px 3px 3px;
-      background: lightgray;
-      border: 1px solid black;
-      height: 150px;
-      width: 100%;
-    }
-
-    #blame pre {
-      background-color: lightgray;
-      font-size: 14px;
-      color: red;
-    }
-
-    #container {
-      margin: 0 auto;
-      width: 700px;
-    }
-
-    div.navigation {
-      padding-top: 120px;
-      position: fixed;
-      font-size: 14pt;
-    }
-
-    .navigation li {
-      list-style-type: none;
-      text-decoration: underline;
-      cursor: pointer;
-    }
-
-    pre {
-      background-color: #F0F3F3;
-      padding: 6px;
-      word-wrap: break-word;
-      white-space: pre-wrap;
-    }
-
-    h1 { text-align: center; font-size: 3.8em; color: black; margin-bottom: 3px; }
-    h1 .small { font-size: 0.4em; }
-    h1 a { text-decoration: none }
-    h2 { font-size: 1.5em; color: black; }
-    h3 { text-align: center; color: black; }
-    a { color: black; }
-    .description { font-size: 1.2em; margin-bottom: 30px; margin-top: 30px; font-style: italic;}
-    .download { float: right; }
-    /* pre { background: #000; color: #fff; padding: 15px;} */
-    hr { border: 0; width: 80%; border-bottom: 1px solid #aaa}
-    .footer { text-align:center; padding-top:30px; font-style: italic; }
-  </style>
   <script type="text/javascript">
 
     var _gaq = _gaq || [];
@@ -202,13 +32,13 @@
     <ul>
       <li><a href="#basics">Basics</a></li>
       <li><a href="#quickstart">Quick Start</a></li>
-      <li><a href="#modules">Modules</a></li>
+      <li><a href="#use">Use</a></li>
       <li style="text-decoration: none;">&nbsp;</li>
       <li><a href="#simple">Simple</a></li>
       <li><a href="#functions">Functions</a></li>
       <li><a href="#objects">Objects</a></li>
       <li><a href="#arrays">Arrays</a></li>
-      <li><a href="#andor">And/Or</a></li>
+      <li><a href="#operators">Operators</a></li>
       <li><a href="#naming">Naming</a></li>
       <li style="text-decoration: none;">&nbsp;</li>
       <li><span id="try_button">Try it now!</span></li>
@@ -234,16 +64,19 @@ id = id.use()
 # Violates the contract by calling id
 # with a string instead of a number.
 
-id "foo"          
-</textarea>
+id "foo"</textarea>
+        <div id="run_button">Run!</div>
+        <div id="source_label">CoffeeScript</div>
       </div>
       <div id="repl_result_wrap">
+        <div id="result_label">JavaScript</div>
         <pre id="repl_results"></pre>
       </div>
-      <div id="run_button">Run</div>
       <div style="clear: both"></div>
     </div>
-    <div id="blame"><pre></pre></div>
+    <div id="blame">
+      <div id="error_label">Errors</div>
+      <pre></pre></div>
   </div>
 
   <div id="container">
@@ -273,12 +106,12 @@ id "foo"
 </div>
 <p>The program throws an error, which displays lots of nice information telling us what we did wrong:</p>
 <pre style='color: red'>
-Error: Contract violation: expected &lt;Number&gt;,
+Error: Contract violation: expected &lt;Num&gt;,
 actual: "foo"
-Value guarded in: id_module.js:42
-  -- blame is on: client_code.js:104
+Value guarded in: id_module:42
+  -- blame is on: client_code:104
 Parent contracts:
-(Number) -> Number 
+(Num) -> Num
 </pre>
 <p>You can also put contracts on objects.</p>
 <div class='highlight'><pre><code class='coffeescript'><span class='nx'>person</span> <span class='o'>::</span>
@@ -302,7 +135,7 @@ Parent contracts:
 <span class='s2'>     #{sum / loc.length} lines of code.&quot;</span>
 </code></pre>
 </div>
-<p>Under the covers, contracts are really just normal functions that return <code>true</code> or <code>false</code>, so it&#8217;s really easy to roll your own.</p>
+<p>Under the covers, contracts are really just normal functions that return <code>true</code> or <code>false</code>, so it&#8217;s really easy to roll your own by using the <code>!</code> operator to define new contracts.</p>
 <div class='highlight'><pre><code class='coffeescript'><span class='nv'>isEven = </span><span class='nf'>(x) -&gt;</span> <span class='nx'>x</span> <span class='o'>%</span> <span class='mi'>2</span> <span class='o'>is</span> <span class='mi'>0</span>
 <span class='nv'>isOdd = </span><span class='nf'>(x) -&gt;</span> <span class='nx'>x</span> <span class='o'>%</span> <span class='mi'>2</span> <span class='o'>isnt</span> <span class='mi'>0</span>
 
@@ -362,59 +195,75 @@ coffee -C MyContractedScript.coffee
 </code></pre>
 </div>
 <p>You will get a bunch of errors. So just compile to JavaScript and run it in Firefox for now.</p>
-<span id='modules' />
-<h2 id='a_word_on_modules'>A word on modules</h2>
+<span id='use' />
+<h2 id='how_to_use'>How to Use</h2>
 
-<p>In order to provide good error messages when things go wrong, contracts.coffee attempts to enforce a kind of module separation in your code. What this means practically is that before you can use a value that has a contract on it, you must first <code>use()</code> it:</p>
-<div class='highlight'><pre><code class='coffeescript'><span class='nx'>id</span> <span class='o'>::</span> <span class='nf'>(Num) -&gt;</span> <span class='nx'>Num</span>
-<span class='nv'>id = </span><span class='nf'>(x) -&gt;</span> <span class='nx'>x</span>
-<span class='nv'>id = </span><span class='nx'>id</span><span class='p'>.</span><span class='nx'>use</span><span class='p'>()</span>
+<p>In order to provide good error messages when things go wrong, contracts.coffee needs to know where contracted values are used in your code. What this means practically is that before you can use a value that has a contract on it, you must first <code>use()</code> it:</p>
+<div class='highlight'><pre><code class='coffeescript'><span class='c1'># Library.coffee</span>
+<span class='nb'>window</span><span class='p'>.</span><span class='nx'>id</span> <span class='o'>::</span> <span class='nf'>(Num) -&gt;</span> <span class='nx'>Num</span>
+<span class='nb'>window</span><span class='p'>.</span><span class='nv'>id = </span><span class='nf'>(x) -&gt;</span> <span class='nx'>x</span>
+</code></pre>
+</div><div class='highlight'><pre><code class='coffeescript'><span class='c1'># Main.coffee</span>
+<span class='nv'>id = </span><span class='nb'>window</span><span class='p'>.</span><span class='nx'>id</span><span class='p'>.</span><span class='nx'>use</span><span class='p'>()</span>
 
 <span class='nx'>id</span> <span class='mi'>4</span>     <span class='c1'># ok</span>
 <span class='nx'>id</span> <span class='s2'>&quot;foo&quot;</span> <span class='c1'># Contract Violation...</span>
 </code></pre>
-</div>
-<p>The <code>use()</code> function does the work of dynamically setting up the right names (for things like modules) that get used in error messages.</p>
+</div><pre style='color: red'>
+Contract violation: expected &lt;Num&gt;, actual: "foo"
+Value guarded in: Library:3
+  -- blame is on: Main:2
+Parent contracts:
+(Num) -> Num 
+</pre>
+<p>The <code>use()</code> function does the work of dynamically setting up the right file names to display in error messages.</p>
 
 <p>This is an unfortunate bit of syntax that we hope to do implicitly in the future with better compiler and module support.</p>
 
-<p>To see what recording the right names with <code>use()</code> gives us, consider this example:</p>
-<div class='highlight'><pre><code class='coffeescript'><span class='lineno'>1</span> <span class='c1'># StringLibrary.coffee</span>
-<span class='lineno'>2</span> <span class='nb'>window</span><span class='p'>.</span><span class='nx'>concat</span> <span class='o'>::</span> <span class='nf'>(Str, Str) -&gt;</span> <span class='nx'>Str</span>
-<span class='lineno'>3</span> <span class='nb'>window</span><span class='p'>.</span><span class='nv'>concat = </span><span class='nf'>(x, y) -&gt;</span> <span class='nx'>x</span> <span class='o'>+</span> <span class='nx'>y</span>
+<p>In general it is advisable to only put contracts on module exports but if you want to use them in the same module simply call <code>use()</code> immediately.</p>
+
+<p>Admittedly, in the example above finding the right file name is pretty trivial (we could have just inspected the stacktrace). To see the real power of recording the right names with <code>use()</code> consider the following example:</p>
+<div class='highlight'><pre><code class='coffeescript'><span class='lineno'>1</span> <span class='c1'># CheckingLibrary.coffee</span>
+<span class='lineno'>2</span> <span class='nb'>window</span><span class='p'>.</span><span class='nx'>checkAge</span> <span class='o'>::</span> <span class='nf'>(Num) -&gt;</span> <span class='nx'>Bool</span>
+<span class='lineno'>3</span> <span class='nb'>window</span><span class='p'>.</span><span class='nv'>checkAge = </span><span class='nf'>(age) -&gt;</span>
+<span class='lineno'>4</span>   <span class='c1'># make sure the age makes sense</span>
+<span class='lineno'>5</span>   <span class='nx'>age</span> <span class='o'>&gt;</span> <span class='mi'>0</span> <span class='o'>&amp;&amp;</span> <span class='nx'>age</span> <span class='o'>&lt;</span> <span class='mi'>150</span> 
 </code></pre>
-</div><div class='highlight'><pre><code class='coffeescript'><span class='lineno'>1</span> <span class='c1'># Server.coffee</span>
-<span class='lineno'>2</span> <span class='nb'>window</span><span class='p'>.</span><span class='nx'>doStuff</span> <span class='o'>::</span> <span class='p'>(</span><span class='nf'>(Num, Num) -&gt;</span> <span class='nx'>Num</span><span class='p'>,</span> <span class='nx'>Num</span><span class='p'>)</span> <span class='o'>-&gt;</span> <span class='nx'>Num</span>
-<span class='lineno'>3</span> <span class='nb'>window</span><span class='p'>.</span><span class='nv'>doStuff = </span><span class='nf'>(callback, n) -&gt;</span>
-<span class='lineno'>4</span>   <span class='nx'>callback</span> <span class='mi'>42</span><span class='p'>,</span> <span class='nx'>n</span>   <span class='c1'># failure is here</span>
+</div><div class='highlight'><pre><code class='coffeescript'><span class='lineno'>1</span> <span class='c1'># Validator.coffee</span>
+<span class='lineno'>2</span> <span class='nb'>window</span><span class='p'>.</span><span class='nx'>validateForm</span> <span class='o'>::</span> <span class='p'>(</span><span class='nf'>(Str) -&gt;</span> <span class='nx'>Bool</span><span class='p'>,</span> <span class='nx'>Str</span><span class='p'>)</span> <span class='o'>-&gt;</span> <span class='nx'>Bool</span>
+<span class='lineno'>3</span> <span class='nb'>window</span><span class='p'>.</span><span class='nv'>validateForm = </span><span class='nf'>(checker, fieldName) -&gt;</span>
+<span class='lineno'>4</span>   <span class='nx'>checker</span> <span class='nx'>$</span><span class='p'>(</span><span class='nx'>fieldName</span><span class='p'>).</span><span class='nx'>val</span><span class='p'>()</span>   <span class='c1'># failure is here </span>
 </code></pre>
 </div><div class='highlight'><pre><code class='coffeescript'><span class='lineno'>1</span> <span class='c1'># Main.coffee</span>
-<span class='lineno'>2</span> <span class='nv'>concat = </span><span class='nb'>window</span><span class='p'>.</span><span class='nx'>concat</span><span class='p'>.</span><span class='nx'>use</span><span class='p'>()</span>
-<span class='lineno'>3</span> <span class='nv'>doStuff = </span><span class='nb'>window</span><span class='p'>.</span><span class='nx'>doStuff</span><span class='p'>.</span><span class='nx'>use</span><span class='p'>()</span>
+<span class='lineno'>2</span> <span class='nv'>checkAge = </span><span class='nb'>window</span><span class='p'>.</span><span class='nx'>checkAge</span><span class='p'>.</span><span class='nx'>use</span><span class='p'>()</span>
+<span class='lineno'>3</span> <span class='nv'>validateForm = </span><span class='nb'>window</span><span class='p'>.</span><span class='nx'>validateForm</span><span class='p'>.</span><span class='nx'>use</span><span class='p'>()</span>
 <span class='lineno'>4</span> 
-<span class='lineno'>5</span> <span class='c1'># concat takes Str but doStuff expects Num!</span>
-<span class='lineno'>6</span> <span class='nx'>doStuff</span> <span class='nx'>concat</span><span class='p'>,</span> <span class='mi'>24</span>  
+<span class='lineno'>5</span> <span class='nx'>$</span><span class='p'>(</span><span class='s2'>&quot;form&quot;</span><span class='p'>).</span><span class='nx'>submit</span> <span class='o'>-&gt;</span>
+<span class='lineno'>6</span>   <span class='c1'># checkAge takes Num but validateForm passes Str!</span>
+<span class='lineno'>7</span>   <span class='nx'>validateForm</span> <span class='nx'>checkAge</span><span class='p'>,</span> <span class='s2'>&quot;#age&quot;</span>
 </code></pre>
 </div>
 <p>We get this contract violation:</p>
 <pre style='color: red'>
-Contract violation: expected &lt;String&gt;, actual: 42
-Value guarded in: StringLibrary.js:2
-  -- blame is on: Main.js:3
+Contract violation: expected &lt;Num&gt;, actual: "42"
+Value guarded in: CheckingLibrary:2
+  -- blame is on: Main:3
 Parent contracts:
-(String,String) -> String 
+(Num) -> Bool
 </pre>
-<p>Here we have a library that provides some string manipulation functions and a server that expects to be given a callback that performs operations on numbers. The <code>Main</code> module <code>uses()</code> the string library and the server and then incorrectly calls the server with a string function.</p>
+<p>Here we have a library that does some simple form validation. The <code>checkAge</code> library function checks ages to be within a reasonable range for humans and the <code>validateForm</code> function takes a field name and a checker function and checks the field&#8217;s value with the supplied checker.</p>
 
-<p>Notice that the violation happens at <code>Server.coffee:4</code> when the callback is called with two numbers but the module at fault is actually <code>Main.coffee</code> (since it was responsible for providing <code>Server.coffee</code> with the correct callback). And, in fact, the error message gets this right!</p>
+<p>The problem happens when <code>Main.coffee</code> sets up the form submit handler to call <code>validateForm</code> (which expects a checker that takes strings) with <code>checkAge</code> (which takes numbers).</p>
 
-<p>It gets it right because <code>use()</code> records the module name where the contracted values were used and we correctly track all the module names through all the contract checks.</p>
+<p>Notice that the violation happens at <code>Validator.coffee:4</code> when the checker is called with a string but the module at fault is actually <code>Main.coffee</code> (since it was responsible for providing <code>Validator.coffee</code> with the right checker). Not only is the failure location in a different file than the one at fault, but since this happens in an event handler <code>Main.coffee</code> isn&#8217;t even in the stacktrace!</p>
 
-<p>In general it is considered best practice to only put contracts on module boundaries but if you want to use them in the same module simply call <code>use()</code> immediately as shown above.</p>
+<p>And, in fact, the error message gets it right!</p>
+
+<p>It gets it right because <code>use()</code> records the module name where the contracted values were <code>used()</code> and we correctly track all the module names through all the subsequent contract checks.</p>
 <span id='simple' />
 <h2 id='simple_contracts'>Simple Contracts</h2>
 
-<p>In addition to the <code>Num</code> contract that checks for numbers, we also have <code>Str</code>, <code>Bool</code>, <code>Null</code>, <code>Undefined</code>, and <code>Pos</code> (for numbers greater than 0).</p>
+<p>In addition to the <code>Num</code> contract that checks for numbers, we also have <code>Str</code>, <code>Bool</code>, <code>Null</code>, <code>Undefined</code>, <code>Nat</code>, <code>Pos</code>, and <code>Neg</code>.</p>
 <span id='functions' />
 <h2 id='functions'>Functions</h2>
 
@@ -574,8 +423,8 @@ Parent contracts:
 </code></pre>
 </div>
 <p>The <code>...</code> operator can be mixed with single contracts. This says that the array&#8217;s first and second positions must pass the first two contracts and the remaining array positions must pass <code>Num</code>. The <code>...</code> operator must be in the last position of the array contract.</p>
-<span id='andor' />
-<h2 id='andor'>And/Or</h2>
+<span id='operators' />
+<h2 id='contract_operators'>Contract Operators</h2>
 
 <p>The <code>or</code> contract:</p>
 <div class='highlight'><pre><code class='coffeescript'><span class='nx'>o</span> <span class='o'>::</span> <span class='p'>{</span> <span class='nv'>a: </span><span class='nx'>Num</span> <span class='o'>or</span> <span class='nx'>Str</span> <span class='p'>}</span>
@@ -660,6 +509,9 @@ Parent contracts:
 
     # Eval the compiled js.
     evalJS = ->
+      if typeof window.Proxy is 'undefined'
+        $('#blame pre').text "Your browser does not yet support Proxies which are required to run contracts.coffee.\nProxies currently work in Firefox 4+ with support for Chrome coming soon."
+        return false
       try
         eval window.compiledJS
       catch error

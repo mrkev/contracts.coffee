@@ -38,12 +38,12 @@ The program throws an error, which displays lots of nice information
 telling us what we did wrong:
 
 <pre style="color: red">
-Error: Contract violation: expected &lt;Number&gt;,
+Error: Contract violation: expected &lt;Num&gt;,
 actual: "foo"
-Value guarded in: id_module.js:42
-  -- blame is on: client_code.js:104
+Value guarded in: id_module:42
+  -- blame is on: client_code:104
 Parent contracts:
-(Number) -> Number 
+(Num) -> Num
 </pre>
 
 You can also put contracts on objects.
@@ -75,7 +75,8 @@ average = (person, loc) ->
 {% endhighlight %}
 
 Under the covers, contracts are really just normal functions that
-return `true` or `false`, so it's really easy to roll your own.
+return `true` or `false`, so it's really easy to roll your own by
+using the `!` operator to define new contracts.
 
 {% highlight coffeescript %}
 isEven = (x) -> x % 2 is 0
@@ -170,92 +171,117 @@ coffee -C MyContractedScript.coffee
 You will get a bunch of errors. So just compile to JavaScript and run
 it in Firefox for now.
 
-<span id="modules"></span>
-A word on modules
+<span id="use"></span>
+How to Use
 -----------------
 
 In order to provide good error messages when things go wrong,
-contracts.coffee attempts to enforce a kind of module separation in
-your code. What this means practically is that before you can use a value
-that has a contract on it, you must first `use()` it:
+contracts.coffee needs to know where contracted values are 
+used in your code. What this means practically is that before you can
+use a value that has a contract on it, you must first `use()` it:
 
 {% highlight coffeescript %}
-id :: (Num) -> Num
-id = (x) -> x
-id = id.use()
+# Library.coffee
+window.id :: (Num) -> Num
+window.id = (x) -> x
+{% endhighlight %}
+
+{% highlight coffeescript %}
+# Main.coffee
+id = window.id.use()
 
 id 4     # ok
 id "foo" # Contract Violation...
 {% endhighlight %}
 
-The `use()` function does the work of dynamically setting up the right names (for things
-like modules) that get used in error messages.
+<pre style="color: red">
+Contract violation: expected &lt;Num&gt;, actual: "foo"
+Value guarded in: Library:3
+  -- blame is on: Main:2
+Parent contracts:
+(Num) -> Num 
+</pre>
+
+The `use()` function does the work of dynamically setting up the right
+file names to display in error messages.
 
 This is an unfortunate bit of syntax that we hope to do implicitly in
 the future with better compiler and module support.
 
-To see what recording the right names with `use()` gives us, consider
-this example:
+In general it is advisable to only put contracts on
+module exports but if you want to use them in the same module
+simply call `use()` immediately.
+
+Admittedly, in the example above finding the right file name is pretty trivial
+(we could have just inspected the stacktrace). To see the real power
+of recording the right names with `use()` consider the following
+example:
 
 {% highlight coffeescript linenos %}
-# StringLibrary.coffee
-window.concat :: (Str, Str) -> Str
-window.concat = (x, y) -> x + y
+# CheckingLibrary.coffee
+window.checkAge :: (Num) -> Bool
+window.checkAge = (age) ->
+  # make sure the age makes sense
+  age > 0 && age < 150 
 {% endhighlight %}
 
 {% highlight coffeescript linenos %}
-# Server.coffee
-window.doStuff :: ((Num, Num) -> Num, Num) -> Num
-window.doStuff = (callback, n) ->
-  callback 42, n   # failure is here
+# Validator.coffee
+window.validateForm :: ((Str) -> Bool, Str) -> Bool
+window.validateForm = (checker, fieldName) ->
+  checker $(fieldName).val()   # failure is here 
 {% endhighlight %}
 
 {% highlight coffeescript linenos %}
 # Main.coffee
-concat = window.concat.use()
-doStuff = window.doStuff.use()
+checkAge = window.checkAge.use()
+validateForm = window.validateForm.use()
 
-# concat takes Str but doStuff expects Num!
-doStuff concat, 24  
+$("form").submit ->
+  # checkAge takes Num but validateForm passes Str!
+  validateForm checkAge, "#age"
 {% endhighlight %}
 
 We get this contract violation:
 
 <pre style="color: red">
-Contract violation: expected &lt;String&gt;, actual: 42
-Value guarded in: StringLibrary.js:2
-  -- blame is on: Main.js:3
+Contract violation: expected &lt;Num&gt;, actual: "42"
+Value guarded in: CheckingLibrary:2
+  -- blame is on: Main:3
 Parent contracts:
-(String,String) -> String 
+(Num) -> Bool
 </pre>
 
-Here we have a library that provides some string manipulation functions 
-and a server that expects to be given a callback that
-performs operations on numbers. The `Main` module `uses()` the string
-library and the server and then incorrectly calls the server with a
-string function.
+Here we have a library that does some simple form validation.
+The `checkAge` library function checks ages to be within a reasonable
+range for humans and the `validateForm` function takes a field name
+and a checker function and checks the field's value with the supplied
+checker.
 
-Notice that the violation happens at `Server.coffee:4` when the
-callback is called with two numbers but the module at fault is actually
-`Main.coffee` (since it was responsible for providing `Server.coffee`
-with the correct callback). And, in fact, the error message gets this
-right!
+The problem happens when `Main.coffee` sets up the form submit handler to call
+`validateForm` (which expects a checker that takes strings) with
+`checkAge` (which takes numbers).
+
+Notice that the violation happens at `Validator.coffee:4` when the
+checker is called with a string but the module at fault is actually
+`Main.coffee` (since it was responsible for providing `Validator.coffee`
+with the right checker). Not only is the failure location in a
+different file than the one at fault, but since this happens in an
+event handler `Main.coffee` isn't even in the stacktrace!
+
+And, in fact, the error message gets it right!
 
 It gets it right because `use()` records the module name where the
-contracted values were used and we correctly track all the module
-names through all the contract checks.
+contracted values were `used()` and we correctly track all the module
+names through all the subsequent contract checks.
 
-In general it is considered best practice to only put contracts on
-module boundaries but if you want to use them in the same module
-simply call `use()` immediately as shown above.
 
 <span id="simple"></span>
 Simple Contracts
 ----------------
 
 In addition to the `Num` contract that checks for numbers, we
-also have `Str`, `Bool`, `Null`, `Undefined`, and `Pos` (for numbers
-greater than 0).
+also have `Str`, `Bool`, `Null`, `Undefined`, `Nat`, `Pos`, and `Neg`.
 
 <span id="functions"></span>
 Functions
@@ -470,8 +496,8 @@ the array's first and second positions must pass the first two
 contracts and the remaining array positions must pass `Num`. The
 `...` operator must be in the last position of the array contract.
 
-<span id="andor"></span>
-And/Or
+<span id="operators"></span>
+Contract Operators
 ------
 
 The `or` contract:
