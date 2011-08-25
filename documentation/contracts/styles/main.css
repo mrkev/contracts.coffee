@@ -1,0 +1,237 @@
+body {
+    margin-top: 1.0em;
+    background-color: white;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 16pt;
+    /* font-family: Helvetica, Arial, FreeSans, san-serif; */
+    color: black;
+}
+
+#repl_container {
+    display: none;
+}
+
+/* override the pygments error style for syntax highlighting */
+.err {
+    border: 0 none;
+}
+
+code {
+    background-color: #F0F3F3;
+}
+
+#repl_container.active {
+    display: block;
+    position: fixed;
+    top: 50px;
+    left: 0;
+    right: 40px;
+    bottom: 250px;
+    width: 800px;
+    height: auto;
+    margin: 0 auto;
+
+/*
+  opacity: .95;
+  border-radius: 3px 3px 3px 3px;
+  background-color: lightgray;
+  border: 1px solid black;
+  */
+}
+
+#repl_source_wrap, #repl_source {
+    height: auto;
+    right: 0px;
+    top: 0px;
+    left: 0px;
+    bottom: 0px;
+    margin-bottom: 0;
+    position: absolute;
+    width: auto;
+}
+
+#repl_source_wrap {
+    opacity: .95;
+    background-color: lightgray;
+    border: 0 none;
+
+    float: left;
+    right: 50%;
+    padding: 0;
+    margin: 0;
+    width: 46%;
+    z-index: 1;
+}
+
+#repl_source {
+    height: 100%;
+    width: 100%;
+    font-size: 14px;
+    resize: none;
+    overflow-y: auto;
+    background-color: lightgray;
+    z-index: 1;
+    border-radius: 3px 3px 3px 3px;
+    border: 1px solid black
+}
+
+
+#repl_result_wrap, #repl_results {
+    bottom: 0px;
+    height: auto;
+    left: 0px;
+    position: absolute;
+    right: 0px;
+    top: 0px;
+    width: auto;
+}
+
+#repl_result_wrap {
+    white-space:pre;
+    cursor: text;
+    z-index: 0;
+/*
+  float: left;
+  padding: 4px;
+  margin: 2px;
+  height: 100%;
+  */
+}
+
+#repl_results {
+    opacity: .95;
+    background-color: lightgray;
+    left: 50%;
+    height: auto;
+    overflow-y: auto;
+    font-size: 14px;
+    z-index: 1;
+    border-radius: 3px 3px 3px 3px;
+    border: 1px solid black;
+
+    margin-top: 0;
+    margin-bottom: 0;
+    padding: 0;
+    width: auto;
+}
+
+#run_button {
+    position: absolute;
+
+    border: 1px solid black;
+    border-radius: 3px 3px 3px 3px;
+    background-color: green;
+    font-size: 14px;
+    color: white;
+    cursor: pointer;
+
+    padding-left: 6px;
+    padding-right: 6px;
+    padding-top: 4px;
+    padding-bottom: 3px;
+    top: -22px;
+    left: 327px;
+}
+
+#source_label {
+    position: absolute;
+
+    border: 1px solid black;
+    border-radius: 3px 3px 3px 3px;
+    background-color: blue;
+    font-size: 14px;
+    color: white;
+
+    padding-left: 6px;
+    padding-right: 6px;
+    padding-top: 4px;
+    padding-bottom: 4px;
+    top: -24px;
+}
+
+#result_label {
+    position: absolute;
+
+    border: 1px solid black;
+    border-radius: 3px 3px 3px 3px;
+    background-color: blue;
+    font-size: 14px;
+    color: white;
+
+    padding-left: 6px;
+    padding-right: 6px;
+    padding-top: 4px;
+    padding-bottom: 4px;
+    top: -24px;
+    left: 400px;
+}
+
+#error_label {
+    position: absolute;
+
+    border: 1px solid black;
+    border-radius: 3px 3px 3px 3px;
+    background-color: blue;
+    font-size: 14px;
+    color: white;
+
+    padding-left: 6px;
+    padding-right: 6px;
+    padding-top: 4px;
+    padding-bottom: 4px;
+    top: -25px;
+    left: -1px;
+    z-index: -1;
+}
+
+#blame {
+    position: absolute;
+    bottom: -220px;
+    border-radius: 3px 3px 3px 3px;
+    background: lightgray;
+    border: 1px solid black;
+    height: 180px;
+    width: 100%;
+}
+
+#blame pre {
+    background-color: lightgray;
+    font-size: 14px;
+    color: red;
+}
+
+#container {
+    margin: 0 auto;
+    width: 700px;
+}
+
+div.navigation {
+    padding-top: 120px;
+    position: fixed;
+    font-size: 14pt;
+}
+
+.navigation li {
+    list-style-type: none;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+pre {
+    background-color: #F0F3F3;
+    padding: 6px;
+    word-wrap: break-word;
+    white-space: pre-wrap;
+}
+
+h1 { text-align: center; font-size: 3.8em; color: black; margin-bottom: 3px; }
+h1 .small { font-size: 0.4em; }
+h1 a { text-decoration: none }
+h2 { font-size: 1.5em; color: black; }
+h3 { text-align: center; color: black; }
+a { color: black; }
+.description { font-size: 1.2em; margin-bottom: 30px; margin-top: 30px; font-style: italic;}
+.download { float: right; }
+/* pre { background: #000; color: #fff; padding: 15px;} */
+hr { border: 0; width: 80%; border-bottom: 1px solid #aaa}
+.footer { text-align:center; padding-top:30px; font-style: italic; }

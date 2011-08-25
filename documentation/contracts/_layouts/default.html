@@ -123,8 +123,8 @@ id "foo"
 
     # Eval the compiled js.
     evalJS = ->
-      if typeof window.Proxy is 'undefined
-        $('#blame pre').text "Your browser does not yet support Proxies which are required to run contracts.coffee.\nProxies currently work in Firefox 4+ with support coming to Chrome soon."
+      if typeof window.Proxy is 'undefined'
+        $('#blame pre').text "Your browser does not yet support Proxies which are required to run contracts.coffee.\nProxies currently work in Firefox 4+ with support for Chrome coming soon."
         return false
       try
         eval window.compiledJS
