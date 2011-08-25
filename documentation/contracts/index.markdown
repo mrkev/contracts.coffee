@@ -249,6 +249,13 @@ In general it is considered best practice to only put contracts on
 module boundaries but if you want to use them in the same module
 simply call `use()` immediately as shown above.
 
+<span id="simple"></span>
+Simple Contracts
+----------------
+
+In addition to the `Num` contract that checks for numbers, we
+also have `Str`, `Bool`, `Null`, `Undefined`, and `Pos` (for numbers
+greater than 0).
 
 <span id="functions"></span>
 Functions
