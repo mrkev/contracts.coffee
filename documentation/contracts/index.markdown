@@ -5,7 +5,7 @@ layout: default
 Contracts.coffee is a dialect of CoffeeScript with built-in
 support for contracts.
 
-Contracts let you to clearly&mdash;even beautifully&mdash;express how
+Contracts let you clearly&mdash;even beautifully&mdash;express how
 your code behaves, and free you from writing tons of boilerplate,
 defensive code.
 
