@@ -127,7 +127,7 @@ Parent contracts:
 <span class='nv'>loc = </span><span class='p'>[</span><span class='mi'>99332</span><span class='p'>,</span> <span class='mi'>23452</span><span class='p'>,</span> <span class='mi'>123</span><span class='p'>,</span> <span class='mi'>2</span><span class='p'>,</span> <span class='mi'>5000</span><span class='p'>]</span>
 </code></pre>
 </div>
-<p>And various combinations.</p>
+<p>And in various combinations.</p>
 <div class='highlight'><pre><code class='coffeescript'><span class='nx'>average</span> <span class='o'>::</span> <span class='nf'>({name: Str, age: Num}, [...Num]) -&gt;</span> <span class='nx'>Str</span>
 <span class='nv'>average = </span><span class='nf'>(person, loc) -&gt;</span>
     <span class='nv'>sum = </span><span class='nx'>loc</span><span class='p'>.</span><span class='nx'>reduce</span> <span class='nf'>(s1, s2) -&gt;</span> <span class='nx'>s1</span> <span class='o'>+</span> <span class='nx'>s2</span>
@@ -265,7 +265,7 @@ Parent contracts:
 <span id='simple' />
 <h2 id='simple_contracts'>Simple Contracts</h2>
 
-<p>In addition to the <code>Num</code> contract that checks for numbers, we also have <code>Str</code>, <code>Bool</code>, <code>Null</code>, <code>Undefined</code>, <code>Nat</code>, <code>Pos</code>, and <code>Neg</code>.</p>
+<p>In addition to the <code>Num</code> contract that checks for numbers, we also have <code>Str</code>, <code>Bool</code>, <code>Null</code>, <code>Undefined</code>, <code>Nat</code>, <code>Pos</code>, <code>Neg</code>, <code>Any</code> (everything is ok), and <code>None</code> (nothing is ok).</p>
 <span id='functions' />
 <h2 id='functions'>Functions</h2>
 

@@ -64,7 +64,7 @@ loc :: [...Num]
 loc = [99332, 23452, 123, 2, 5000]
 {% endhighlight %}
 
-And various combinations.
+And in various combinations.
 
 {% highlight coffeescript %}
 average :: ({name: Str, age: Num}, [...Num]) -> Str
@@ -290,7 +290,8 @@ Simple Contracts
 ----------------
 
 In addition to the `Num` contract that checks for numbers, we
-also have `Str`, `Bool`, `Null`, `Undefined`, `Nat`, `Pos`, and `Neg`.
+also have `Str`, `Bool`, `Null`, `Undefined`, `Nat`, `Pos`, `Neg`,
+`Any` (everything is ok), and `None` (nothing is ok).
 
 <span id="functions"></span>
 Functions
