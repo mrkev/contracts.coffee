@@ -171,6 +171,13 @@ coffee -C MyContractedScript.coffee
 You will get a bunch of errors. So just compile to JavaScript and run
 it in Firefox for now.
 
+Note that since leaving off the `-C` flag will generate JavaScript
+code with absolutely no trace of contracts (the code is exactly what
+vanilla CoffeeScript would generate), you can easily set up a
+production build with contracts disabled that can run in any browser
+or JavaScript environment and a development/testing build with
+contracts enabled that you run in Firefox to help track down bugs.
+
 <span id="use"></span>
 How to Use
 -----------------
