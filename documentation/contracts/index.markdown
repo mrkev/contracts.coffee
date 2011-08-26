@@ -534,7 +534,7 @@ o = { a: 42 }
 
 The `a` property must pass both the `Num` and `Even`
 contracts. Just like `or` you cannot use multiple function/object
-with `and`.
+contracts with `and`.
 
 
 <span id="naming"></span>
