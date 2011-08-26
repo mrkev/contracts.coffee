@@ -186,6 +186,11 @@ code {
     color: red;
 }
 
+#main {
+    width: 1000px;
+    margin: 0 auto;
+}
+
 #container {
     margin: 0 auto;
     width: 700px;
