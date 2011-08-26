@@ -264,12 +264,14 @@ The problem happens when `Main.coffee` sets up the form submit handler to call
 
 Notice that the violation happens at `Validator.coffee:4` when the
 checker is called with a string but the module at fault is actually
-`Main.coffee` (since it was responsible for providing `Validator.coffee`
-with the right checker). Not only is the failure not located in
-the file at fault, but since this happens in an
-event handler `Main.coffee` isn't even in the *stacktrace*!
+`Main.coffee` (since it was responsible for providing
+`Validator.coffee` with the right checker). In this case it is pretty
+much impossible to correctly assign blame by just inspecting the
+stacktrace since the the point of failure is in a different location
+than the file actually at fault.
 
-And, in fact, the error message gets it right!
+
+But the error message gets it right!
 
 It gets it right because `use()` records the module name where the
 contracted values were `used()` and we correctly track all the module

@@ -255,9 +255,9 @@ Parent contracts:
 
 <p>The problem happens when <code>Main.coffee</code> sets up the form submit handler to call <code>validateForm</code> (which expects a checker that takes strings) with <code>checkAge</code> (which takes numbers).</p>
 
-<p>Notice that the violation happens at <code>Validator.coffee:4</code> when the checker is called with a string but the module at fault is actually <code>Main.coffee</code> (since it was responsible for providing <code>Validator.coffee</code> with the right checker). Not only is the failure location in a different file than the one at fault, but since this happens in an event handler <code>Main.coffee</code> isn&#8217;t even in the stacktrace!</p>
+<p>Notice that the violation happens at <code>Validator.coffee:4</code> when the checker is called with a string but the module at fault is actually <code>Main.coffee</code> (since it was responsible for providing <code>Validator.coffee</code> with the right checker). In this case it is pretty much impossible to correctly assign blame by just inspecting the stacktrace since the the point of failure is in a different location than the file actually at fault.</p>
 
-<p>And, in fact, the error message gets it right!</p>
+<p>But the error message gets it right!</p>
 
 <p>It gets it right because <code>use()</code> records the module name where the contracted values were <code>used()</code> and we correctly track all the module names through all the subsequent contract checks.</p>
 <span id='simple' />
