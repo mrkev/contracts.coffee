@@ -19,6 +19,10 @@ code {
     background-color: #F0F3F3;
 }
 
+.label {
+    background-color: #727373;
+}
+
 #repl_container.active {
     display: block;
     position: fixed;
@@ -44,7 +48,7 @@ code {
 
 #repl_source_wrap {
     opacity: .95;
-    background-color: lightgray;
+    background-color: #F0F3F3;
     border: 0 none;
 
     float: left;
@@ -61,7 +65,7 @@ code {
     font-size: 14px;
     resize: none;
     overflow-y: auto;
-    background-color: lightgray;
+    background-color: #F0F3F3;
     z-index: 1;
     border-radius: 3px 3px 3px 3px;
     border: 1px solid black
@@ -86,7 +90,7 @@ code {
 
 #repl_results {
     opacity: .95;
-    background-color: lightgray;
+    background-color: #F0F3F3;
     left: 50%;
     height: auto;
     overflow-y: auto;
@@ -106,7 +110,7 @@ code {
 
     border: 1px solid black;
     border-radius: 3px 3px 3px 3px;
-    background-color: green;
+    background-color: #3F7373;
     font-size: 14px;
     color: white;
     cursor: pointer;
@@ -124,7 +128,6 @@ code {
 
     border: 1px solid black;
     border-radius: 3px 3px 3px 3px;
-    background-color: blue;
     font-size: 14px;
     color: white;
 
@@ -140,7 +143,6 @@ code {
 
     border: 1px solid black;
     border-radius: 3px 3px 3px 3px;
-    background-color: blue;
     font-size: 14px;
     color: white;
 
@@ -157,7 +159,6 @@ code {
 
     border: 1px solid black;
     border-radius: 3px 3px 3px 3px;
-    background-color: blue;
     font-size: 14px;
     color: white;
 
@@ -174,14 +175,14 @@ code {
     position: absolute;
     bottom: -220px;
     border-radius: 3px 3px 3px 3px;
-    background: lightgray;
+    background: #F0F3F3;
     border: 1px solid black;
     height: 180px;
     width: 100%;
 }
 
 #blame pre {
-    background-color: lightgray;
+    background-color: #F0F3F3;
     font-size: 14px;
     color: red;
 }
