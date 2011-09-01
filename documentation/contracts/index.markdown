@@ -79,10 +79,10 @@ return `true` or `false`, so it's really easy to roll your own by
 using the `!` operator to define new contracts.
 
 {% highlight coffeescript %}
-isEven = (x) -> x % 2 is 0
-isOdd = (x) -> x % 2 isnt 0
+Even = (x) -> x % 2 is 0
+Odd = (x) -> x % 2 isnt 0
 
-addEvens :: (!isEven) -> !isOdd
+addEvens :: (!Even) -> !Odd
 addEvens = (x) -> x + 1
 {% endhighlight %}
 
@@ -90,9 +90,9 @@ In fact, since contracts are checked at runtime, they can enforce
 properties that static type systems can only dream of.
 
 {% highlight coffeescript %}
-isPrime = (x) -> # ...
+Prime = (x) -> # ...
 
-f :: (!isPrime) -> !isPrime
+f :: (!Prime) -> !Prime
 f = (x) -> x
 {% endhighlight %}
 

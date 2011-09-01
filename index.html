@@ -147,17 +147,17 @@ Parent contracts:
 </code></pre>
 </div>
 <p>Under the covers, contracts are really just normal functions that return <code>true</code> or <code>false</code>, so it&#8217;s really easy to roll your own by using the <code>!</code> operator to define new contracts.</p>
-<div class='highlight'><pre><code class='coffeescript'><span class='nv'>isEven = </span><span class='nf'>(x) -&gt;</span> <span class='nx'>x</span> <span class='o'>%</span> <span class='mi'>2</span> <span class='o'>is</span> <span class='mi'>0</span>
-<span class='nv'>isOdd = </span><span class='nf'>(x) -&gt;</span> <span class='nx'>x</span> <span class='o'>%</span> <span class='mi'>2</span> <span class='o'>isnt</span> <span class='mi'>0</span>
+<div class='highlight'><pre><code class='coffeescript'><span class='nv'>Even = </span><span class='nf'>(x) -&gt;</span> <span class='nx'>x</span> <span class='o'>%</span> <span class='mi'>2</span> <span class='o'>is</span> <span class='mi'>0</span>
+<span class='nv'>Odd = </span><span class='nf'>(x) -&gt;</span> <span class='nx'>x</span> <span class='o'>%</span> <span class='mi'>2</span> <span class='o'>isnt</span> <span class='mi'>0</span>
 
-<span class='nx'>addEvens</span> <span class='o'>::</span> <span class='nf'>(!isEven) -&gt;</span> <span class='o'>!</span><span class='nx'>isOdd</span>
+<span class='nx'>addEvens</span> <span class='o'>::</span> <span class='nf'>(!Even) -&gt;</span> <span class='o'>!</span><span class='nx'>Odd</span>
 <span class='nv'>addEvens = </span><span class='nf'>(x) -&gt;</span> <span class='nx'>x</span> <span class='o'>+</span> <span class='mi'>1</span>
 </code></pre>
 </div>
 <p>In fact, since contracts are checked at runtime, they can enforce properties that static type systems can only dream of.</p>
-<div class='highlight'><pre><code class='coffeescript'><span class='nv'>isPrime = </span><span class='nf'>(x) -&gt;</span> <span class='c1'># ...</span>
+<div class='highlight'><pre><code class='coffeescript'><span class='nv'>Prime = </span><span class='nf'>(x) -&gt;</span> <span class='c1'># ...</span>
 
-<span class='nx'>f</span> <span class='o'>::</span> <span class='nf'>(!isPrime) -&gt;</span> <span class='o'>!</span><span class='nx'>isPrime</span>
+<span class='nx'>f</span> <span class='o'>::</span> <span class='nf'>(!Prime) -&gt;</span> <span class='o'>!</span><span class='nx'>Prime</span>
 <span class='nv'>f = </span><span class='nf'>(x) -&gt;</span> <span class='nx'>x</span>
 </code></pre>
 </div>
