@@ -11,15 +11,15 @@ test "function, first order", ->
 
   raises (-> badRng "foo"), "violates range"
 
-  opt :: (Num, Str?) -> Bool
-  opt = (n, s) -> true
+  option :: (Num, Str?) -> Bool
+  option = (n, s) -> true
 
-  opt = opt.use()
+  option = option.use()
 
-  ok (opt 42, "foo"), "optional abides by contract"
-  ok (opt 42), "does not include optional arg"
+  ok (option 42, "foo"), "optional abides by contract"
+  ok (option 42), "does not include optional arg"
 
-  raises (-> opt 42, 42), "violates optional argument"
+  raises (-> option 42, 42), "violates optional argument"
 
   even :: ( !(x) -> (x % 2) == 0 ) -> Num
   even = (x) -> x

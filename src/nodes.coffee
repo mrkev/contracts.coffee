@@ -4,8 +4,8 @@
 # the syntax tree into a string of JavaScript code, call `compile()` on the root.
 
 {Scope} = require './scope'
-
-c = require './contracts'
+path = require 'path'
+fs = require 'fs'
 
 # Import the helpers we plan to use.
 {compact, flatten, extend, merge, del, starts, ends, last} = require './helpers'
@@ -242,22 +242,10 @@ exports.Block = class Block extends Base
     o.scope  = new Scope null, this, null
     o.level  = LEVEL_TOP
     code     = @compileWithDeclarations o
-    headerSource = ""
-    if o.contracts and o.withLib
-      headerSource = """
-        #{contractsSource}
-        // load all the contract identifiers into the global scope
-        function load(obj) {
-          var name;
-          for(name in obj) {
-            if(obj.hasOwnProperty(name)) {
-              window[name] = obj[name];
-            }
-          }
-        }
-        load(Contracts.contracts);
-                     """
-    if o.bare then code else "(function() {#{headerSource}\n#{code}\n}).call(this);\n"
+    cpath = path.join path.dirname(fs.realpathSync(__filename)), 'loadContracts.js'
+    loadContracts = if o.contracts and o.withLib then (fs.readFileSync cpath, 'utf8') else ''
+
+    if o.bare then code else "(function() {#{loadContracts}\n#{code}\n}).call(this);\n"
 
   # Compile the expressions body for the contents of a function, with
   # declarations of all inner variables pushed up to the top.
