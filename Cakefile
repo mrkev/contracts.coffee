@@ -65,7 +65,12 @@ task 'build', 'build the CoffeeScript language from source', build = (cb) ->
   files = fs.readdirSync 'src'
   files = ('src/' + file for file in files when file.match(/\.coffee$/))
   run ['-c', '-o', 'lib'].concat(files), cb
-  loadContracts = "#{fs.readFileSync 'contracts.js/src/stacktrace.js'}\n#{fs.readFileSync 'contracts.js/src/contracts.js'}\n#{fs.readFileSync 'contracts.js/src/autoload.js'}"
+
+  contractPath = 'contracts.js/src/'
+  contractFiles = ['stacktrace.js', 'contracts.js', 'autoload.js']
+  loadContracts = (fs.readFileSync contractPath + file for file in contractFiles).join "\n"
+
+  # loadContracts = "#{fs.readFileSync 'contracts.js/src/stacktrace.js'}\n#{fs.readFileSync 'contracts.js/src/contracts.js'}\n#{fs.readFileSync 'contracts.js/src/autoload.js'}"
   fs.writeFile 'loadContracts.js', loadContracts
 
 task 'build:webtests', 'compiles the contracts testing files', ->
