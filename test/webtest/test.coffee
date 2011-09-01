@@ -87,16 +87,6 @@ test "function, call/new only", ->
   same x.a, 42, "abides by contract"
   raises (-> newOnly 42), "violates contract by not calling new"
 
-  newSafe :: (Num) -=> { a: Num }
-  newSafe = (x) -> @.a = x
-  newSafe = newSafe.use()
-
-  withnew = new newSafe 42
-  without = newSafe 42
-  same without.a, 42, "abides by contract"
-  same withnew.a, 42, "abides by contract"
-
-
 test "function, dependent", ->
   # gt = (result) -> result > $1
 

@@ -27,9 +27,6 @@ f :: (Num) --> Num # can't be used with 'new'
 # new only
 f :: (Num) ==> Any # can't be used without 'new'
 
-# new safe
-f :: (Num) -=> Any
-
 # dependent
 inc :: (Num, Num) -> !(result) -> result > $1 and $1 > $2
 

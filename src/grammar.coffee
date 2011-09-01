@@ -208,7 +208,6 @@ grammar =
     o '->',  -> 'func'
     o '-->', -> 'callOnly'
     o '==>', -> 'newOnly'
-    o '-=>', -> 'newSafe'
   ]
 
   ContractArgList: [
