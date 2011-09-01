@@ -178,6 +178,17 @@ production build with contracts disabled that can run in any browser
 or JavaScript environment and a development/testing build with
 contracts enabled that you run in Firefox to help track down bugs.
 
+<span id="resources"></span>
+Resources
+---------
+
+*  [Issue Tracker](https://github.com/disnet/contracts.coffee/issues?sort=created&direction=desc&state=open)
+   <br />
+   For filing bugs, requesting features and changes.
+*  [Google Group](https://groups.google.com/forum/?hl=en#!forum/contractscoffee)
+   <br />
+   For general discussion about contracts.coffee.
+
 <span id="use"></span>
 How to Use
 -----------------
@@ -580,3 +591,6 @@ Str = (x) -> typeof x is 'string'
 
 f = (!Num) -> !Str
 {% endhighlight %}
+
+     
+  
