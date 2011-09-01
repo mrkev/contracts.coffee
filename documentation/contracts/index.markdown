@@ -349,17 +349,6 @@ g = f 42      # error!
 g = new f 42  # ok
 {% endhighlight %}
 
-Functions that get `new` inserted automatically if it was left out.
-
-{% highlight coffeescript %}
-f :: (Num) -=> Num
-f = (n) -> # ...
-#...
-
-g = f 42      # ok: converted to g = new f 42
-g = new f 42  # ok
-{% endhighlight %}
-
 Dependent functions:
 
 {% highlight coffeescript %}

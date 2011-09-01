@@ -320,15 +320,6 @@ Parent contracts:
 <span class='nv'>g = </span><span class='k'>new</span> <span class='nx'>f</span> <span class='mi'>42</span>  <span class='c1'># ok</span>
 </code></pre>
 </div>
-<p>Functions that get <code>new</code> inserted automatically if it was left out.</p>
-<div class='highlight'><pre><code class='coffeescript'><span class='nx'>f</span> <span class='o'>::</span> <span class='p'>(</span><span class='nx'>Num</span><span class='p'>)</span> <span class='o'>-=&gt;</span> <span class='nx'>Num</span>
-<span class='nv'>f = </span><span class='nf'>(n) -&gt;</span> <span class='c1'># ...</span>
-<span class='c1'>#...</span>
-
-<span class='nv'>g = </span><span class='nx'>f</span> <span class='mi'>42</span>      <span class='c1'># ok: converted to g = new f 42</span>
-<span class='nv'>g = </span><span class='k'>new</span> <span class='nx'>f</span> <span class='mi'>42</span>  <span class='c1'># ok</span>
-</code></pre>
-</div>
 <p>Dependent functions:</p>
 <div class='highlight'><pre><code class='coffeescript'><span class='nx'>inc</span> <span class='o'>::</span> <span class='nf'>(Num) -&gt;</span> <span class='o'>!</span><span class='nf'>(result) -&gt;</span> <span class='nx'>result</span> <span class='o'>&gt;</span> <span class='nx'>$1</span>
 <span class='nv'>inc = </span><span class='nf'>(n) -&gt;</span> <span class='nx'>n</span> <span class='o'>+</span> <span class='mi'>1</span>
