@@ -131,13 +131,13 @@ enables contracts in the compiled JavaScript. If you don't want
 contracts enabled (say in production) simply don't include the `-C`
 flag.
 
-You will also need to include `loadContracts.js`, which is found in the
-root of contracts.coffee. So the header of your HTML file will look
+You will also need to include `lib/loadContracts.js`. 
+So the header of your HTML file will look
 something like:
 
 {% highlight html %}
 ...
-<script src="loadContracts.js"
+<script src="lib/loadContracts.js"
     type="application/javascript"></script>
 <script src="MyContractedScript.js"
     type="application/javascript"></script>

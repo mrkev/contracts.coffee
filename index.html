@@ -185,9 +185,9 @@ git submodule update
 </div>
 <p>Note the <code>-cC</code> flag. The <code>-c</code> says to compile to JavaScript and <code>-C</code> enables contracts in the compiled JavaScript. If you don&#8217;t want contracts enabled (say in production) simply don&#8217;t include the <code>-C</code> flag.</p>
 
-<p>You will also need to include <code>loadContracts.js</code>, which is found in the root of contracts.coffee. So the header of your HTML file will look something like:</p>
+<p>You will also need to include <code>lib/loadContracts.js</code>. So the header of your HTML file will look something like:</p>
 <div class='highlight'><pre><code class='html'>...
-<span class='nt'>&lt;script </span><span class='na'>src=</span><span class='s'>&quot;loadContracts.js&quot;</span>
+<span class='nt'>&lt;script </span><span class='na'>src=</span><span class='s'>&quot;lib/loadContracts.js&quot;</span>
     <span class='na'>type=</span><span class='s'>&quot;application/javascript&quot;</span><span class='nt'>&gt;&lt;/script&gt;</span>
 <span class='nt'>&lt;script </span><span class='na'>src=</span><span class='s'>&quot;MyContractedScript.js&quot;</span>
     <span class='na'>type=</span><span class='s'>&quot;application/javascript&quot;</span><span class='nt'>&gt;&lt;/script&gt;</span>
@@ -558,6 +558,6 @@ Parent contracts:
 
   <script src="documentation/vendor/jquery-1.4.2.js"></script>
   <script src="extras/coffee-script.js"></script>
-  <script src="loadContracts.js"></script>
+  <script src="lib/loadContracts.js"></script>
 </body>
 </html>
