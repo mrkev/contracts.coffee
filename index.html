@@ -40,7 +40,9 @@
       <li><a href="#objects">Objects</a></li>
       <li><a href="#arrays">Arrays</a></li>
       <li><a href="#operators">Operators</a></li>
+      <li style="text-decoration: none;">&nbsp;</li>
       <li><a href="#naming">Naming</a></li>
+      <li><a href="#duck">Duck-Typing</a></li>
       <li style="text-decoration: none;">&nbsp;</li>
       <li><span id="try_button">Try it now!</span></li>
 
@@ -216,6 +218,8 @@ coffee -C MyContractedScript.coffee
 <li><a href='https://github.com/disnet/contracts.coffee/issues?sort=created&amp;direction=desc&amp;state=open'>Issue Tracker</a> <br /> For filing bugs, requesting features and changes.</li>
 
 <li><a href='https://groups.google.com/forum/?hl=en#!forum/contractscoffee'>Google Group</a> <br /> For general discussion about contracts.coffee.</li>
+
+<li><a href='http://disnetdev.com/blog/'>disnet&#8217;s blog</a> <br /> Will sometimes post about contracts.coffee.</li>
 </ul>
 <span id='use' />
 <h2 id='how_to_use'>How to Use</h2>
@@ -488,7 +492,64 @@ Parent contracts:
 
 <span class='nv'>f = </span><span class='nf'>(!Num) -&gt;</span> <span class='o'>!</span><span class='nx'>Str</span>
 </code></pre>
+</div><span id='duck' />
+<h2 id='ducktyping_invariants'>Duck-Typing Invariants</h2>
+
+<p>A full write-up on this topic is covered <a href=''>here</a> but to whet your appetite: you can &#8220;duck-type&#8221; object invariants. Code can now say, &#8220;give me whatever object you want so long as it has <em>these</em> properties and satisfies <em>these</em> invariants&#8221;.</p>
+
+<p>Consider a binary search tree:</p>
+<div class='highlight'><pre><code class='coffeescript'><span class='c1'># A binary search tree is a binary tree </span>
+<span class='c1'># where each node is  greater than the </span>
+<span class='c1'># left child but less than the right child</span>
+<span class='nv'>BinarySearchTree = </span><span class='o'>?</span><span class='p'>(</span><span class='nx'>Null</span> <span class='o'>or</span> <span class='p'>{</span>
+  <span class='nv'>node: </span><span class='nx'>Num</span>
+  <span class='nv'>left: </span><span class='nx'>Self</span> <span class='o'>or</span> <span class='nx'>Null</span>
+  <span class='nv'>right: </span><span class='nx'>Self</span> <span class='o'>or</span> <span class='nx'>Null</span>
+  <span class='o'>|</span> <span class='nv'>invariant: </span><span class='o'>-&gt;</span>
+    <span class='p'>(</span><span class='err'>@</span><span class='p'>.</span><span class='nx'>node</span> <span class='o'>&gt;</span> <span class='err'>@</span><span class='p'>.</span><span class='nx'>left</span><span class='p'>.</span><span class='nx'>node</span><span class='p'>)</span> <span class='o'>and</span> <span class='p'>(</span><span class='err'>@</span><span class='p'>.</span><span class='nx'>node</span> <span class='o'>&lt;</span> <span class='err'>@</span><span class='p'>.</span><span class='nx'>right</span><span class='p'>.</span><span class='nx'>node</span><span class='p'>)</span>
+<span class='p'>})</span>
+</code></pre>
 </div>
+<p>And a <a href='http://en.wikipedia.org/wiki/Red-black_tree'>red-black tree</a>:</p>
+<div class='highlight'><pre><code class='coffeescript'><span class='c1'># A red-black tree is a binary search tree </span>
+<span class='c1'># that keeps its balance</span>
+<span class='nv'>RedBlackTree = </span><span class='o'>?</span><span class='p'>(</span><span class='nx'>Null</span> <span class='o'>or</span> <span class='p'>{</span>
+  <span class='nv'>node: </span><span class='nx'>Num</span>
+  <span class='nv'>color: </span><span class='nx'>Str</span>
+  <span class='nv'>left: </span><span class='nx'>Self</span> <span class='o'>or</span> <span class='nx'>Null</span>
+  <span class='nv'>right: </span><span class='nx'>Self</span> <span class='o'>or</span> <span class='nx'>Null</span>
+  <span class='o'>|</span> <span class='nv'>invariant: </span><span class='o'>-&gt;</span>
+    <span class='p'>(</span><span class='err'>@</span><span class='p'>.</span><span class='nx'>color</span> <span class='o'>is</span> <span class='s2'>&quot;red&quot;</span> <span class='o'>or</span> <span class='err'>@</span><span class='p'>.</span><span class='nx'>color</span> <span class='o'>is</span> <span class='s2'>&quot;black&quot;</span><span class='p'>)</span> <span class='o'>and</span>
+    <span class='p'>(</span><span class='k'>if</span> <span class='err'>@</span><span class='p'>.</span><span class='nx'>color</span> <span class='o'>is</span> <span class='s2'>&quot;red&quot;</span>
+      <span class='p'>(</span><span class='err'>@</span><span class='p'>.</span><span class='nx'>left</span><span class='p'>.</span><span class='nx'>color</span> <span class='o'>is</span> <span class='s2'>&quot;black&quot;</span> <span class='o'>and</span> 
+       <span class='err'>@</span><span class='p'>.</span><span class='nx'>right</span><span class='p'>.</span><span class='nx'>color</span> <span class='o'>is</span> <span class='s2'>&quot;black&quot;</span><span class='p'>)</span> 
+    <span class='k'>else</span> 
+      <span class='kc'>true</span>
+    <span class='p'>)</span> <span class='o'>and</span>
+    <span class='p'>(</span><span class='err'>@</span><span class='p'>.</span><span class='nx'>node</span> <span class='o'>&gt;=</span> <span class='err'>@</span><span class='p'>.</span><span class='nx'>left</span><span class='p'>.</span><span class='nx'>node</span><span class='p'>)</span> <span class='o'>and</span> 
+    <span class='p'>(</span><span class='err'>@</span><span class='p'>.</span><span class='nx'>node</span> <span class='o'>&gt;=</span> <span class='err'>@</span><span class='p'>.</span><span class='nx'>right</span><span class='p'>.</span><span class='nx'>node</span><span class='p'>)</span> <span class='o'>and</span>
+<span class='p'>})</span>
+</code></pre>
+</div>
+<p>The red-black tree is exactly the same as a binary search tree with some additional invariants. This means we have a kind of subtyping going on here: code that expects a binary search tree will also work with a red-black tree but <em>not</em> vica versa.</p>
+<div class='highlight'><pre><code class='coffeescript'><span class='nx'>takesBST</span> <span class='o'>::</span> <span class='nf'>(BinarySearchTree) -&gt;</span> <span class='nx'>Any</span>
+<span class='nv'>takesBST = </span><span class='nf'>(bst) -&gt;</span> <span class='p'>...</span>
+
+<span class='nx'>takesRedBlack</span> <span class='o'>::</span> <span class='nf'>(RedBlackTree) -&gt;</span> <span class='nx'>Any</span>
+<span class='nv'>takesRedBlack = </span><span class='nf'>(rbTree) -&gt;</span> <span class='p'>...</span>
+
+<span class='nv'>bst = </span><span class='nx'>makeBinarySearchTree</span><span class='p'>()</span>  
+<span class='nv'>rb = </span><span class='nx'>makeRedBlackTree</span><span class='p'>()</span>
+
+<span class='nx'>takesBST</span> <span class='nx'>bst</span> <span class='c1'># works fine</span>
+<span class='nx'>takesBST</span> <span class='nx'>rb</span>  <span class='c1'># works fine</span>
+
+<span class='nx'>takesRedBlack</span> <span class='nx'>rb</span>  <span class='c1'># works fine</span>
+<span class='nx'>takesRedBlack</span> <span class='nx'>bst</span> <span class='c1'># might fail if the full </span>
+                  <span class='c1'># red-black invariants don&#39;t hold!</span>
+</code></pre>
+</div>
+<p>In duck-typing, functions work when given <em>any</em> object that has the properties the function needs (though the object might have other properties too). Contracts allow us to extend that to object invariants: functions work when given <em>any</em> object that has the required properties <em>and</em> satisfies the required invariants (though the object might satisfy other invariants too).</p>
 
     <div class="footer">
       get the source code on GitHub : <a href="http://github.com/disnet/contracts.coffee">disnet/contracts.coffee</a>

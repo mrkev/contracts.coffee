@@ -188,6 +188,9 @@ Resources
 *  [Google Group](https://groups.google.com/forum/?hl=en#!forum/contractscoffee)
    <br />
    For general discussion about contracts.coffee.
+*  [disnet's blog](http://disnetdev.com/blog/)
+   <br />
+   Will sometimes post about contracts.coffee.
 
 <span id="use"></span>
 How to Use
@@ -593,4 +596,71 @@ f = (!Num) -> !Str
 {% endhighlight %}
 
      
+<span id="duck"></span>
+Duck-Typing Invariants
+----------------------
   
+A full write-up on this topic is covered [here](http://disnetdev.com/blog/2011/09/05/Duck-Typing-Invariants-In-contracts.coffee/) but to whet your appetite: you can "duck-type" object invariants. Code can now say, "give me whatever object you want so long as it has *these* properties and satisfies *these* invariants".
+
+Consider a binary search tree:
+
+{% highlight coffeescript %}
+# A binary search tree is a binary tree 
+# where each node is  greater than the 
+# left child but less than the right child
+BinarySearchTree = ?(Null or {
+  node: Num
+  left: Self or Null
+  right: Self or Null
+  | invariant: ->
+    (@.node > @.left.node) and (@.node < @.right.node)
+})
+{% endhighlight %}
+
+And a [red-black tree](http://en.wikipedia.org/wiki/Red-black_tree):
+
+{% highlight coffeescript %}
+# A red-black tree is a binary search tree 
+# that keeps its balance
+RedBlackTree = ?(Null or {
+  node: Num
+  color: Str
+  left: Self or Null
+  right: Self or Null
+  | invariant: ->
+    (@.color is "red" or @.color is "black") and
+    (if @.color is "red"
+      (@.left.color is "black" and 
+       @.right.color is "black") 
+    else 
+      true
+    ) and
+    (@.node >= @.left.node) and 
+    (@.node >= @.right.node) and
+})
+{% endhighlight %}
+
+The red-black tree is exactly the same as a binary search tree with some additional invariants. This means we have a kind of subtyping going on here: code that expects a binary search tree will also work with a red-black tree but *not* vica versa.
+
+{% highlight coffeescript %}
+takesBST :: (BinarySearchTree) -> Any
+takesBST = (bst) -> ...
+
+takesRedBlack :: (RedBlackTree) -> Any
+takesRedBlack = (rbTree) -> ...
+
+bst = makeBinarySearchTree()  
+rb = makeRedBlackTree()
+
+takesBST bst # works fine
+takesBST rb  # works fine
+
+takesRedBlack rb  # works fine
+takesRedBlack bst # might fail if the full 
+                  # red-black invariants don't hold!
+{% endhighlight %}
+
+In duck-typing, functions work when given *any* object that has the properties the function needs (though the object might have other properties too). Contracts allow us to extend that to object invariants: functions work when given *any* object that has the required properties *and* satisfies the required invariants (though the object might satisfy other invariants too).
+
+
+
