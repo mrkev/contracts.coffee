@@ -2,8 +2,8 @@
 layout: default
 ---
 
-Contracts.coffee is a dialect of CoffeeScript with built-in
-support for contracts.
+Contracts.coffee is a dialect of [CoffeeScript](http://jashkenas.github.com/coffee-script/) with built-in
+support for contracts. It is inspired by the contract system found in [Racket](http://racket-lang.org/).
 
 Contracts let you clearly&mdash;even beautifully&mdash;express how
 your code behaves, and free you from writing tons of boilerplate,
