@@ -476,8 +476,8 @@ o =
   f: (x) -> @.a = @.a + x
 {% endhighlight %}
 
-The invariant is checked whenever there is a possibility of `o`
-mutating (on property sets, delete, etc.).
+The invariant is checked at contract application and whenever there is a possibility of `o`
+mutating (on property sets and delete).
 
 <span id="arrays"></span>
 Arrays
