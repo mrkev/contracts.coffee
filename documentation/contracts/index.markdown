@@ -171,6 +171,8 @@ coffee -C MyContractedScript.coffee
 You will get a bunch of errors. So just compile to JavaScript and run
 it in Firefox for now.
 
+**Update:** we now have preliminary support for V8 and node.js. Instructions for getting this working are [here](http://disnetdev.com/blog/2011/09/20/Contracts.coffee-Works-In-Node.js/)
+
 Note that since leaving off the `-C` flag will generate JavaScript
 code with absolutely no trace of contracts (the code is exactly what
 vanilla CoffeeScript would generate), you can easily set up a

@@ -210,6 +210,8 @@ coffee -C MyContractedScript.coffee
 </div>
 <p>You will get a bunch of errors. So just compile to JavaScript and run it in Firefox for now.</p>
 
+<p><strong>Update:</strong> we now have preliminary support for V8 and node.js. Instructions for getting this working are <a href='http://disnetdev.com/blog/2011/09/20/Contracts.coffee-Works-In-Node.js/'>here</a></p>
+
 <p>Note that since leaving off the <code>-C</code> flag will generate JavaScript code with absolutely no trace of contracts (the code is exactly what vanilla CoffeeScript would generate), you can easily set up a production build with contracts disabled that can run in any browser or JavaScript environment and a development/testing build with contracts enabled that you run in Firefox to help track down bugs.</p>
 <span id='resources' />
 <h2 id='resources'>Resources</h2>
@@ -419,7 +421,7 @@ Parent contracts:
   <span class='nv'>f: </span><span class='nf'>(x) -&gt;</span> <span class='err'>@</span><span class='p'>.</span><span class='nv'>a = </span><span class='err'>@</span><span class='p'>.</span><span class='nx'>a</span> <span class='o'>+</span> <span class='nx'>x</span>
 </code></pre>
 </div>
-<p>The invariant is checked whenever there is a possibility of <code>o</code> mutating (on property sets, delete, etc.).</p>
+<p>The invariant is checked at contract application and whenever there is a possibility of <code>o</code> mutating (on property sets and delete).</p>
 <span id='arrays' />
 <h2 id='arrays'>Arrays</h2>
 
