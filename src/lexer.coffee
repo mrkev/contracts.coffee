@@ -104,7 +104,7 @@ exports.Lexer = class Lexer
             @tokens.pop()
             id = '!' + id
 
-    if id in JS_FORBIDDEN
+    if id in ['eval', 'arguments'].concat JS_FORBIDDEN
       if forcedIdentifier
         tag = 'IDENTIFIER'
         id  = new String id
@@ -279,6 +279,7 @@ exports.Lexer = class Lexer
         @outdebt = 0
         @token 'OUTDENT', dent
     @outdebt -= moveOut if dent
+    @tokens.pop() while @value() is ';'
     @token 'TERMINATOR', '\n' unless @tag() is 'TERMINATOR' or noNewlines
     this
 
@@ -293,6 +294,7 @@ exports.Lexer = class Lexer
 
   # Generate a newline token. Consecutive newlines get merged together.
   newlineToken: ->
+    @tokens.pop() while @value() is ';'
     @token 'TERMINATOR', '\n' unless @tag() is 'TERMINATOR'
     this
 
@@ -339,7 +341,6 @@ exports.Lexer = class Lexer
         tag = 'INDEX_START'
         switch prev[0]
           when '?'  then prev[0] = 'INDEX_SOAK'
-          when '::' then prev[0] = 'INDEX_PROTO'
     @token tag, value
     value.length
 
@@ -491,9 +492,8 @@ exports.Lexer = class Lexer
   # Are we in the midst of an unfinished expression?
   unfinished: ->
     LINE_CONTINUER.test(@chunk) or
-    (prev = last @tokens, 1) and prev[0] isnt '.' and
-      (value = @value()) and not value.reserved and
-      NO_NEWLINE.test(value) and not CODE.test(value) and not ASSIGNED.test(@chunk)
+    @tag() in ['\\', '.', '?.', 'UNARY', 'MATH', '+', '-', 'SHIFT', 'RELATION'
+               'COMPARE', 'LOGIC', 'COMPOUND_ASSIGN', 'THROW', 'EXTENDS']
 
   # Converts newlines for string literals.
   escapeLines: (str, heredoc) ->
@@ -612,17 +612,9 @@ HEREDOC_INDENT  = /\n+([^\n\S]*)/g
 
 HEREDOC_ILLEGAL = /\*\//
 
-ASSIGNED        = /^\s*@?([$A-Za-z_][$\w\x7f-\uffff]*|['"].*['"])[^\n\S]*?[:=][^:=>]/
-
 LINE_CONTINUER  = /// ^ \s* (?: , | \??\.(?![.\d]) | :: ) ///
 
 TRAILING_SPACES = /\s+$/
-
-NO_NEWLINE      = /// ^ (?:            # non-capturing group
-  [-+*&|/%=<>!.\\][<>=&|]* |           # symbol operators
-  and | or | is(?:nt)? | n(?:ot|ew) |  # word operators
-  delete | typeof | instanceof
-) $ ///
 
 # Compound assignment tokens.
 COMPOUND_ASSIGN = [
