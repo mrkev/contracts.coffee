@@ -196,10 +196,10 @@ test "objects, props with functions", ->
   obj :: {
     a: Num
     b: Str
-    f: (Num) -> Num |
+    f: (Num) -> Num -|
         pre: (o) -> o.a > 10
         post: (o) -> o.b is "foo"
-    | invariant: ->
+    -| invariant: ->
       @.a > 0 and @.b is "foo"
   }
   obj =
@@ -376,7 +376,7 @@ test "binary search tree example", ->
       node: Num
       left: (Self or Null)
       right: (Self or Null)
-      | invariant: ->
+      -| invariant: ->
         (@.left is null or @.node > @.left.node) and
         (@.right is null or @.node < @.right.node)
     })
