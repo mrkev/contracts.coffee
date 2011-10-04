@@ -195,14 +195,8 @@ grammar =
         new FunctionContract (new Arr []), $3, $1, $4
   ]
   FunctionOptions: [
-    o 'LOGIC INDENT { AssignList } OUTDENT', ->
-      # cheating a little here...otherwise would have to tweak the lexer/rewriter
-      # to not group all LOGIC expression together in contract expressions
-      if $1 is '|'
+    o 'CONTRACT_OPT INDENT { AssignList } OUTDENT', ->
         $4
-      else
-        parser.parseError "Parse error on line #{yylineno + 1}: expecting '|' not '#{$1}'"
-        null
   ]
   ContractFunGlyph: [
     o '->',  -> 'func'
@@ -231,7 +225,7 @@ grammar =
   ]
 
   ContractAssignObj: [
-    o 'LOGIC AssignObj', -> { objectOption: $2 }
+    o 'CONTRACT_OPT AssignObj', -> { objectOption: $2 }
     o 'ObjAssignable',                      -> new Value $1
     o 'ObjAssignable : ContractExpression', -> new Assign new Value($1), $3, 'object'
     o 'ObjAssignable :

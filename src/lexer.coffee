@@ -329,9 +329,10 @@ exports.Lexer = class Lexer
     else if value in COMPOUND_ASSIGN then tag = 'COMPOUND_ASSIGN'
     else if value in UNARY           then tag = 'UNARY'
     else if value in SHIFT           then tag = 'SHIFT'
+    else if value is "-|" then tag = "CONTRACT_OPT"
     else if value in LOGIC or value is '?' and prev?.spaced and not (prev[0] is '=') then tag = 'LOGIC'
     # the prev.spaced here is used to disambiguate legit usages of angle brackets with prtotypes
-    else if prev and value is "[" and prev[0] is '::' and prev.spaced then prev[0] = 'CONTRACT_SIG'
+    else if prev and value is '[' and prev[0] is '::' and prev.spaced then prev[0] = 'CONTRACT_SIG'
     else if prev and not prev.spaced
       if value is '(' and prev[0] in CALLABLE
         # only a function existence check if the expression is not like `id = ?(Num) -> Num
@@ -572,6 +573,7 @@ OPERATOR   = /// ^ (
    | ([&|<>])\2=?      # logic / shift
    | \?\.              # soak access
    | \.{2,3}           # range or splat
+   | -\|                # contract option
 ) ///
 
 WHITESPACE = /^[^\n\S]+/
