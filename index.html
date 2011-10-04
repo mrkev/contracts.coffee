@@ -398,7 +398,7 @@ Parent contracts:
 <p>Objects with functions that have pre and post conditions:</p>
 <div class='highlight'><pre><code class='coffeescript'><span class='nx'>o</span> <span class='o'>::</span>
   <span class='nv'>a: </span><span class='nx'>Num</span>
-  <span class='nv'>f: </span><span class='nf'>(Num) -&gt;</span> <span class='nx'>Num</span> <span class='o'>|</span>
+  <span class='nv'>f: </span><span class='nf'>(Num) -&gt;</span> <span class='nx'>Num</span> <span class='o'>-|</span>
       <span class='nv'>pre: </span><span class='nf'>(o) -&gt;</span> <span class='nx'>o</span><span class='p'>.</span><span class='nx'>a</span> <span class='o'>&gt;</span> <span class='mi'>10</span>
       <span class='nv'>post: </span><span class='nf'>(o) -&gt;</span> <span class='nx'>o</span><span class='p'>.</span><span class='nx'>a</span> <span class='o'>&gt;</span> <span class='mi'>20</span>
 <span class='nv'>o =</span>
@@ -411,10 +411,10 @@ Parent contracts:
 <p>Object invariants:</p>
 <div class='highlight'><pre><code class='coffeescript'><span class='nx'>o</span> <span class='o'>::</span>
   <span class='nv'>a: </span><span class='nx'>Num</span>
-  <span class='nv'>f: </span><span class='nf'>(Num) -&gt;</span> <span class='nx'>Num</span> <span class='o'>|</span>
+  <span class='nv'>f: </span><span class='nf'>(Num) -&gt;</span> <span class='nx'>Num</span> <span class='o'>-|</span>
       <span class='nv'>pre: </span><span class='nf'>(o) -&gt;</span> <span class='nx'>o</span><span class='p'>.</span><span class='nx'>a</span> <span class='o'>&gt;</span> <span class='mi'>10</span>
       <span class='nv'>post: </span><span class='nf'>(o) -&gt;</span> <span class='nx'>o</span><span class='p'>.</span><span class='nx'>a</span> <span class='o'>&gt;</span> <span class='mi'>20</span>
-  <span class='o'>|</span> <span class='nv'>invariant: </span><span class='o'>-&gt;</span>
+  <span class='o'>-|</span> <span class='nv'>invariant: </span><span class='o'>-&gt;</span>
     <span class='err'>@</span><span class='p'>.</span><span class='nx'>a</span> <span class='o'>&gt;</span> <span class='mi'>0</span> <span class='o'>and</span> <span class='err'>@</span><span class='p'>.</span><span class='nx'>a</span> <span class='o'>&lt;</span> <span class='mi'>100</span>
 <span class='nv'>o =</span>
   <span class='nv'>a: </span><span class='mi'>12</span>
@@ -507,7 +507,7 @@ Parent contracts:
   <span class='nv'>node: </span><span class='nx'>Num</span>
   <span class='nv'>left: </span><span class='nx'>Self</span> <span class='o'>or</span> <span class='nx'>Null</span>
   <span class='nv'>right: </span><span class='nx'>Self</span> <span class='o'>or</span> <span class='nx'>Null</span>
-  <span class='o'>|</span> <span class='nv'>invariant: </span><span class='o'>-&gt;</span>
+  <span class='o'>-|</span> <span class='nv'>invariant: </span><span class='o'>-&gt;</span>
     <span class='p'>(</span><span class='err'>@</span><span class='p'>.</span><span class='nx'>node</span> <span class='o'>&gt;</span> <span class='err'>@</span><span class='p'>.</span><span class='nx'>left</span><span class='p'>.</span><span class='nx'>node</span><span class='p'>)</span> <span class='o'>and</span> <span class='p'>(</span><span class='err'>@</span><span class='p'>.</span><span class='nx'>node</span> <span class='o'>&lt;</span> <span class='err'>@</span><span class='p'>.</span><span class='nx'>right</span><span class='p'>.</span><span class='nx'>node</span><span class='p'>)</span>
 <span class='p'>})</span>
 </code></pre>
@@ -520,7 +520,7 @@ Parent contracts:
   <span class='nv'>color: </span><span class='nx'>Str</span>
   <span class='nv'>left: </span><span class='nx'>Self</span> <span class='o'>or</span> <span class='nx'>Null</span>
   <span class='nv'>right: </span><span class='nx'>Self</span> <span class='o'>or</span> <span class='nx'>Null</span>
-  <span class='o'>|</span> <span class='nv'>invariant: </span><span class='o'>-&gt;</span>
+  <span class='o'>-|</span> <span class='nv'>invariant: </span><span class='o'>-&gt;</span>
     <span class='p'>(</span><span class='err'>@</span><span class='p'>.</span><span class='nx'>color</span> <span class='o'>is</span> <span class='s2'>&quot;red&quot;</span> <span class='o'>or</span> <span class='err'>@</span><span class='p'>.</span><span class='nx'>color</span> <span class='o'>is</span> <span class='s2'>&quot;black&quot;</span><span class='p'>)</span> <span class='o'>and</span>
     <span class='p'>(</span><span class='k'>if</span> <span class='err'>@</span><span class='p'>.</span><span class='nx'>color</span> <span class='o'>is</span> <span class='s2'>&quot;red&quot;</span>
       <span class='p'>(</span><span class='err'>@</span><span class='p'>.</span><span class='nx'>left</span><span class='p'>.</span><span class='nx'>color</span> <span class='o'>is</span> <span class='s2'>&quot;black&quot;</span> <span class='o'>and</span> 

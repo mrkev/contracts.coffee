@@ -451,7 +451,7 @@ Objects with functions that have pre and post conditions:
 {% highlight coffeescript %}
 o ::
   a: Num
-  f: (Num) -> Num |
+  f: (Num) -> Num -|
       pre: (o) -> o.a > 10
       post: (o) -> o.a > 20
 o =
@@ -468,10 +468,10 @@ Object invariants:
 {% highlight coffeescript %}
 o ::
   a: Num
-  f: (Num) -> Num |
+  f: (Num) -> Num -|
       pre: (o) -> o.a > 10
       post: (o) -> o.a > 20
-  | invariant: ->
+  -| invariant: ->
     @.a > 0 and @.a < 100
 o =
   a: 12
@@ -614,7 +614,7 @@ BinarySearchTree = ?(Null or {
   node: Num
   left: Self or Null
   right: Self or Null
-  | invariant: ->
+  -| invariant: ->
     (@.node > @.left.node) and (@.node < @.right.node)
 })
 {% endhighlight %}
@@ -629,7 +629,7 @@ RedBlackTree = ?(Null or {
   color: Str
   left: Self or Null
   right: Self or Null
-  | invariant: ->
+  -| invariant: ->
     (@.color is "red" or @.color is "black") and
     (if @.color is "red"
       (@.left.color is "black" and 
