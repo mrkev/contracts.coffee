@@ -236,7 +236,7 @@ runTests = (CoffeeScript) ->
     currentFile = filename = path.join 'test', file
     code = fs.readFileSync filename
     try
-      CoffeeScript.run code.toString(), {filename}
+      CoffeeScript.run code.toString(), {filename, contracts: true, withLib: true}
     catch error
       failures.push {filename, error}
   return !failures.length
