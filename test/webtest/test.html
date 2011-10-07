@@ -6,7 +6,18 @@
     <link rel="Stylesheet" href="qunit.css"></script>
     <script type="text/javascript" src="qunit.js"></script>
 
-    <script type="text/javascript" src="test.js"></script>
+    <script type="text/javascript">
+      // shims between node assert functions and qunit
+      var eq = function(a, b, msg) {
+        same(a, b, msg);
+      },
+        throws = function(f, msg) {
+        raises(f, msg);
+      },
+        inBrowser = true;
+    </script>
+
+    <script type="text/javascript" src="contracts.js"></script>
     <script type="text/javascript" src="../../lib/coffee-script/loadContracts.js"></script>
 
   </head>

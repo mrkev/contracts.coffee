@@ -73,9 +73,7 @@ task 'build', 'build the CoffeeScript language from source', build = (cb) ->
   fs.writeFile '${lib}/loadContracts.js', loadContracts
 
 buildWebtests = ->  
-  files = fs.readdirSync 'test/webtest'
-  files = ('test/webtest/' + file for file in files when file.match(/\.coffee$/))
-  run ['-c', '-C', '-o', 'test/webtest'].concat(files)
+  run ['-c', '-C', '-o', 'test/webtest', 'test/contracts.coffee']
 
 task 'build:webtests', 'compiles the contracts testing files', ->
   buildWebtests()
