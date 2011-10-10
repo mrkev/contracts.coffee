@@ -61,7 +61,7 @@ task 'install', 'install CoffeeScript into /usr/local (or --prefix)', (options) 
 
 
 task 'build', 'build the CoffeeScript language from source', build = (cb) ->
-  lib = "${base}/lib/coffee-script"
+  lib = "lib/coffee-script"
   files = fs.readdirSync 'src'
   files = ('src/' + file for file in files when file.match(/\.coffee$/))
   run ['-c', '-o', 'lib/coffee-script'].concat(files), cb
@@ -70,7 +70,7 @@ task 'build', 'build the CoffeeScript language from source', build = (cb) ->
   contractFiles = ['stacktrace.js', 'contracts.js', 'autoload.js']
   loadContracts = (fs.readFileSync contractPath + file for file in contractFiles).join "\n"
 
-  fs.writeFile '${lib}/loadContracts.js', loadContracts
+  fs.writeFileSync "#{lib}/loadContracts.js", loadContracts
 
 buildWebtests = ->  
   run ['-c', '-C', '-o', 'test/webtest', 'test/contracts.coffee']
