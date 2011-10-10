@@ -8,6 +8,7 @@ test "function, first order", ->
 
   badRng :: (Str) -> Num
   badRng = (x) -> x
+  badRng = badRng.use()
 
   throws (-> badRng "foo"), "violates range"
 
@@ -36,6 +37,7 @@ test "function, first order", ->
 
   noarg_bad :: -> Num
   noarg_bad = -> "foo"
+  noarg_bad = noarg_bad.use()
 
   throws (-> noarg_bad()), "violates contract"
 
@@ -269,7 +271,6 @@ test "arrays, basic", ->
 	  a = [42, "foo"]
 	  a = a.use()
 
-	  console.log a[0]
 	  eq a[0], 42, "array get abides by contract"
 	  throws (-> a[0] = "foo"), "array set violates contract"
 
