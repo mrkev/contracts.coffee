@@ -1,3 +1,5 @@
+# requires recent "unstable" versions of node (v0.5.8+) to work
+
 test "function, first order", ->
   id :: (Str) -> Str
   id = (x) -> x
