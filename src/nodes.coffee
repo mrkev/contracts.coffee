@@ -234,7 +234,11 @@ exports.Block = class Block extends Base
         codes.push if node.isStatement o then code else "#{@tab}#{code};"
       else
         codes.push node.compile o, LEVEL_LIST
-    return codes.join '\n' if top
+    if top
+      if @spaced
+        return '\n' + codes.join('\n\n') + '\n'
+      else
+        return codes.join '\n'
     code = codes.join(', ') or 'void 0'
     if codes.length > 1 and o.level >= LEVEL_LIST then "(#{code})" else code
 
@@ -246,6 +250,7 @@ exports.Block = class Block extends Base
     o.indent = @tab = if o.bare then '' else TAB
     o.scope  = new Scope null, this, null
     o.level  = LEVEL_TOP
+    @spaced  = yes
     code     = @compileWithDeclarations o
     cpath = path.join path.dirname(fs.realpathSync(__filename)), 'loadContracts.js'
     loadContracts = if o.contracts and o.withLib then (fs.readFileSync cpath, 'utf8') else ''
@@ -312,6 +317,8 @@ exports.Literal = class Literal extends Base
   compileNode: (o) ->
     code = if @isUndefined
       if o.level >= LEVEL_ACCESS then '(void 0)' else 'void 0'
+    else if @value is 'this'
+      if o.scope.method?.bound then o.scope.method.context else @value
     else if @value.reserved and "#{@value}" not in ['eval', 'arguments']
       "\"#{@value}\""
     else
@@ -555,7 +562,7 @@ exports.Comment = class Comment extends Base
   makeReturn:      THIS
 
   compileNode: (o, level) ->
-    code = '/*' + multident(@comment, @tab) + "\n#{@tab}*/\n"
+    code = '/*' + multident(@comment, @tab) + "\n#{@tab}*/"
     code = o.indent + code if (level or o.level) is LEVEL_TOP
     code
 
@@ -835,14 +842,14 @@ exports.Slice = class Slice extends Base
   compileNode: (o) ->
     {to, from} = @range
     fromStr    = from and from.compile(o, LEVEL_PAREN) or '0'
-    compiled   = to and to.compile o, LEVEL_PAREN
+    compiled   = to and to.compile o, LEVEL_ACCESS
     if to and not (not @range.exclusive and +compiled is -1)
       toStr = ', ' + if @range.exclusive
         compiled
       else if SIMPLENUM.test compiled
         (+compiled + 1).toString()
       else
-        "(#{compiled} + 1) || 9e9"
+        "#{compiled} + 1 || 9e9"
     ".slice(#{ fromStr }#{ toStr or '' })"
 
 #### Obj
@@ -1015,6 +1022,7 @@ exports.Class = class Class extends Base
     @setContext name
     @walkBody name, o
     @ensureConstructor name
+    @body.spaced = yes
     @body.expressions.unshift new Extends lname, @parent if @parent
     @body.expressions.unshift @ctor unless @ctor instanceof Code
     @body.expressions.push lname
@@ -1168,7 +1176,7 @@ exports.Assign = class Assign extends Base
         to = +to.compile(o) - +fromRef
         to += 1 unless exclusive
       else
-        to = to.compile(o) + ' - ' + fromRef
+        to = to.compile(o, LEVEL_ACCESS) + ' - ' + fromRef
         to += ' + 1' unless exclusive
     else
       to = "9e9"
@@ -1186,7 +1194,7 @@ exports.Code = class Code extends Base
     @params  = params or []
     @body    = body or new Block
     @bound   = tag is 'boundfunc'
-    @context = 'this' if @bound
+    @context = '_this' if @bound
 
   children: ['params', 'body']
 
@@ -1201,7 +1209,7 @@ exports.Code = class Code extends Base
   # a closure.
   compileNode: (o) ->
     o.scope         = new Scope o.scope, @body, this
-    o.scope.shared  = del o, 'sharedScope'
+    o.scope.shared  = del(o, 'sharedScope')
     o.indent        += TAB
     delete o.bare
     vars   = []
@@ -1228,6 +1236,11 @@ exports.Code = class Code extends Base
     @body.expressions.unshift exprs... if exprs.length
     o.scope.parameter vars[i] = v.compile o for v, i in vars unless splats
     @body.makeReturn() unless wasEmpty or @noReturn
+    if @bound
+      if o.scope.parent.method?.bound
+        @bound = o.scope.parent.method.context
+      else
+        o.scope.parent.assign '_this', 'this'
     idt   = o.indent
     code  = 'function'
     code  += ' ' + @name if @ctor
@@ -1235,7 +1248,6 @@ exports.Code = class Code extends Base
     code  += "\n#{ @body.compileWithDeclarations o }\n#{@tab}" unless @body.isEmpty()
     code  += '}'
     return @tab + code if @ctor
-    return utility('bind') + "(#{code}, #{@context})" if @bound
     if @front or (o.level >= LEVEL_ACCESS) then "(#{code})" else code
 
   # Short-circuit `traverseChildren` method to prevent it from crossing scope boundaries
@@ -1478,9 +1490,11 @@ exports.Op = class Op extends Base
   # Compile a unary **Op**.
   compileUnary: (o) ->
     parts = [op = @operator]
+    plusMinus = op in ['+', '-']
     parts.push ' ' if op in ['new', 'typeof', 'delete'] or
-                      op in ['+', '-'] and @first instanceof Op and @first.operator is op
-    @first = new Parens @first if op is 'new' and @first.isStatement o
+                      plusMinus and @first instanceof Op and @first.operator is op
+    if (plusMinus && @first instanceof Op) or (op is 'new' and @first.isStatement o)
+      @first = new Parens @first 
     parts.push @first.compile o, LEVEL_OP
     parts.reverse() if @flip
     parts.join ''
@@ -1506,11 +1520,11 @@ exports.In = class In extends Base
     @compileLoopTest o
 
   compileOrTest: (o) ->
+    return "#{!!@negated}" if @array.base.objects.length is 0
     [sub, ref] = @object.cache o, LEVEL_OP
     [cmp, cnj] = if @negated then [' !== ', ' && '] else [' === ', ' || ']
     tests = for item, i in @array.base.objects
       (if i then ref else sub) + cmp + item.compile o, LEVEL_ACCESS
-    return 'false' if tests.length is 0
     tests = tests.join cnj
     if o.level < LEVEL_OP then tests else "(#{tests})"
 
@@ -1905,14 +1919,7 @@ UTILITIES =
   # Correctly set up a prototype chain for inheritance, including a reference
   # to the superclass for `super()` calls, and copies of any static properties.
   extends: -> """
-    function(child, parent) {
-      for (var key in parent) { if (#{utility 'hasProp'}.call(parent, key)) child[key] = parent[key]; }
-      function ctor() { this.constructor = child; }
-      ctor.prototype = parent.prototype;
-      child.prototype = new ctor;
-      child.__super__ = parent.prototype;
-      return child;
-    }
+    function(child, parent) { for (var key in parent) { if (#{utility 'hasProp'}.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; }
   """
 
   # Create a function bound to the current value of "this".
@@ -1922,12 +1929,7 @@ UTILITIES =
 
   # Discover if an item is in an array.
   indexOf: -> """
-    Array.prototype.indexOf || function(item) {
-      for (var i = 0, l = this.length; i < l; i++) {
-        if (#{utility 'hasProp'}.call(this, i) && this[i] === item) return i;
-      }
-      return -1;
-    }
+    Array.prototype.indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (#{utility 'hasProp'}.call(this, i) && this[i] === item) return i; } return -1; }
   """
 
   # Shortcuts to speed up the lookup time for native functions.
