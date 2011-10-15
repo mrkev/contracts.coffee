@@ -107,10 +107,8 @@ Here's what you need to actually start working with contracts.coffee.
 First, grab the source from github.
 
 {% highlight bash %}
-git clone git://github.com/disnet/contracts.coffee.git
+git clone --recursive git://github.com/disnet/contracts.coffee.git
 cd contracts.coffee
-git submodule init
-git submodule update
 {% endhighlight %}
 
 Install [Node.js](https://github.com/joyent/node/wiki/Installation)
