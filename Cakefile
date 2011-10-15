@@ -5,10 +5,16 @@ CoffeeScript  = require './lib/coffee-script'
 {spawn, exec} = require 'child_process'
 
 # ANSI Terminal Colors.
-bold  = '\033[0;1m'
-red   = '\033[0;31m'
-green = '\033[0;32m'
-reset = '\033[0m'
+enableColors = no
+unless process.platform is 'win32'
+  enableColors = not process.env.NODE_DISABLE_COLORS
+
+bold = red = green = reset = ''
+if enableColors
+  bold  = '\033[0;1m'
+  red   = '\033[0;31m'
+  green = '\033[0;32m'
+  reset = '\033[0m'
 
 # Built file header.
 header = """
@@ -61,7 +67,7 @@ task 'install', 'install CoffeeScript into /usr/local (or --prefix)', (options) 
 
 
 task 'build', 'build the CoffeeScript language from source', build = (cb) ->
-  lib = "${base}/lib/coffee-script"
+  lib = "lib/coffee-script"
   files = fs.readdirSync 'src'
   files = ('src/' + file for file in files when file.match(/\.coffee$/))
   run ['-c', '-o', 'lib/coffee-script'].concat(files), cb
@@ -70,12 +76,10 @@ task 'build', 'build the CoffeeScript language from source', build = (cb) ->
   contractFiles = ['stacktrace.js', 'contracts.js', 'autoload.js']
   loadContracts = (fs.readFileSync contractPath + file for file in contractFiles).join "\n"
 
-  fs.writeFile '${lib}/loadContracts.js', loadContracts
+  fs.writeFileSync "#{lib}/loadContracts.js", loadContracts
 
 buildWebtests = ->  
-  files = fs.readdirSync 'test/webtest'
-  files = ('test/webtest/' + file for file in files when file.match(/\.coffee$/))
-  run ['-c', '-C', '-o', 'test/webtest'].concat(files)
+  run ['-c', '-C', '-o', 'test/webtest', 'test/contracts.coffee']
 
 task 'build:webtests', 'compiles the contracts testing files', ->
   buildWebtests()
@@ -236,7 +240,7 @@ runTests = (CoffeeScript) ->
     currentFile = filename = path.join 'test', file
     code = fs.readFileSync filename
     try
-      CoffeeScript.run code.toString(), {filename}
+      CoffeeScript.run code.toString(), {filename, contracts: true, withLib: true}
     catch error
       failures.push {filename, error}
   return !failures.length
