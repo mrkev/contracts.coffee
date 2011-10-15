@@ -252,7 +252,8 @@ exports.Block = class Block extends Base
     o.level  = LEVEL_TOP
     @spaced  = yes
     code     = @compileWithDeclarations o
-    cpath = path.join path.dirname(fs.realpathSync(__filename)), 'loadContracts.js'
+    if path?
+      cpath = path.join path.dirname(fs.realpathSync(__filename)), 'loadContracts.js'
     loadContracts = if o.contracts and o.withLib then (fs.readFileSync cpath, 'utf8') else ''
 
     if o.bare then code else "(function() {#{loadContracts}\n#{code}\n}).call(this);\n"
