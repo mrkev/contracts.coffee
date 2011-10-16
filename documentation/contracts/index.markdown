@@ -12,7 +12,6 @@ defensive code.
 You can think of contracts as `assert` on
 steroids.
 
-<span id="basics"></span>
 Basics
 ------
 
@@ -43,7 +42,7 @@ actual: "foo"
 Value guarded in: id_module:42
   -- blame is on: client_code:104
 Parent contracts:
-(Num) -> Num
+(Num) -&gt; Num
 </pre>
 
 You can also put contracts on objects.
@@ -178,7 +177,6 @@ production build with contracts disabled that can run in any browser
 or JavaScript environment and a development/testing build with
 contracts enabled that you run in Firefox to help track down bugs.
 
-<span id="resources"></span>
 Resources
 ---------
 
@@ -220,7 +218,7 @@ Contract violation: expected &lt;Num&gt;, actual: "foo"
 Value guarded in: Library:3
   -- blame is on: Main:2
 Parent contracts:
-(Num) -> Num 
+(Num) -&gt; Num 
 </pre>
 
 The `use()` function does the work of dynamically setting up the right
@@ -270,7 +268,7 @@ Contract violation: expected &lt;Num&gt;, actual: "42"
 Value guarded in: CheckingLibrary:2
   -- blame is on: Main:3
 Parent contracts:
-(Num) -> Bool
+(Num) -&gt; Bool
 </pre>
 
 Here we have a library that does some simple form validation.
@@ -307,7 +305,6 @@ In addition to the `Num` contract that checks for numbers, we
 also have `Str`, `Bool`, `Null`, `Undefined`, `Nat`, `Pos`, `Neg`,
 `Any` (everything is ok), and `None` (nothing is ok).
 
-<span id="functions"></span>
 Functions
 ---------
 
@@ -389,7 +386,6 @@ o.f()
 
 Checks that `this` matches the given object contract.
 
-<span id="objects"></span>
 Objects
 -------
 
@@ -479,7 +475,6 @@ o =
 The invariant is checked at contract application and whenever there is a possibility of `o`
 mutating (on property sets and delete).
 
-<span id="arrays"></span>
 Arrays
 ------
 

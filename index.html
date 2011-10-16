@@ -1,9 +1,11 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset='utf-8'>
+
   <title>disnet/contracts.coffee @ GitHub</title>
-  <link href='http://fonts.googleapis.com/css?family=Lobster|Gentium+Book+Basic' rel='stylesheet' type='text/css'>
+  <link href='http://fonts.googleapis.com/css?family=Gentium+Book+Basic' rel='stylesheet' type='text/css'>
+  <link href='http://fonts.googleapis.com/css?family=Lobster' rel='stylesheet' type='text/css'>
 
   <link href='documentation/contracts/styles/default.css' rel='stylesheet' type='text/css'>
   <link href='documentation/contracts/styles/main.css' rel='stylesheet' type='text/css'>
@@ -50,7 +52,7 @@
       <li>
         <div style="position: absolute; left: 35px">
         <a href="http://www.mozilla.org/">
-          <img style="height: 27px" src="documentation/images/moz-research.png">
+          <img alt="Mozilla Research" style="height: 27px" src="documentation/images/moz-research.png">
         </a>
         </div>
       </li>
@@ -103,7 +105,7 @@ id "foo"</textarea>
 <p>Contracts let you clearly&#8212;even beautifully&#8212;express how your code behaves, and free you from writing tons of boilerplate, defensive code.</p>
 
 <p>You can think of contracts as <code>assert</code> on steroids.</p>
-<span id='basics' />
+
 <h2 id='basics'>Basics</h2>
 
 <p>Here&#8217;s a simple example of a contract on a function:</p>
@@ -124,7 +126,7 @@ actual: "foo"
 Value guarded in: id_module:42
   -- blame is on: client_code:104
 Parent contracts:
-(Num) -> Num
+(Num) -&gt; Num
 </pre>
 <p>You can also put contracts on objects.</p>
 <div class='highlight'><pre><code class='coffeescript'><span class='nx'>person</span> <span class='o'>::</span>
@@ -210,7 +212,7 @@ coffee -C MyContractedScript.coffee
 <p><strong>Update:</strong> we now have preliminary support for V8 and node.js. Instructions for getting this working are <a href='http://disnetdev.com/blog/2011/09/20/Contracts.coffee-Works-In-Node.js/'>here</a></p>
 
 <p>Note that since leaving off the <code>-C</code> flag will generate JavaScript code with absolutely no trace of contracts (the code is exactly what vanilla CoffeeScript would generate), you can easily set up a production build with contracts disabled that can run in any browser or JavaScript environment and a development/testing build with contracts enabled that you run in Firefox to help track down bugs.</p>
-<span id='resources' />
+
 <h2 id='resources'>Resources</h2>
 
 <ul>
@@ -239,7 +241,7 @@ Contract violation: expected &lt;Num&gt;, actual: "foo"
 Value guarded in: Library:3
   -- blame is on: Main:2
 Parent contracts:
-(Num) -> Num 
+(Num) -&gt; Num 
 </pre>
 <p>The <code>use()</code> function does the work of dynamically setting up the right file names to display in error messages.</p>
 
@@ -274,7 +276,7 @@ Contract violation: expected &lt;Num&gt;, actual: "42"
 Value guarded in: CheckingLibrary:2
   -- blame is on: Main:3
 Parent contracts:
-(Num) -> Bool
+(Num) -&gt; Bool
 </pre>
 <p>Here we have a library that does some simple form validation. The <code>checkAge</code> library function checks ages to be within a reasonable range for humans and the <code>validateForm</code> function takes a field name and a checker function and checks the field&#8217;s value with the supplied checker.</p>
 
@@ -289,7 +291,7 @@ Parent contracts:
 <h2 id='simple_contracts'>Simple Contracts</h2>
 
 <p>In addition to the <code>Num</code> contract that checks for numbers, we also have <code>Str</code>, <code>Bool</code>, <code>Null</code>, <code>Undefined</code>, <code>Nat</code>, <code>Pos</code>, <code>Neg</code>, <code>Any</code> (everything is ok), and <code>None</code> (nothing is ok).</p>
-<span id='functions' />
+
 <h2 id='functions'>Functions</h2>
 
 <p>Basic functions:</p>
@@ -348,7 +350,7 @@ Parent contracts:
 </code></pre>
 </div>
 <p>Checks that <code>this</code> matches the given object contract.</p>
-<span id='objects' />
+
 <h2 id='objects'>Objects</h2>
 
 <p>Simple properties:</p>
@@ -419,7 +421,7 @@ Parent contracts:
 </code></pre>
 </div>
 <p>The invariant is checked at contract application and whenever there is a possibility of <code>o</code> mutating (on property sets and delete).</p>
-<span id='arrays' />
+
 <h2 id='arrays'>Arrays</h2>
 
 <p>Basic arrays:</p>
