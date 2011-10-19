@@ -116,6 +116,17 @@ test "function, dependent", ->
 
   throws (-> bad_inc "foo", 42), "violates multi arg dependent contract"
 
+  neg :: (Bool or Num) -> !(r) -> typeof r is typeof $1
+  neg = (x) ->
+    if typeof x is 'number'
+      0 - x
+    else
+      !x
+  neg = neg.use()
+
+  eq (neg 100), -100
+  eq (neg true), false
+
 test "function, this contract", ->
 	# v8 function proxies don't currently set `this` right
 	if inBrowser? 
