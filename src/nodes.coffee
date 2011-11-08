@@ -5,6 +5,8 @@
 
 {Scope} = require './scope'
 {RESERVED} = require './lexer'
+fs = require 'fs'
+path = require 'path'
 
 # Import the helpers we plan to use.
 {compact, flatten, extend, merge, del, starts, ends, last} = require './helpers'
@@ -248,9 +250,14 @@ exports.Block = class Block extends Base
     o.level  = LEVEL_TOP
     @spaced  = yes
     code     = @compileWithDeclarations o
+
+    vpath = path.join path.dirname(fs.realpathSync(__filename)), 'loadVirt.js'
+    loadVirt = if o.virtualize then (fs.readFileSync vpath, 'utf8') else ''
+
+
     # the `1` below accounts for `arguments`, always "in scope"
     return code if o.bare or o.scope.variables.length <= 1
-    "(function() {\n#{code}\n}).call(this);\n"
+    "(function() {\n#{loadVirt}\n#{code}\n}).call(this);\n"
 
   # Compile the expressions body for the contents of a function, with
   # declarations of all inner variables pushed up to the top.
@@ -1353,8 +1360,12 @@ exports.Op = class Op extends Base
     return @compileUnary     o if @isUnary()
     return @compileChain     o if isChain
     return @compileExistence o if @operator is '?'
-    code = @first.compile(o, LEVEL_OP) + ' ' + @operator + ' ' +
-           @second.compile(o, LEVEL_OP)
+    cfirst = @first.compile(o, LEVEL_OP)
+    csecond = @second.compile(o, LEVEL_OP)
+    if o.virtualize
+      code = "Proxy.dispatchBinary('#{@operator}', #{cfirst}, #{csecond}, function() { return #{cfirst} #{@operator} #{csecond};})"
+    else
+      code = cfirst + ' ' + @operator + ' ' + csecond
     if o.level <= LEVEL_OP then code else "(#{code})"
 
   # Mimic Python's chained comparisons when multiple comparison operators are
@@ -1385,9 +1396,14 @@ exports.Op = class Op extends Base
                       plusMinus and @first instanceof Op and @first.operator is op
     if (plusMinus && @first instanceof Op) or (op is 'new' and @first.isStatement o)
       @first = new Parens @first 
-    parts.push @first.compile o, LEVEL_OP
+    cfirst = @first.compile o, LEVEL_OP
+    parts.push cfirst 
     parts.reverse() if @flip
-    parts.join ''
+    if o.virtualize
+      "Proxy.dispatchUnary('#{op}', #{cfirst}, function() { return #{parts.join ''}; })"
+    else
+      parts.join ''
+
 
   toString: (idt) ->
     super idt, @constructor.name + ' ' + @operator
@@ -1729,6 +1745,8 @@ exports.If = class If extends Base
       return new If(@condition.invert(), @elseBodyNode(), type: 'if').compile o
 
     cond     = @condition.compile o, LEVEL_PAREN
+    if o.virtualize
+      cond = "Proxy.dispatchTest(#{cond})"
     o.indent += TAB
     body     = @ensureBlock(@body)
     bodyc    = body.compile o
@@ -1754,6 +1772,8 @@ exports.If = class If extends Base
   # Compile the `If` as a conditional operator.
   compileExpression: (o) ->
     cond = @condition.compile o, LEVEL_COND
+    if o.virtualize
+      cond = "Proxy.dispatchTest(#{cond})"
     body = @bodyNode().compile o, LEVEL_LIST
     alt  = if @elseBodyNode() then @elseBodyNode().compile(o, LEVEL_LIST) else 'void 0'
     code = "#{cond} ? #{body} : #{alt}"

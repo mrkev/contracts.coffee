@@ -43,7 +43,8 @@ SWITCHES = [
   ['-s', '--stdio',           'listen for and compile scripts over stdio']
   ['-t', '--tokens',          'print out the tokens that the lexer/rewriter produce']
   ['-v', '--version',         'display the version number']
-  ['-w', '--watch',           'watch scripts for changes and rerun commands']
+  ['-w', '--watch',           'watch scripts for changes and rerun commands'],
+  ['-V', '--virtualize',      'virtualize primitive operations']
 ]
 
 # Top-level objects shared by all the functions.
@@ -233,7 +234,7 @@ parseOptions = ->
   sources       = o.arguments
 
 # The compile-time options to pass to the CoffeeScript compiler.
-compileOptions = (filename) -> {filename, bare: opts.bare}
+compileOptions = (filename) -> {filename, bare: opts.bare, virtualize: opts.virtualize}
 
 # Start up a new Node.js instance with the arguments in `--nodejs` passed to
 # the `node` binary, preserving the other options.
