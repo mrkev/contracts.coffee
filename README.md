@@ -5,7 +5,7 @@ This is an experiment to add virtual values (aka Value Proxies) to CoffeeScript.
 
 Proxies are a meta-object protocol that allow you to add your own code to intercept and handle operations on objects and functions like property gets and function calls. Virtual values extend the operations Proxies allow you to intercept to include operations on primitives (like `+`, `*`, and if statements).
 
-This means you can easily add language extensions like complex numbers or units of measure.
+This means you can easily add language extensions like [complex numbers](https://github.com/disnet/contracts.coffee/blob/virtual-values/extensions/complex.coffee) or [units of measure](https://github.com/disnet/contracts.coffee/blob/virtual-values/extensions/units.coffee).
 
 For more information about the theory behind virtual values see the OOPSLA [paper](http://disnetdev.com/papers/oopsla054-austin.pdf) and [slides](http://disnetdev.com/talks/virtual_values.pdf).
 
