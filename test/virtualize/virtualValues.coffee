@@ -1,6 +1,7 @@
 complex = require '../../lib/extensions/complex'
 units = require '../../lib/extensions/units'
 
+# simple identity proxy on numbers
 makeVNum = (n) ->
   unaryOps =
     '-': (v) -> -v
@@ -19,6 +20,7 @@ makeVNum = (n) ->
       throw "Not defined"
   Proxy.create h, null, {}
         
+# simple identity proxy on booleans
 makeVBool = (b) ->
   h =
     value: b

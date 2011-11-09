@@ -1,3 +1,4 @@
+# unique value used to recognize other unit proxies
 secret = {}
 
 unaryOps =
@@ -12,21 +13,24 @@ binOps =
 # exports.makeComplex :: (Num, Num) -> Complex
 exports.makeComplex = makeComplex = (r, i) ->
   h =
-    real: r
+    real: r   # store the real and imaginary parts in the handler
     imag: i
     unary: (o) -> unaryOps[o] r, i
     left: (o, right) ->
-      h = Proxy.unProxy secret, right
+      # see if the right value is also a complex number
+      h = Proxy.unProxy secret, right  
       if h
+        # right is a complex number so pull out its real and imaginary parts
         binOps[o] r, i, h.real, h.imag
       else
+        # right is not a complex number so pass 0 as the imaginary part
         binOps[o] r, i, y, 0
     right: (o, left) ->
+      # left is never a complex number
       binOps[o] left, 0, r, i
-    test: -> true
+    # all complex numbers are non-false
+    test: -> true     
     getPropertyDescriptor: (name) -> undefined
-    # todo: need the identity forms. perhaps a good time to 
-    # look into direct proxy?
   Proxy.create h, null, secret
 
 # exports.isComplex :: (Any) -> Bool

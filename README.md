@@ -41,6 +41,47 @@ Becomes
 
 The dispatch* functions all check to see if their arguments are proxies and if so delegate to the appropriate traps defined on the proxy's handler otherwise they defer to the standard operation (e.g. `(-> not x)`, the function is used to lazily execute the operation only if it actually is needed).
 
-When creating an extension there are four new trap in addition to the traps supported by Proxies: `unary` (for handling unary operations), `left` (for handling binary operations where the left operand is a proxy), `right` (for handling binary operations where the right operand is a proxy), and `test` (for handling `if` statements where the conditional is a proxy). Note that if both operands of a binary operation are proxies then `left` is trapped.
+When creating an extension there are four new trap in addition to the traps supported by Proxies: 
 
-For examples of how extensions can be written see the [complex number](ttps://github.com/disnet/contracts.coffee/blob/virtual-values/extensions/complex.coffee) and [units of measure](https://github.com/disnet/contracts.coffee/blob/virtual-values/extensions/units.coffee) extensions.
+  * `unary` for handling unary operations
+  * `left` for handling binary operations where the left operand is a proxy
+  * `right` for handling binary operations where the right operand is a proxy
+  * `test` for handling `if` statements where the conditional is a proxy
+
+If both operands of a binary operation are proxies then `left` is trapped.
+
+So, if you wanted to make a simple virtual number that behaved just like normal numbers but also logged each addition and multiplication you could define one like this:
+
+    makeLoggingNumber = (n) ->
+      handler = 
+        value: n           # store the original number in the handler for later use
+        unary: (op)        -> unaryOps[op] @.value
+        left:  (op, right) -> binaryOps[op] @.value, right
+        right: (op, left)  -> binaryOps[op] right, @.value
+      Proxy.create handler, null, {}
+
+    unaryOps =
+      '-': (v) ->
+        console.log "Negating: #{v}"
+        -v
+
+    binaryOps =
+      '+': (a, b) ->
+        console.log "Adding: #{a} and #{b}"
+        a + b
+      '-': (a, b) ->
+        console.log "Subtracting: #{a} and #{b}"
+        a - b
+      '*': (a, b) ->
+        console.log "Multiplying: #{a} and #{b}"
+        a * b
+      '/': (a, b) ->
+        console.log "Dividing: #{a} and #{b}"
+        a / b
+
+Now to create a logging number:
+
+    log42 = makeLoggingNumber 42
+    log42 + 24  # prints out "Adding 42 and 24"
+
+For more interesting and useful examples of how extensions can be written see the [complex number](ttps://github.com/disnet/contracts.coffee/blob/virtual-values/extensions/complex.coffee) and [units of measure](https://github.com/disnet/contracts.coffee/blob/virtual-values/extensions/units.coffee) extensions. See the [tests](https://github.com/disnet/contracts.coffee/blob/virtual-values/test/virtualize/virtualValues.coffee) for how they are used. 
