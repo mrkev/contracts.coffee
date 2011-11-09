@@ -84,4 +84,4 @@ Now to create a logging number:
     log42 = makeLoggingNumber 42
     log42 + 24  # prints out "Adding 42 and 24"
 
-For more interesting and useful examples of how extensions can be written see the [complex number](ttps://github.com/disnet/contracts.coffee/blob/virtual-values/extensions/complex.coffee) and [units of measure](https://github.com/disnet/contracts.coffee/blob/virtual-values/extensions/units.coffee) extensions. See the [tests](https://github.com/disnet/contracts.coffee/blob/virtual-values/test/virtualize/virtualValues.coffee) for how they are used. 
+For more interesting and useful examples of how extensions can be written see the [complex number](https://github.com/disnet/contracts.coffee/blob/virtual-values/extensions/complex.coffee) and [units of measure](https://github.com/disnet/contracts.coffee/blob/virtual-values/extensions/units.coffee) extensions. See the [tests](https://github.com/disnet/contracts.coffee/blob/virtual-values/test/virtualize/virtualValues.coffee) for how they are used. 
