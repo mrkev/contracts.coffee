@@ -1,5 +1,10 @@
 complex = require '../../lib/extensions/complex'
 units = require '../../lib/extensions/units'
+mv = require '../../lib/extensions/multiple-values'
+
+# note, don't use built in equality testing functions (eq, equals, etc.) since
+# these will not be trapped (Cakefile can't be run through the virtualization process
+# and the node builtins as well). Do the normal tests and then ok the resulting bool.
 
 # simple identity proxy on numbers
 makeVNum = (n) ->
@@ -35,25 +40,25 @@ test "virtual numbers, operations are identity", ->
   q = makeVNum 20
 
   # unary operations
-  eq (-p), -10
+  ok -p is -10
 
   # binary left operations
-  eq (p - 2), 8
-  eq (p + 2), 12
-  eq (p / 2), 5
-  eq (p * 2), 20
+  ok (p - 2) is 8
+  ok (p + 2) is 12
+  ok (p / 2) is 5
+  ok (p * 2) is 20
 
   # binary right operations
-  eq (20 + p), 30
-  eq (20 - p), 10
-  eq (20 / p), 2
-  eq (20 * p), 200
+  ok (20 + p) is 30
+  ok (20 - p) is 10
+  ok (20 / p) is 2
+  ok (20 * p) is 200
 
   # binary operations, both proxy
-  eq (q + p), 30
-  eq (q - p), 10
-  eq (q / p), 2
-  eq (q * p), 200
+  ok (q + p) is 30
+  ok (q - p) is 10
+  ok (q / p) is 2
+  ok (q * p) is 200
 
 test "virtual booleans, various forms of if", ->
   bt = makeVBool true
@@ -78,6 +83,22 @@ test "complex numbers", ->
   z = 7 + 2 * complex.i
 
   ok (x + y) is z
+
+test "multiple values basics", ->
+  v = mv.values 2,3
+  [x, y] = mv.bind v
+
+  ok v is 2
+  ok x is 2
+  ok y is 3
+
+test "multiple values with functions", ->
+  polar = (x, y) ->
+    mv.values (Math.sqrt (x * x) + (y * y)), (Math.atan2 y, x)
+  
+  [r, theta] = mv.bind (polar 3.0, 4.0)
+  ok r is 5.0
+  ok theta is 0.9272952180016122
 
 test "units extension", ->
   meter = units.makeUnit 'meter'
