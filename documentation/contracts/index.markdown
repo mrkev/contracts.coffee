@@ -103,18 +103,11 @@ Quick Start
 
 Here's what you need to actually start working with contracts.coffee.
 
-First, grab the source from github.
+First, if you don't already have them, install [Node.js](https://github.com/joyent/node/wiki/Installation)
+and [npm](http://npmjs.org/). Then install contracts.coffee using npm:
 
 {% highlight bash %}
-git clone --recursive git://github.com/disnet/contracts.coffee.git
-cd contracts.coffee
-{% endhighlight %}
-
-Install [Node.js](https://github.com/joyent/node/wiki/Installation)
-and then contracts.coffee.
-
-{% highlight bash %}
-sudo bin/cake install
+npm install -g contracts.coffee
 {% endhighlight %}
 
 Now, compile some coffee with contracts!
@@ -141,10 +134,18 @@ something like:
 ...
 {% endhighlight %}
 
+Alternately, you can compile with the contract library concatenated into the generated
+JavaScript source by using the `--withlib` flag:
+
+{% highlight bash %}
+coffee -cC --withlib MyContractedScript.coffee
+{% endhighlight %}
+
 Note that if you have an existing install of CoffeeScript,
 installing contracts.coffee will replace it. If you don't want to give
-up the old CoffeeScript compiler you can just run contracts.coffee
-from its own directory:
+up the old CoffeeScript compiler you can grab the source from 
+[github](https://github.com/disnet/contracts.coffee) and 
+just run contracts.coffee from its own directory:
 
 {% highlight bash %}
 bin/coffee -cC MyContractedScript.coffee
@@ -153,22 +154,18 @@ bin/coffee -cC MyContractedScript.coffee
 And finally, note that contracts.coffee requires some pretty new
 features of JavaScript to get its job done (in particular
 [Proxies](https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Proxy))
-so it currently only works on Firefox 4+. Support for other JavaScript
-engines is coming soon.
+so it currently only works on Firefox 4+ and Node.js 0.6.0+ 
+(Proxy support is in V8 but it hasn't worked it way into Chrome just yet). 
 
-This means that if you attempt to run your contracted CoffeeScript
-under node/V8:
+When using node you will need to supply two command line flags to enable
+Proxies (`--harmony_proxies`) and WeakMaps (`--harmony-weakmaps`). If you use the
+`coffee` or `cake` scripts these flags will be enabled automatically for you, otherwise
+the full process looks like:
 
 {% highlight bash %}
-# note the -c flag is missing
-coffee -C MyContractedScript.coffee
-# Compile error!!!
+coffee -cC --withlib script.coffee
+node --harmony_proxies --harmony-weakmaps script.js
 {% endhighlight %}
-
-You will get a bunch of errors. So just compile to JavaScript and run
-it in Firefox for now.
-
-**Update:** we now have preliminary support for V8 and node.js. Instructions for getting this working are [here](http://disnetdev.com/blog/2011/09/20/Contracts.coffee-Works-In-Node.js/)
 
 Note that since leaving off the `-C` flag will generate JavaScript
 code with absolutely no trace of contracts (the code is exactly what

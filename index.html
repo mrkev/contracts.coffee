@@ -171,13 +171,8 @@ Parent contracts:
 
 <p>Here&#8217;s what you need to actually start working with contracts.coffee.</p>
 
-<p>First, grab the source from github.</p>
-<div class='highlight'><pre><code class='bash'>git clone --recursive git://github.com/disnet/contracts.coffee.git
-<span class='nb'>cd </span>contracts.coffee
-</code></pre>
-</div>
-<p>Install <a href='https://github.com/joyent/node/wiki/Installation'>Node.js</a> and then contracts.coffee.</p>
-<div class='highlight'><pre><code class='bash'>sudo bin/cake install
+<p>First, if you don&#8217;t already have them, install <a href='https://github.com/joyent/node/wiki/Installation'>Node.js</a> and <a href='http://npmjs.org/'>npm</a>. Then install contracts.coffee using npm:</p>
+<div class='highlight'><pre><code class='bash'>npm install -g contracts.coffee
 </code></pre>
 </div>
 <p>Now, compile some coffee with contracts!</p>
@@ -195,22 +190,21 @@ Parent contracts:
 ...
 </code></pre>
 </div>
-<p>Note that if you have an existing install of CoffeeScript, installing contracts.coffee will replace it. If you don&#8217;t want to give up the old CoffeeScript compiler you can just run contracts.coffee from its own directory:</p>
+<p>Alternately, you can compile with the contract library concatenated into the generated JavaScript source by using the <code>--withlib</code> flag:</p>
+<div class='highlight'><pre><code class='bash'>coffee -cC --withlib MyContractedScript.coffee
+</code></pre>
+</div>
+<p>Note that if you have an existing install of CoffeeScript, installing contracts.coffee will replace it. If you don&#8217;t want to give up the old CoffeeScript compiler you can grab the source from <a href='https://github.com/disnet/contracts.coffee'>github</a> and just run contracts.coffee from its own directory:</p>
 <div class='highlight'><pre><code class='bash'>bin/coffee -cC MyContractedScript.coffee
 </code></pre>
 </div>
-<p>And finally, note that contracts.coffee requires some pretty new features of JavaScript to get its job done (in particular <a href='https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Proxy'>Proxies</a>) so it currently only works on Firefox 4+. Support for other JavaScript engines is coming soon.</p>
+<p>And finally, note that contracts.coffee requires some pretty new features of JavaScript to get its job done (in particular <a href='https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Proxy'>Proxies</a>) so it currently only works on Firefox 4+ and Node.js 0.6.0+ (Proxy support is in V8 but it hasn&#8217;t worked it way into Chrome just yet).</p>
 
-<p>This means that if you attempt to run your contracted CoffeeScript under node/V8:</p>
-<div class='highlight'><pre><code class='bash'><span class='c'># note the -c flag is missing</span>
-coffee -C MyContractedScript.coffee
-<span class='c'># Compile error!!!</span>
+<p>When using node you will need to supply two command line flags to enable Proxies (<code>--harmony_proxies</code>) and WeakMaps (<code>--harmony-weakmaps</code>). If you use the <code>coffee</code> or <code>cake</code> scripts these flags will be enabled automatically for you, otherwise the full process looks like:</p>
+<div class='highlight'><pre><code class='bash'>coffee -cC --withlib script.coffee
+node --harmony_proxies --harmony-weakmaps script.js
 </code></pre>
 </div>
-<p>You will get a bunch of errors. So just compile to JavaScript and run it in Firefox for now.</p>
-
-<p><strong>Update:</strong> we now have preliminary support for V8 and node.js. Instructions for getting this working are <a href='http://disnetdev.com/blog/2011/09/20/Contracts.coffee-Works-In-Node.js/'>here</a></p>
-
 <p>Note that since leaving off the <code>-C</code> flag will generate JavaScript code with absolutely no trace of contracts (the code is exactly what vanilla CoffeeScript would generate), you can easily set up a production build with contracts disabled that can run in any browser or JavaScript environment and a development/testing build with contracts enabled that you run in Firefox to help track down bugs.</p>
 
 <h2 id='resources'>Resources</h2>
