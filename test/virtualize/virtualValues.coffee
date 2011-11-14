@@ -1,6 +1,7 @@
-complex = require '../../lib/extensions/complex'
-units = require '../../lib/extensions/units'
-mv = require '../../lib/extensions/multiple-values'
+{i} = require '../../lib/extensions/complex'
+{makeUnit} = require '../../lib/extensions/units'
+{values, bind} = require '../../lib/extensions/multiple-values'
+{defgeneric, defmethod} = require '../../lib/extensions/generic-functions'
 
 # note, don't use built in equality testing functions (eq, equals, etc.) since
 # these will not be trapped (Cakefile can't be run through the virtualization process
@@ -78,30 +79,41 @@ test "virtual booleans, various forms of if", ->
   x = if bf then fail "should not get the true branch" else ok true
 
 test "complex numbers", ->
-  x = 4 + 1 * complex.i
-  y = 3 + 1 * complex.i
-  z = 7 + 2 * complex.i
+  # x = 4 + 1 * i
+  # y = 3 + 1 * i
+  # z = 7 + 2 * i
 
-  ok (x + y) is z
+  # ok (x + y) is z
 
 test "multiple values basics", ->
-  v = mv.values 2,3
-  [x, y] = mv.bind v
+  # v = values 2,3
+  # [x, y] = bind v
 
-  ok v is 2
-  ok x is 2
-  ok y is 3
+  # ok v is 2
+  # ok x is 2
+  # ok y is 3
 
 test "multiple values with functions", ->
-  polar = (x, y) ->
-    mv.values (Math.sqrt (x * x) + (y * y)), (Math.atan2 y, x)
+  # polar = (x, y) ->
+  #   values (Math.sqrt (x * x) + (y * y)), (Math.atan2 y, x)
   
-  [r, theta] = mv.bind (polar 3.0, 4.0)
-  ok r is 5.0
-  ok theta is 0.9272952180016122
+  # ok (polar 3.0, 4.0) is 5.0
+  # [r, theta] = bind (polar 3.0, 4.0)
+  # ok r is 5.0
+  # ok theta is 0.9272952180016122
+
+test "generic functions", ->
+  keyInput = defgeneric
+  defmethod keyInput, ((keyName) -> key is "escape"), (keyName) ->
+    "quit!"
+  defmethod keyInput, ((keyName) -> key is "enter"), (keyName) ->
+    "do it!"  
+
+  ok (keyInput "escape") is "quit!"
+  ok (keyInput "enter") is "do it!"
 
 test "units extension", ->
-  meter = units.makeUnit 'meter'
-  second = units.makeUnit 'second'
-  g = 9.81 * meter / second / second
-  throws (-> g + 1)
+  # meter = makeUnit 'meter'
+  # second = makeUnit 'second'
+  # g = 9.81 * meter / second / second
+  # throws (-> g + 1)
