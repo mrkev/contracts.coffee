@@ -26,7 +26,6 @@ if not Proxy.__vvalues?
   Proxy.unProxy = (secret, proxy) ->
     # WeakMap.get will throw exception if we don't do this check
     return false if proxy isnt Object(proxy)
-    console.log proxy
     hs = proxyMap.get proxy
     [handler, s] = hs if hs?
     if s and s is secret
