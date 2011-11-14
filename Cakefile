@@ -233,6 +233,10 @@ runTests = (CoffeeScript) ->
       console.log "  #{error.source}" if error.source
     return
 
+  files = fs.readdirSync 'test/modules'
+  files = ('test/modules/' + file for file in files when file.match(/\.coffee$/))
+  run ['-c', '-C', '-o', 'test/modules/'].concat(files)
+
   # Run every test in the `test` folder, recording failures.
   files = fs.readdirSync 'test'
   for file in files when file.match /\.coffee$/i

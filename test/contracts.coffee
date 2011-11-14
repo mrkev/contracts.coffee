@@ -435,3 +435,10 @@ test "binary search tree example", ->
 	  bst.right.node = 0 # invariant is volated but no signal yet
 	  throws (-> findInBst bst, 100), "invariant is violated"
 	  throws (-> bst.node = 0) , "invariant is violated"
+
+test "using patched require in node", ->
+  if not inBrowser?
+    idmod = require './modules/id'
+
+    eq (idmod.id "foo"), "foo"
+    idmod.id 42

@@ -14,12 +14,9 @@
   }
 })();
 
-  var key, val, _ref;
 
-  _ref = require('./coffee-script');
-  for (key in _ref) {
-    val = _ref[key];
-    exports[key] = val;
-  }
+  exports.id = guard(fun([Str], Str, {}),function(x) {
+    return x;
+  });
 
 }).call(this);

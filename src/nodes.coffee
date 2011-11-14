@@ -255,8 +255,26 @@ exports.Block = class Block extends Base
     cpath = path.join path.dirname(fs.realpathSync(__filename)), 'loadContracts.js'
     loadContracts = if o.contracts and o.withLib then (fs.readFileSync cpath, 'utf8') else ''
 
+    patchRequire = """
+      (function() {
+        var old_require = require;
+        require = function(mod, filename) {
+          var key, m = old_require(mod);
+          for(key in m) {
+            if(typeof(m[key]) && m[key].hasOwnProperty('use')) {
+              m[key] = m[key].use(filename, mod);
+            }
+          }
+          return m;
+        };
+        for(var key in old_require) {
+          require[key] = old_require[key];
+        }
+      })();
+    """
+
     return code if o.bare or o.scope.variables.length <=1
-    "(function() {#{loadContracts}\n#{code}\n}).call(this);\n"
+    "(function() {#{patchRequire}\n#{loadContracts}\n#{code}\n}).call(this);\n"
 
   # Compile the expressions body for the contents of a function, with
   # declarations of all inner variables pushed up to the top.
@@ -662,6 +680,10 @@ exports.Call = class Call extends Base
     args = (arg.compile o, LEVEL_LIST for arg in args).join ', '
     if @isSuper
       @superReference(o) + ".call(this#{ args and ', ' + args })"
+    else if o.contracts and @variable?.base?.value is 'require'
+      # helping out the contract modules by passing along the filename to a patched require
+      # which will setup the client/server automatically
+      (if @isNew then 'new ' else '') + @variable.compile(o, LEVEL_ACCESS) + "(#{args}, '#{o.filename}')"
     else
       (if @isNew then 'new ' else '') + @variable.compile(o, LEVEL_ACCESS) + "(#{args})"
 
