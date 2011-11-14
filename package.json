@@ -17,7 +17,9 @@
   "main" : "./lib/coffee-script/coffee-script",
   "bin":          {
     "coffee":     "./bin/coffee",
-    "cake":       "./bin/cake"
+    "cake":       "./bin/cake",
+    "coffee-node":     "./bin/coffee-node",
+    "cake-node":       "./bin/cake-node"
   },
   "homepage":     "http://disnetdev.com/contracts.coffee/",
   "repository":   {
