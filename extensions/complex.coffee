@@ -10,8 +10,10 @@ binOps =
   '*': (r1, i1, r2, i2) -> makeComplex (r1 * r2 - i1 * i2), (i1 * r2 + r1 * i2)
   '===': (r1, i1, r2, i2) -> (r1 is r2) and (i1 is i2)
 
-# exports.makeComplex :: (Num, Num) -> Complex
-exports.makeComplex = makeComplex = (r, i) ->
+Complex = ?!(x) -> isComplex x
+
+makeComplex :: (Num, Num) -> Complex
+makeComplex = (r, i) ->
   h =
     real: r   # store the real and imaginary parts in the handler
     imag: i
@@ -32,8 +34,10 @@ exports.makeComplex = makeComplex = (r, i) ->
     test: -> true     
     getPropertyDescriptor: (name) -> undefined
   Proxy.create h, null, secret
+exports.makeComplex = makeComplex
+makeComplex = makeComplex.use "self"
 
-# exports.isComplex :: (Any) -> Bool
+exports.isComplex :: (Any) -> Bool
 exports.isComplex = isComplex = (x) -> if (Proxy.unProxy secret, x) then true else false
 
 # Complex

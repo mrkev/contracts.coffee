@@ -1,7 +1,9 @@
 # unique value used to recognize other unit proxies
 secret = {}
 
-# makeQuantity :: (Str, Num, Quantity) -> Quantity
+Quantity = ?!(x) -> if (typeof x is 'number' or Proxy.unProxy secret, x) then true else false
+
+makeQuantity :: (Str, Num, Quantity) -> Quantity
 makeQuantity = (u, i, n) ->
   h = Proxy.unProxy secret, n # see if the value passed in is also a unit proxy
   if i is 0                   # drop zero-ary unit
@@ -20,6 +22,7 @@ makeQuantity = (u, i, n) ->
       right: (o, l) -> rightOps[o] u, i, n, l
       test: -> n    # ignore uints in tests
     }, null, secret
+makeQuantity = makeQuantity.use "self"
 
 
 unaryOps = 
@@ -39,13 +42,14 @@ rightOps =
   '/': (u, i, n, l) -> makeQuantity u, (-i), (l / n)
   '=': (u, i, n, l) -> false
 
-# dropUnit :: (Str, Num, Quantity) -> Quantity
+dropUnit :: (Str, Num, Quantity) -> Quantity
 dropUnit = (u, i, n) ->
   h = Proxy.unProxy secret, n
   throw "bad units!" if not (h isnt false and h.unit is u and h.index is i)
   h.value
+dropUnit = dropUnit.use "self"
 
 # given a string to represent the unit will return a proxy
 # that represents one of that unit
-# exports.makeUnit :: (Str) -> Quantity
+exports.makeUnit :: (Str) -> Quantity
 exports.makeUnit = makeUnit = (u) -> makeQuantity u, 1, 1
