@@ -22,7 +22,7 @@ exports.defgeneric = defgeneric = ->
       # todo: don't throw, some kind of ordering on predicates?
       throw "multiple specializations match"
     else
-      res[0].call args
+      res[0].apply @, args
 
   construct = -> 
     throw "not defined"
