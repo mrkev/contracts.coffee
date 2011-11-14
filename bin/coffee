@@ -1,7 +1,4 @@
-#!/usr/bin/env node --harmony_proxies
+#!/bin/sh
 
-var path = require('path');
-var fs   = require('fs');
-var lib  = path.join(path.dirname(fs.realpathSync(__filename)), '../lib');
+exec node --harmony_proxies --harmony-weakmaps $(dirname $0)/coffee-node $@
 
-require(lib + '/coffee-script/command').run();
