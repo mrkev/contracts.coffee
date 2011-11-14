@@ -46,6 +46,7 @@ SWITCHES = [
   ['-w', '--watch',           'watch scripts for changes and rerun commands']
   ['-C', '--contracts',       'compile with support for contracts']
   ['-L', '--withlib',         'concatenate the contract library into the generated source']
+  ['-V', '--virtualize',      'virtualize primitive operations']
 ]
 
 # Top-level objects shared by all the functions.
@@ -243,7 +244,7 @@ parseOptions = ->
   sources       = o.arguments
 
 # The compile-time options to pass to the CoffeeScript compiler.
-compileOptions = (filename) -> {filename, bare: opts.bare, contracts: opts.contracts, withLib: opts.withlib}
+compileOptions = (filename) -> {filename, bare: opts.bare, contracts: opts.contracts, withLib: opts.withlib, virtualize: opts.virtualize}
 
 # Start up a new Node.js instance with the arguments in `--nodejs` passed to
 # the `node` binary, preserving the other options.

@@ -3,7 +3,7 @@
   require = function(mod, filename) {
     var key, m = old_require(mod);
     for(key in m) {
-      if(typeof(m[key]) && m[key].hasOwnProperty('use')) {
+      if(typeof(m[key]) && m[key].hasOwnProperty && m[key].hasOwnProperty('use')) {
         m[key] = m[key].use(filename, mod);
       }
     }
@@ -13,6 +13,7 @@
     require[key] = old_require[key];
   }
 })();
+
 
 
   exports.id = guard(fun([Str], Str, {}),function(x) {

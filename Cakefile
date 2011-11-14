@@ -30,6 +30,7 @@ header = """
 sources = [
   'coffee-script', 'grammar', 'helpers'
   'lexer', 'nodes', 'rewriter', 'scope'
+  'loadVirt'
 ].map (filename) -> "src/#{filename}.coffee"
 
 # Run a CoffeeScript through our node/coffee interpreter.
@@ -85,6 +86,12 @@ buildWebtests = ->
 
 task 'build:webtests', 'compiles the contracts testing files', ->
   buildWebtests()
+ 
+task 'build:extensions', 'build the virtual value extensions', (cb) ->
+  lib = "lib/extensions"
+  files = fs.readdirSync 'extensions'
+  files = ('extensions/' + file for file in files when file.match(/\.coffee$/))
+  run ['-c', '-V', '-o', 'lib/extensions'].concat(files), cb
 
 task 'build:full', 'rebuild the source twice, and run the tests', ->
   build ->
@@ -240,14 +247,20 @@ runTests = (CoffeeScript) ->
   run ['-c', '-C', '-o', 'test/modules/'].concat(files)
 
   # Run every test in the `test` folder, recording failures.
-  files = fs.readdirSync 'test'
-  for file in files when file.match /\.coffee$/i
-    currentFile = filename = path.join 'test', file
-    code = fs.readFileSync filename
-    try
-      CoffeeScript.run code.toString(), {filename, contracts: true, withLib: true}
-    catch error
-      failures.push {filename, error}
+  runfiles = (subpath, extraOp) ->
+    files = fs.readdirSync subpath
+    for file in files when file.match /\.coffee$/i
+      currentFile = filename = path.join subpath, file
+      code = fs.readFileSync filename
+      compileOps = {filename, contracts:true, withLib:true}
+      for op, val of extraOp
+        compileOps[op] = val
+      try
+        CoffeeScript.run code.toString(), compileOps 
+      catch error
+        failures.push {filename, error}
+  runfiles 'test', {}
+  runfiles "test/virtualize", virtualize:true
   return !failures.length
 
 
