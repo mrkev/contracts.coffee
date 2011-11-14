@@ -17,12 +17,12 @@ CoffeeScript   = require './coffee-script'
 helpers.extend CoffeeScript, new EventEmitter
 
 printLine = (line) -> process.stdout.write line + '\n'
-printWarn = (line) -> process.binding('stdio').writeError line + '\n'
+printWarn = (line) -> process.stderr.write line + '\n'
 
 # The help banner that is printed when `coffee` is called without arguments.
 BANNER = '''
   Usage: coffee [options] path/to/script.coffee
-  
+
   If called without options, `coffee` will run your script.
          '''
 
@@ -64,12 +64,15 @@ exports.run = ->
   return version()                       if opts.version
   loadRequires()                         if opts.require
   return require './repl'                if opts.interactive
+  if opts.watch and !fs.watch
+    printWarn "The --watch feature depends on Node v0.6.0+. You are running \
+#{process.version}."
   return compileStdio()                  if opts.stdio
   return compileScript null, sources[0]  if opts.eval
   return require './repl'                unless sources.length
   if opts.run
     opts.literals = sources.splice(1).concat opts.literals
-  process.ARGV = process.argv = process.argv.slice(0, 2).concat opts.literals
+  process.argv = process.argv.slice(0, 2).concat opts.literals
   process.argv[0] = 'coffee'
   process.execPath = require.main.filename
   compileScripts()
@@ -170,15 +173,27 @@ loadRequires = ->
   require req for req in opts.require
   module.filename = realFilename
 
-# Watch a source CoffeeScript file using `fs.watchFile`, recompiling it every
+# Watch a source CoffeeScript file using `fs.watch`, recompiling it every
 # time the file is updated. May be used in combination with other options,
 # such as `--lint` or `--print`.
 watch = (source, base) ->
-  fs.watchFile source, {persistent: true, interval: 500}, (curr, prev) ->
-    return if curr.size is prev.size and curr.mtime.getTime() is prev.mtime.getTime()
-    fs.readFile source, (err, code) ->
-      throw err if err
-      compileScript(source, code.toString(), base)
+  return unless fs.watch
+  fs.stat source, (err, prevStats)->
+    throw err if err
+    watcher = fs.watch source, callback = (event) ->
+      if event is 'rename'
+        watcher.close()
+        try  # if source no longer exists, never mind
+          watcher = fs.watch source, callback
+      else if event is 'change'
+        fs.stat source, (err, stats) ->
+          throw err if err
+          return if stats.size is prevStats.size and
+            stats.mtime.getTime() is prevStats.mtime.getTime()
+          prevStats = stats
+          fs.readFile source, (err, code) ->
+            throw err if err
+            compileScript(source, code.toString(), base)
 
 # Write out a JavaScript source file with the compiled code. By default, files
 # are written out in `cwd` as `.js` files with the same name, but the output
@@ -203,7 +218,7 @@ writeJs = (source, js, base) ->
 # any errors or warnings that arise.
 lint = (file, js) ->
   printIt = (buffer) -> printLine file + ':\t' + buffer.toString().trim()
-  conf = __dirname + '/../extras/jsl.conf'
+  conf = __dirname + '/../../extras/jsl.conf'
   jsl = spawn 'jsl', ['-nologo', '-stdin', '-conf', conf]
   jsl.stdout.on 'data', printIt
   jsl.stderr.on 'data', printIt
