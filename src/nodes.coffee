@@ -273,7 +273,7 @@ exports.Block = class Block extends Base
       })();
     """
 
-    return code if o.bare or o.scope.variables.length <=1
+    return code if o.bare
     "(function() {#{patchRequire}\n#{loadContracts}\n#{code}\n}).call(this);\n"
 
   # Compile the expressions body for the contents of a function, with

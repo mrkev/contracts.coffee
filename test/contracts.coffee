@@ -441,4 +441,4 @@ test "using patched require in node", ->
     idmod = require './modules/id'
 
     eq (idmod.id "foo"), "foo"
-    idmod.id 42
+    throws (-> idmod.id 42)
