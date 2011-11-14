@@ -59,6 +59,8 @@ task 'install', 'install CoffeeScript into /usr/local (or --prefix)', (options) 
     "cp -rf bin lib LICENSE README package.json src #{lib}"
     "ln -sfn #{lib}/bin/coffee #{bin}/coffee"
     "ln -sfn #{lib}/bin/cake #{bin}/cake"
+    "ln -sfn #{lib}/bin/coffee-node #{bin}/coffee-node"
+    "ln -sfn #{lib}/bin/cake-node #{bin}/cake-node"
     "mkdir -p ~/.node_libraries"
     "ln -sfn #{lib}/lib/coffee-script #{node}"
   ].join(' && '), (err, stdout, stderr) ->
