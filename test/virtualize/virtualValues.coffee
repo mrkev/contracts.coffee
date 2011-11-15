@@ -116,10 +116,16 @@ test "generic functions", ->
 test "function operators", ->
   f = deffun (x) -> x * x
   g = deffun (x) -> x + 10
-    
 
   ok ((f + g) 10) is 400
   ok ((g + f) 10) is 110
+
+  curried = deffun (x,y,z) -> x + y + z
+  c1 = curried 1
+  c2 = c1 2
+  c3 = c2 3
+
+  ok c3 is 6
 
 test "units extension", ->
   meter = makeUnit 'meter'
