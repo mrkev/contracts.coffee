@@ -143,6 +143,10 @@ test "lists", ->
   ok hd is 1
   ok tl is (list [2,3])
 
+  c = 1 >> b
+  ok c is (list [1,4,5,6])
+
+
 test "units extension", ->
   meter = makeUnit 'meter'
   second = makeUnit 'second'

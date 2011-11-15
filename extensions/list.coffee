@@ -22,11 +22,14 @@ arrayEgal = (a, b) ->
 
 List = ?!(a) -> if (Proxy.unProxy secret, a) then true else false
 
+
 # binOps ::
 #   '+': ([...Any], [...Any]) -> List
 #   '===': ([...Any], [...Any]) -> Bool
 binOps =
   '+': (a, b) -> makeList a.concat b
+  # cons, might not be the best operator in the world but...meh
+  '>>': (h, t) -> makeList [h].concat t
   '===': (a, b) -> arrayEgal a, b
 # binOps = binOps.use "self"
 
