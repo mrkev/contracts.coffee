@@ -2,6 +2,7 @@
 {makeUnit} = require '../../lib/extensions/units'
 {values, bind} = require '../../lib/extensions/multiple-values'
 {defgeneric, defmethod} = require '../../lib/extensions/generic-functions'
+{deffun} = require '../../lib/extensions/function-operators'
 
 # note, don't use built in equality testing functions (eq, equals, etc.) since
 # these will not be trapped (Cakefile can't be run through the virtualization process
@@ -111,6 +112,20 @@ test "generic functions", ->
 
   ok (keyInput "escape") is "quit!"
   ok (keyInput "enter") is "do it!"
+
+test "function operators", ->
+  f = deffun (x) -> x * x
+  g = deffun (x) -> x + 10
+
+  ok ((f + g) 10) is 400
+  ok ((g + f) 10) is 110
+
+  curried = deffun (x,y,z) -> x + y + z
+  c1 = curried 1
+  c2 = c1 2
+  c3 = c2 3
+
+  ok c3 is 6
 
 test "units extension", ->
   meter = makeUnit 'meter'
