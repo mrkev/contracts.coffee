@@ -91,7 +91,7 @@ task 'build:extensions', 'build the virtual value extensions', (cb) ->
   lib = "lib/extensions"
   files = fs.readdirSync 'extensions'
   files = ('extensions/' + file for file in files when file.match(/\.coffee$/))
-  run ['-c', '-V', '-o', 'lib/extensions'].concat(files), cb
+  run ['-c', '-C', '-V', '-o', 'lib/extensions'].concat(files), cb
 
 task 'build:full', 'rebuild the source twice, and run the tests', ->
   build ->
@@ -236,8 +236,10 @@ runTests = (CoffeeScript) ->
       match              = error.stack?.match(/on line (\d+):/) unless match
       [match, line, col] = match if match
       console.log ''
-      log "  #{error.description}", red if error.description
-      log "  #{error.stack}", red
+      description = if error.description then error.description else error
+      stack = if error?.stack then error.stack else ''
+      log "  #{description}", red 
+      log "  #{stack}", red
       log "  #{jsFilename}: line #{line ? 'unknown'}, column #{col ? 'unknown'}", red
       console.log "  #{error.source}" if error.source
     return
