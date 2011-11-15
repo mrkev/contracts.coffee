@@ -3,6 +3,7 @@
 {values, bind} = require '../../lib/extensions/multiple-values'
 {defgeneric, defmethod} = require '../../lib/extensions/generic-functions'
 {deffun} = require '../../lib/extensions/function-operators'
+{list, head, tail, split} = require '../../lib/extensions/list'
 
 # note, don't use built in equality testing functions (eq, equals, etc.) since
 # these will not be trapped (Cakefile can't be run through the virtualization process
@@ -126,6 +127,24 @@ test "function operators", ->
   c3 = c2 3
 
   ok c3 is 6
+
+test "lists", ->
+  a = list [1,2,3]
+  b = list [4,5,6]
+
+  ok (a + b) is (list [1,2,3,4,5,6])
+
+  h = head a
+  t = tail a
+  ok h is 1
+  ok t is (list [2,3])
+
+  [hd, tl] = split a
+  ok hd is 1
+  ok tl is (list [2,3])
+
+  c = 1 >> b
+  ok c is (list [1,4,5,6])
 
 test "units extension", ->
   meter = makeUnit 'meter'
