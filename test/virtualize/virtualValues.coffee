@@ -4,6 +4,7 @@
 {defgeneric, defmethod} = require '../../lib/extensions/generic-functions'
 {deffun} = require '../../lib/extensions/function-operators'
 {list, head, tail, split} = require '../../lib/extensions/list'
+{reactive, getCurrent, addListener} = require '../../lib/extensions/functional-reactive'
 
 # note, don't use built in equality testing functions (eq, equals, etc.) since
 # these will not be trapped (Cakefile can't be run through the virtualization process
@@ -146,6 +147,13 @@ test "lists", ->
   c = 1 >> b
   ok c is (list [1,4,5,6])
 
+test "functional reactive", ->
+  x = reactive 3
+  y = x + 3
+
+  y is 6
+  x.set 1
+  y is 4
 
 test "units extension", ->
   meter = makeUnit 'meter'
