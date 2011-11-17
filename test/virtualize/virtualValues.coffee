@@ -5,7 +5,7 @@ require('../../src/loadVirt').patch()
 {defgeneric, defmethod} = require '../../lib/extensions/generic-functions'
 {deffun} = require '../../lib/extensions/function-operators'
 {list, head, tail, split} = require '../../lib/extensions/list'
-{reactive, getCurrent, addListener} = require '../../lib/extensions/functional-reactive'
+{reactive, getCurrent, addListener, reactiveAlt} = require '../../lib/extensions/functional-reactive'
 
 # note, don't use built in equality testing functions (eq, equals, etc.) since
 # these will not be trapped (Cakefile can't be run through the virtualization process
@@ -150,11 +150,22 @@ test "lists", ->
 
 test "functional reactive", ->
   x = reactive 3
-  y = x + 3
 
-  y is 6
+  a = x + 3
+  b = x + a
+
+  a is 6
+  b is 9
   x.set 1
-  y is 4
+  a is 4
+  b is 5
+
+test "functional reactive, other method", ->
+  [x, set] = reactiveAlt()
+
+  a = x + 4
+  set 4
+  a is 8
 
 test "units extension", ->
   meter = makeUnit 'meter'
