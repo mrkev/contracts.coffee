@@ -1,3 +1,4 @@
+require('../../src/loadVirt').patch()
 {i} = require '../../lib/extensions/complex'
 {makeUnit} = require '../../lib/extensions/units'
 {values, bind} = require '../../lib/extensions/multiple-values'

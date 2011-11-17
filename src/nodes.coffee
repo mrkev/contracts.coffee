@@ -257,7 +257,6 @@ exports.Block = class Block extends Base
     cpath = path.join path.dirname(fs.realpathSync(__filename)), 'loadContracts.js'
     loadContracts = if o.contracts and o.withLib then (fs.readFileSync cpath, 'utf8') else ''
     vpath = path.join path.dirname(fs.realpathSync(__filename)), 'loadVirt.js'
-    loadVirt = if o.virtualize then (fs.readFileSync vpath, 'utf8') else ''
 
     patchRequire = """
       (function() {
@@ -278,7 +277,7 @@ exports.Block = class Block extends Base
     """
 
     return code if o.bare
-    "(function() {#{patchRequire}\n#{loadVirt}\n#{loadContracts}\n#{code}\n}).call(this);\n"
+    "(function() {#{patchRequire}\n#{loadContracts}\n#{code}\n}).call(this);\n"
 
   # Compile the expressions body for the contents of a function, with
   # declarations of all inner variables pushed up to the top.
