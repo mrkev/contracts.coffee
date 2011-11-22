@@ -17,7 +17,7 @@ PQ = ->
   ctx = this
   ctx.val = []
 
-  @.insert = (kv) ->
+  @insert = (kv) ->
     ctx.val.push(kv)
     kvpos = ctx.val.length - 1
     while kvpos > 0 and kv.k < ctx.val[Math.floor((kvpos-1)/2)]?.k
@@ -26,10 +26,10 @@ PQ = ->
       ctx.val[oldpos] = ctx.val[kvpos]
       ctx.val[kvpos] = kv
 
-  @.isEmpty = ->
+  @isEmpty = ->
     ctx.val.length is 0
 
-  @.pop = ->
+  @pop = ->
     if ctx.val.length is 1
       return ctx.val.pop()
 
@@ -142,7 +142,6 @@ EventStream::removeListener = (dependent, isWeak) ->
   genericRemoveListener this, dependent, isWeak
 
 
-
 sendEvent = (node, value) ->
   if not node instanceof EventStream 
     throw 'sendEvent: expected Event as first arg'
@@ -150,8 +149,8 @@ sendEvent = (node, value) ->
   propagatePulse (new Pulse nextStamp(), value), node
 
 
-# An internalE is a node that simply propagates all pulses it receives.  It's used internally by various 
-# combinators.
+# An internalE is a node that simply propagates all pulses it receives.  
+# It's used internally by various combinators.
 internalE = (dependsOn = []) -> createNode dependsOn, (pulse) -> pulse
 
 zeroE = ->
@@ -159,7 +158,7 @@ zeroE = ->
     throw "zeroE : received a value; zeroE should not receive a value; the value was #{pulse.value}"
 
 
-exports.oneE = (val) ->
+exports.oneE = oneE = (val) ->
   sent = false
   evt = createNode [], (pulse) ->
     throw 'oneE : received an extra value' if sent
@@ -169,10 +168,26 @@ exports.oneE = (val) ->
   setTimeout (-> sendEvent evt,val), 0
   evt
 
-EventStream::startsWith = (init) -> 
-  b = new Behavior @,init
-  console.log b instanceof Behavior
-  b
+
+mergeE = (deps...) ->
+  if deps.length is 0
+    zeroE()
+  else 
+    internalE deps
+
+EventStream::mergeE = (deps...) ->
+  deps.push @
+  internalE deps
+
+
+EventStream::constantE = (constantValue) ->
+  createNode [@], (pulse) ->
+    pulse.value = constantValue
+    pulse
+
+constantE = (e,v) -> e.constantE v
+
+EventStream::startsWith = (init) -> new Behavior @,init
 
 # bindE :: EventStream a * (a -> EventStream b) -> EventStream b
 EventStream::bindE = (k) ->
@@ -223,11 +238,106 @@ Behavior = (event, init, updater) ->
   @
 # Behavior:: = new Object()
 
-Behavior::valueNow = ->   
-  console.log "calling value now"
-  @last
+Behavior::valueNow = -> @last
 valueNow = (behavior) -> behavior.valueNow()
 
+
+
+receiverE = ->
+  evt = internalE()
+  evt.sendEvent = (value) ->
+    propagatePulse new Pulse(nextStamp(), value), evt
+  evt
+
+
+EventStream::mapE = (f) ->
+  if not f instanceof Function
+    throw 'mapE : expected a function as the first argument; received #{f}'
+  
+  createNode [this], (pulse) ->
+    pulse.value = f pulse.value
+    pulse
+
+EventStream::notE = -> @mapE (v) -> not v
+
+
+EventStream::filterE = (pred) ->
+  if not pred instanceof Function
+    throw 'filterE : expected predicate; received #{pred}'
+  
+  # Can be a bindE
+  createNode [@], (pulse) ->
+    if pred pulse.value then pulse else doNotPropagate
+
+
+filterE = (e,p) -> e.filterE p
+
+
+# Fires just once.
+EventStream::onceE = ->
+  done = no
+  # Alternately: this.collectE(0,\n v -> (n+1,v)).filterE(\(n,v) -> n == 1).mapE(fst)
+  createNode [@], (pulse) ->
+    if not done 
+      done = yes 
+      pulse
+    else 
+      doNotPropagate
+
+
+onceE = (e) -> e.onceE()
+
+
+EventStream::skipFirstE = ->
+  skipped = yes
+  createNode [@], (pulse) -> if skipped then pulse else doNotPropagate
+
+skipFirstE = (e) -> e.skipFirstE()
+
+
+EventStream::collectE = (init, fold) ->
+  acc = init
+  @mapE (n) ->
+    next = fold n, acc
+    acc = next
+    next
+
+
+collectE = (e,i,f) -> e.collectE i,f
+
+EventStream::switchE = ->
+  @bindE (v) -> v
+
+recE = (fn) ->
+  inE = receiverE()
+  outE = fn inE
+  outE.mapE (x) ->
+    inE.sendEvent x
+  outE
+
+switchE = (e) -> e.switchE()
+
+
+EventStream::ifE = (thenE,elseE) ->
+  testStamp = -1
+  testValue = false
+  
+  createNode [@], (pulse) ->
+    testStamp = pulse.stamp 
+    testValue = pulse.value
+    doNotPropagate
+  
+  mergeE(
+    createNode([thenE],(pulse) -> send pulse if testValue and (testStamp is pulse.stamp)),
+    createNode([elseE],(pulse) -> send pulse if not testValue and (testStamp is pulse.stamp)) 
+  )
+
+
+ifE = (test,thenE,elseE) ->
+  if test instanceof EventStream
+    test.ifE thenE,elseE
+  else
+    if test then thenE else elseE
 
 ___timerID = 0
 __getTimerId = -> ++___timerID
@@ -235,7 +345,7 @@ timerDisablers = []
 
 disableTimerNode = (node) -> timerDisablers[node.__timerId]()
 
-disableTimer = (v) ->
+exports.disableTimer = disableTimer = (v) ->
   if v instanceof Behavior
     disableTimerNode v.underlyingRaw
   else if  v instanceof EventStream
@@ -247,7 +357,6 @@ createTimerNodeStatic = (interval) ->
 
   listener = (evt) ->
     if not primEventE.weaklyHeld
-      console.log "ping"
       sendEvent primEventE, (new Date()).getTime()
     else 
       clearInterval timer
@@ -293,7 +402,4 @@ startsWith = (e,init) ->
 
 
 
-exports.timerB = timerB = (interval) -> 
-  t = startsWith timerE(interval), (new Date()).getTime()
-  console.log t instanceof Behavior
-  t
+exports.timerB = timerB = (interval) -> startsWith timerE(interval), (new Date()).getTime()
