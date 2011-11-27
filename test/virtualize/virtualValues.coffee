@@ -6,6 +6,7 @@ require('../../src/loadVirt').patch()
 {deffun} = require '../../lib/extensions/function-operators'
 {list, head, tail, split} = require '../../lib/extensions/list'
 {reactive, getCurrent, addListener, reactiveAlt} = require '../../lib/extensions/functional-reactive'
+{infoReactive, HIGH, LOW, outputLow, outputHigh} = require '../../lib/extensions/info-reactive'
 
 # note, don't use built in equality testing functions (eq, equals, etc.) since
 # these will not be trapped (Cakefile can't be run through the virtualization process
@@ -166,6 +167,24 @@ test "functional reactive, other method", ->
   a = x + 4
   set 4
   a is 8
+
+test "functional reactive information flow", ->
+  h = infoReactive 5, HIGH
+
+  x = h + 5
+  ok (outputLow x) is null
+  ok (outputHigh x) is 10
+  h.set 10
+  ok (outputLow x) is null
+  ok (outputHigh x) is 15
+
+
+  # y = false
+  # if h
+  #   y = infoReactive true, HIGH
+  # ok (outputLow y is false)
+  # ok (outputHigh y is true)
+
 
 test "units extension", ->
   meter = makeUnit 'meter'
