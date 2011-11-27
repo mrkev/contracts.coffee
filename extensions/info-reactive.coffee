@@ -2,37 +2,6 @@
 secret = {}
 STOP = {}
 
-# labSecret = {}
-# labLow = {}
-# labHigh = {}
-
-# LabelValue = ?!(x) -> x is labLow or x is labHigh
-
-# labOps ::
-#   '===': (LabelValue, LabelValue) -> Bool
-#   '<': (LabelValue, LabelValue) -> Bool
-# labOps = 
-#   '===': (a, b) -> a is b
-#   '<': (a, b) -> (a is labLow) or (a is labHigh and b is labHigh)
-# labOps = labOps.use "self"
-
-# makeLabel = (v) ->
-#   handler = makeIdHandler()
-#   handler.value = v
-
-#   handler.left = (o, r) ->
-#     h = Proxy.unProxy labSecret, r
-#     if h
-#       labOps[o] @.value, h.value
-#     else
-#       labOps[o] @.value, labLow
-#   handler.right = (o, l) ->
-#     labOps[o] labLow, @.value
-#   Proxy.create handler, null, labSecret
-
-# exports.HIGH = HIGH = makeLabel labHigh
-# exports.LOW = LOW = makeLabel labLow
-
 # using numbers to represent the array index
 # we are holding the value 
 # TODO: encapsulate this better
