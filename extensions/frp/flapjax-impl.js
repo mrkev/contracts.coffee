@@ -107,8 +107,7 @@ var filter = function (predFn, arr) {
 var fold = function(fn, init /* arrays */) {
   var lists = slice(arguments, 2);
   if (lists.length === 0) { return init; }
-  else if(lists.length === 1) {
-    var acc = init;
+  else if(lists.length === 1) {var acc = init;
     for(var i = 0; i < lists[0].length; i++) {
       acc = fn(lists[0][i],acc);
     }

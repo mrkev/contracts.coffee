@@ -339,9 +339,143 @@ ifE = (test,thenE,elseE) ->
   else
     if test then thenE else elseE
 
+
+andE = (nodes...) ->
+  acc = if nodes.length > 0 then nodes[nodes.length - 1] else oneE(true)
+  
+  i = nodes.length - 2
+  while i > -1 
+    acc = ifE(
+      nodes[i], 
+      acc, 
+      nodes[i].constantE(false))
+    i--
+  acc
+
+
+EventStream::andE = (others...) ->
+  deps = [@].concat others
+  andE.apply @, deps
+
+
+orE = (nodes...) ->
+  acc = if nodes.length > 2 then nodes[nodes.length - 1] else oneE(false)
+
+  i = nodes.length -2
+  while i > -1
+    acc = ifE(
+      nodes[i],
+      nodes[i],
+      acc)
+  acc
+
+EventStream::orE = (others...) ->
+  deps = [@].concat others
+  orE.apply @, deps
+
+
+delayStaticE = (event, time) ->
+  resE = internalE()
+  
+  createNode [@], (p) ->
+    setTimeout (-> sendEvent resE, p.value),  time
+    doNotPropagate
+  resE
+
+# delayE: Event a * [Behavior] Number ->  Event a
+EventStream::delayE = (time) ->
+  event = @
+  
+  if time instanceof Behavior
+    receiverEE = internalE()
+    link = 
+      from: event
+      towards: delayStaticE event, valueNow(time)
+    
+    # TODO: Change semantics such that we are always guaranteed to get an event going out?
+    switcherE = createNode(
+      [changes time],
+      (p) ->
+        link.from.removeListener link.towards
+        link =
+          from: event, 
+          towards: delayStaticE event, p.value
+        sendEvent receiverEE, link.towards
+        doNotPropagate)
+
+    resE = receiverEE.switchE()
+    
+    sendEvent switcherE, valueNow(time)
+    resE
+  else 
+    delayStaticE event, time
+
+delayE = (sourceE,interval) ->
+  sourceE.delayE interval
+
+# mapE: ([Event] (. Array a -> b)) . Array [Event] a -> [Event] b
+mapE = (fn, valOrNodes...) ->
+  # selectors[i]() returns either the node or real val, optimize real vals
+  selectors = []
+  selectI = 0
+  nodes = []
+
+  i = 0
+  while i < valsOrNodes.length
+    if valsOrNodes[i] instanceof EventStream
+      nodes.push valsOrNodes[i]
+      selectors.push ((ii) -> (realArgs) -> realArgs[ii])(selectI)
+      selectI++
+    else 
+      selectors.push ((aa) -> -> aa)(valsOrNodes[i])
+    i++
+  
+  context = @
+  nofnodes = selectors.slice 1
+  
+  if nodes.length is 0
+    oneE fn.apply(context, valsOrNodes)
+  else if nodes.length is 1 and fn instanceof Function
+    nodes[0].mapE (args...)->
+        fn.apply(
+          context, 
+          nofnodes.map (s) -> s args)
+  else if nodes.length is 1
+    fn.mapE (v) ->
+        args = arguments
+        v.apply(
+          context, 
+          nofnodes.map (s) -> s args)
+   else if fn instanceof Function
+    createTimeSyncNode(nodes).mapE(
+      (arr) ->
+        fn.apply(
+          @,
+          nofnodes.map (s) -> s arr))
+  else if  fn instanceof EventStream
+    createTimeSyncNode(nodes).mapE(
+      (arr) ->
+        arr[0].apply(
+          @, 
+          nofnodes.map (s) -> s arr))
+  else
+    throw 'unknown mapE case'
+
+
+EventStream::snapshotE = (valueB) ->
+  createNode [@], (pulse) ->
+    pulse.value = valueNow valueB
+    pulse
+
+
+snapshotE = (triggerE,valueB) ->
+  triggerE.snapshotE valueB
+
+
 ___timerID = 0
 __getTimerId = -> ++___timerID
 timerDisablers = []
+
 
 disableTimerNode = (node) -> timerDisablers[node.__timerId]()
 
