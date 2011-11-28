@@ -82,6 +82,7 @@ propagatePulse = (pulse, node) ->
         i++
 
       qv.n.weaklyHeld = yes if qv.n.sendsTo.length > 0 and weaklyHeld
+  undefined
 
 # Event: Array Node b * ( (Pulse a -> Void) * Pulse b -> Void)
 EventStream = (nodes, updater) ->

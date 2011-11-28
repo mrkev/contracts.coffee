@@ -2,8 +2,15 @@
 fj = require "./flapjax"
 secret = {}
 
+Unit = ?!(x) -> x is undefined
 FlapjaxBehavior = ?!(x) -> x instanceof fj.Behavior
 Reactive = ?!(x) -> if Proxy.unProxy secret, x then true else false
+# todo: want the following Reactive contract but I think some bug in contracts.js or
+# V8 is causing issues with putting an object contract on a Proxy
+# Reactive = ?{
+#   set: (Num) -> Unit
+#   curr: -> Num
+# }
 
 reactive :: (Num or FlapjaxBehavior) -> Reactive
 reactive = (x) -> 
