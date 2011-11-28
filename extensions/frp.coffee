@@ -5,6 +5,7 @@ secret = {}
 FlapjaxBehavior = ?!(x) -> x instanceof fj.Behavior
 Reactive = ?!(x) -> if Proxy.unProxy secret, x then true else false
 
+reactive :: (Num or FlapjaxBehavior) -> Reactive
 reactive = (x) -> 
   if x instanceof fj.Behavior
     b = x
@@ -29,8 +30,9 @@ reactive = (x) ->
   p.curr = ->
     h = Proxy.unProxy secret, this
     h.beh.valueNow()
-    
-  p
 
-exports.reactive :: (Num or FlapjaxBehavior) -> Reactive
+  p
+reactive = reactive.use "self"
+
+exports.reactive :: (Num) -> Reactive
 exports.reactive = reactive
