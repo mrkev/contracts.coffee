@@ -126,12 +126,15 @@ makeReactive = (source, update, value = null, label = LOW) ->
   p
 makeReactive = makeReactive.use "self"
 
+# simulates a low output channel by just returning the low value of its argument
 exports.outputLow = (x) ->
   h = Proxy.unProxy secret, x
   if h
     h.value[LOW]  
   else
     x
+
+# simulates a high output channel by just returning the high value of its argument
 exports.outputHigh = (x) ->
   h = Proxy.unProxy secret, x
   if h
