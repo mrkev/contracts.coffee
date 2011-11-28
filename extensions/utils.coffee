@@ -4,6 +4,19 @@ exports.merge = (a, b) ->
   a[key] = val for own key, val of b
   a
 
+
+exports.numUnaryOps = 
+  '!': (x) -> !x
+  '-': (x) -> -x
+
+exports.numBinaryOps =
+  '+': (x, y) -> x + y
+  '-': (x, y) -> x - y
+  '*': (x, y) -> x * y
+  '/': (x, y) -> x / y
+  '===': (x, y) -> x is y
+  '!==': (x, y) -> x isnt y
+
 getPropertyDescriptor = (obj, prop) ->
   o = obj
   while o isnt null

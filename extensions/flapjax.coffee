@@ -214,7 +214,7 @@ EventStream::bindE = (k) ->
 EventStream::switchE = -> @bindE (v) -> v
 
 # This is up here so we can add things to its prototype that are in flapjax.combinators
-Behavior = (event, init, updater) ->
+exports.Behavior = Behavior = (event, init, updater) ->
   if not event instanceof EventStream
     throw 'Behavior: expected event as second arg';
 
@@ -241,9 +241,44 @@ Behavior = (event, init, updater) ->
 Behavior::valueNow = -> @last
 valueNow = (behavior) -> behavior.valueNow()
 
+Behavior::changes = -> this.underlying
+changes = (behave) -> behave.changes()
+
+exports.liftB = liftB = (fn, args...) ->
+  
+  # dependencies
+  constituentsE = (args.filter (v) -> v instanceof Behavior).map changes
+  
+  # calculate new vals
+  getCur = (v) -> if v instanceof Behavior then v.last else v
+  
+  ctx = this
+  getRes = -> (getCur fn).apply ctx, (args.map getCur)
+
+  if constituentsE.length is 1
+    return new Behavior constituentsE[0], getRes(), getRes
+    
+  # gen/send vals @ appropriate time
+  prevStamp = -1
+  mid = createNode constituentsE, (p) ->
+    if p.stamp isnt prevStamp
+      prevStamp = p.stamp
+      p 
+    else
+      doNotPropagate
+  
+  new Behavior mid, getRes(), getRes
+
+Behavior::liftB = (args...) -> liftB.apply this, args.concat [@]
+
+# artificially send a pulse to underlying event node of a behaviour
+# note: in use, might want to use a receiver node as a proxy or an identity map
+Behavior::sendBehavior = (val) -> sendEvent @underlyingRaw, val
+
+sendBehavior = (b,v) -> b.sendBehavior v
 
 
-receiverE = ->
+exports.receiverE = receiverE = ->
   evt = internalE()
   evt.sendEvent = (value) ->
     propagatePulse new Pulse(nextStamp(), value), evt
@@ -529,7 +564,7 @@ timerE = (interval) ->
   else 
     createTimerNodeStatic interval
 
-startsWith = (e,init) ->
+exports.startsWith = startsWith = (e,init) ->
   if not e instanceof EventStream
     throw 'startsWith: expected EventStream; received #{e}'
   e.startsWith init
