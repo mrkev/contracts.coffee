@@ -181,8 +181,8 @@ test "functional reactive information flow", ->
   l = infoReactive 10, LOW
   y = l + 5
   l.set (infoReactive 15, HIGH)
-  # ok (outputLow y) is 15
-  # ok (outputHigh y) is 20
+  ok (outputLow y) is 15
+  ok (outputHigh y) is 20
 
 
   # y = false
