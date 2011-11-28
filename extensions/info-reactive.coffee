@@ -10,7 +10,7 @@ exports.LOW = LOW = 0
 
 Label = ?!(x) -> x is HIGH or x is LOW
 
-join :: (Label, Label) -> Bool
+join :: (Label, Label) -> Label
 join = (a, b) -> if a is HIGH or b is HIGH then HIGH else LOW
 join = join.use "self"
 
@@ -33,6 +33,7 @@ StopVal = ?!(x) -> x is STOP
 
 getValue :: ([Num, Num], Label) -> Num
 getValue = (v, label) ->
+  # if there is no value at this security level get the lower one
   if v[label] is undefined
     v[LOW]
   else
@@ -40,13 +41,13 @@ getValue = (v, label) ->
 getValue = getValue.use "self"
 
 
-
-# quasi-flapjax style FR
+# quasi-flapjax style FR with information flow
 makeReactive :: (Null or [...Reactive], (Any) -> Any or StopVal, Any?, Label?) -> Reactive
 makeReactive = (source, update, value = null, label = LOW) ->
   handler = merge makeIdHandler(),
     sinks: []
-    value: [null, undefined]
+    # values are stored at security levels in an array: 0: low, 1: high
+    value: [undefined, undefined]
     update: update
     label: label
 
@@ -58,13 +59,24 @@ makeReactive = (source, update, value = null, label = LOW) ->
   p = Proxy.create handler, null, secret
   handler.left = (o, r) ->
       src = p
-      upd = (t) -> binaryOps[o] t, r
       h = Proxy.unProxy secret, r
       if h
+        upd = (t) -> 
+          hand = Proxy.unProxy secret, t
+          if hand
+            binaryOps[o] (getValue hand.value, hand.label), (getValue h.value, h.label)
+          else
+            binaryOps[o] t, (getValue h.value, h.label)
         val = binaryOps[o] (getValue @.value, @.label), (getValue h.value, h.label)
         # consult pc for real label once test trap is working
         makeReactive [src], upd, val, (join @.label, h.label)
       else
+        upd = (t) -> 
+          hand = Proxy.unProxy secret, t
+          if hand
+            binaryOps[o] (getValue hand.value, hand.label), r
+          else
+            binaryOps[o] t, r
         val = binaryOps[o] (getValue @.value, @.label), r
         # consult pc for real label once test trap is working
         makeReactive [src], upd, val, @.label
@@ -101,6 +113,7 @@ makeReactive = (source, update, value = null, label = LOW) ->
       throw "Source is not a reactive value!"
   p.set = (x) ->
     h = Proxy.unProxy secret, x
+    # label depends on the value we're being updated with
     if h
       l = join handler.label, h.label
     else

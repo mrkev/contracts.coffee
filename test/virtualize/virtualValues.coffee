@@ -172,11 +172,17 @@ test "functional reactive information flow", ->
   h = infoReactive 5, HIGH
 
   x = h + 5
-  ok (outputLow x) is null
+  ok (outputLow x) is undefined
   ok (outputHigh x) is 10
   h.set 10
-  ok (outputLow x) is null
+  ok (outputLow x) is undefined
   ok (outputHigh x) is 15
+
+  l = infoReactive 10, LOW
+  y = l + 5
+  l.set (infoReactive 15, HIGH)
+  # ok (outputLow y) is 15
+  # ok (outputHigh y) is 20
 
 
   # y = false
