@@ -184,7 +184,6 @@ test "functional reactive information flow", ->
   ok (outputLow y) is 15
   ok (outputHigh y) is 20
 
-
   # y = false
   # if h
   #   y = infoReactive true, HIGH
