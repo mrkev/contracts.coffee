@@ -22,6 +22,9 @@ reactive = (x) ->
   handler = merge makeIdHandler(),
     beh: b
   
+  handler.unary = (o) ->
+    reactive (fj.liftB numUnaryOps[o], @.beh)
+    
   handler.left = (o, r) ->
     h = Proxy.unProxy secret, r
     if h
