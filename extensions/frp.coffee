@@ -28,6 +28,8 @@ reactive = (x) ->
       reactive (fj.liftB numBinaryOps[o], @.beh, h.beh)
     else
       reactive (fj.liftB numBinaryOps[o], @.beh, r)
+  handler.right = (o, l) ->
+    reactive (fj.liftB numBinaryOps[o], l, @.beh)
 
   p = Proxy.create handler, null, secret
 
