@@ -12,11 +12,12 @@ Reactive = ?!(x) -> if Proxy.unProxy secret, x then true else false
 #   curr: -> Num
 # }
 
-reactive :: (Num or FlapjaxBehavior) -> Reactive
+reactive :: (Any) -> Reactive
 reactive = (x) -> 
   if x instanceof fj.Behavior
     b = x
   else
+    # convert our normal value to a behavior
     b = fj.startsWith fj.receiverE(), x
 
   handler = merge makeIdHandler(),
@@ -24,7 +25,7 @@ reactive = (x) ->
   
   handler.unary = (o) ->
     reactive (fj.liftB numUnaryOps[o], @.beh)
-    
+
   handler.left = (o, r) ->
     h = Proxy.unProxy secret, r
     if h
@@ -46,5 +47,5 @@ reactive = (x) ->
   p
 reactive = reactive.use "self"
 
-exports.reactive :: (Num) -> Reactive
+exports.reactive :: (Any) -> Reactive
 exports.reactive = reactive
