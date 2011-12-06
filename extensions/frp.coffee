@@ -2,6 +2,8 @@
 fj = require "./flapjax"
 secret = {}
 
+root = exports ? this
+
 Unit = ?!(x) -> x is undefined
 FlapjaxBehavior = ?!(x) -> x instanceof fj.Behavior
 Reactive = ?!(x) -> if Proxy.unProxy secret, x then true else false
@@ -43,9 +45,12 @@ reactive = (x) ->
   p.curr = ->
     h = Proxy.unProxy secret, this
     h.beh.valueNow()
+  p.if = (tru, fls) ->
+    h = Proxy.unProxy secret, this
+    reactive h.beh.ifB tru, fls
 
   p
 reactive = reactive.use "self"
 
-exports.reactive :: (Any) -> Reactive
-exports.reactive = reactive
+root.reactive :: (Any) -> Reactive
+root.reactive = reactive

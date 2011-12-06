@@ -39,10 +39,12 @@ test "flapjax via virtual values for basic numbers and bools", ->
 test "flapjax via virtual values for conditionals", ->
   x = frp.reactive 5
 
-  if x is 5
-    res = true
-  else
-    res = false
+  # if x is 5
+  #   res = true
+  # else
+  #   res = false
+
+  res = (x is 5).if true, false
   
   ok (res.curr() is true)
   x.set 10

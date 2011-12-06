@@ -573,3 +573,25 @@ exports.startsWith = startsWith = (e,init) ->
 
 
 exports.timerB = timerB = (interval) -> startsWith timerE(interval), (new Date()).getTime()
+
+# TODO optionally append to objects
+# createConstantB: a -> Behavior a
+constantB = (val) -> new Behavior internalE(), val
+
+Behavior::ifB = (trueB,falseB) ->
+  testB = @
+  # TODO auto conversion for behaviour funcs
+  if not trueB instanceof Behavior
+    trueB = constantB trueB
+
+  if not falseB instanceof Behavior
+    falseB = constantB falseB
+
+  liftB ((te,t,f) -> if te then t else f), testB, trueB, falseB
+
+
+ifB = (test,cons,altr) ->
+  if not test instanceof Behavior 
+    test = constantB test
+
+  test.ifB cons, altr
