@@ -1,12 +1,12 @@
 loadVirt.patch()
-{reactive, reactiveTimer, $E, insertValue, dom} = frp
+{reactive, insertValueB, $E} = frp
 
-$(document).ready ->
 
-  now = reactiveTimer 1000
-  startTm = now.curr()
-  clickTms = $E("reset", "click").snapshot(now).startsWith startTm
+this.run = ->
+  now = timerB 1000
+  startTm = now.valueNow()
+  clickTms = $E("reset", "click").snapshotE(now).startsWith startTm
   elapsed = now - clickTms
+  insertValueB elapsed, "curTime", "innerHTML"
 
-  dom("#curTime").text(elapsed)
 

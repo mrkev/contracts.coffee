@@ -17,19 +17,19 @@
   }
 })();
 
-  var $E, dom, insertValue, reactive, reactiveTimer;
+  var $E, insertValueB, reactive;
 
   loadVirt.patch();
 
-  reactive = frp.reactive, reactiveTimer = frp.reactiveTimer, $E = frp.$E, insertValue = frp.insertValue, dom = frp.dom;
+  reactive = frp.reactive, insertValueB = frp.insertValueB, $E = frp.$E;
 
-  $(document).ready(function() {
+  this.run = function() {
     var clickTms, elapsed, now, startTm;
-    now = reactiveTimer(1000);
-    startTm = now.curr();
-    clickTms = $E("reset", "click").snapshot(now).startsWith(startTm);
+    now = timerB(1000);
+    startTm = now.valueNow();
+    clickTms = $E("reset", "click").snapshotE(now).startsWith(startTm);
     elapsed = Proxy.dispatchBinary('-', now, clickTms, function() { return now - clickTms;});
-    return dom("#curTime").text(elapsed);
-  });
+    return insertValueB(elapsed, "curTime", "innerHTML");
+  };
 
 }).call(this);
