@@ -80,9 +80,13 @@ task 'build', 'build the CoffeeScript language from source', build = (cb) ->
   loadContracts = (fs.readFileSync contractPath + file for file in contractFiles).join "\n"
 
   fs.writeFileSync "#{lib}/loadContracts.js", loadContracts
+  buildExamples()
 
 buildWebtests = ->  
   run ['-c', '-C', '-o', 'test/webtest', 'test/contracts.coffee']
+
+buildExamples = ->
+  run ['-c', '-C', '-V', '-o', 'examples/reactive', 'examples/reactive']
 
 task 'build:webtests', 'compiles the contracts testing files', ->
   buildWebtests()
