@@ -1,5 +1,8 @@
+
+root = exports ? this["loadVirt"] = {}
+
 # only patch Proxy once
-exports.patch = ->
+root.patch = ->
   if not Proxy.__vvalues?
     Proxy.__vvalues = true
 

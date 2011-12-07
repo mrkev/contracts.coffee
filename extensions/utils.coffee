@@ -1,15 +1,16 @@
+root = exports ? this["utils"] = {}
 
 # merges values from b onto a and returns a
-exports.merge = (a, b) -> 
+root.merge = (a, b) -> 
   a[key] = val for own key, val of b
   a
 
 
-exports.numUnaryOps = 
+root.numUnaryOps = 
   '!': (x) -> !x
   '-': (x) -> -x
 
-exports.numBinaryOps =
+root.numBinaryOps =
   '+': (x, y) -> x + y
   '-': (x, y) -> x - y
   '*': (x, y) -> x * y
@@ -26,7 +27,7 @@ getPropertyDescriptor = (obj, prop) ->
     o = Object.getPrototypeOf o
   undefined
 
-exports.makeIdHandler = (obj = {}) ->
+root.makeIdHandler = (obj = {}) ->
   getOwnPropertyDescriptor: (name) ->
     desc = Object.getOwnPropertyDescriptor obj, name
     desc.configurable = true if desc isnt undefined
