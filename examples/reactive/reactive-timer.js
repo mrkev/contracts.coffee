@@ -17,11 +17,8 @@
   }
 })();
 
-  var $E, insertValueB, reactive;
 
   loadVirt.patch();
-
-  reactive = frp.reactive, insertValueB = frp.insertValueB, $E = frp.$E;
 
   this.run = function() {
     var clickTms, elapsed, now, startTm;

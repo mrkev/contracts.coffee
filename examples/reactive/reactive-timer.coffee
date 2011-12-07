@@ -1,5 +1,4 @@
 loadVirt.patch()
-{reactive, insertValueB, $E} = frp
 
 
 this.run = ->
