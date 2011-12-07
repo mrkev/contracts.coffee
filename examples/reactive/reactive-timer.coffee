@@ -1,7 +1,7 @@
 loadVirt.patch()
 
 
-this.run = ->
+window.run = ->
   now = timerB 1000
   startTm = now.valueNow()
   clickTms = $E("reset", "click").snapshotE(now).startsWith startTm

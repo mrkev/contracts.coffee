@@ -20,7 +20,7 @@
 
   loadVirt.patch();
 
-  this.run = function() {
+  window.run = function() {
     var clickTms, elapsed, now, startTm;
     now = timerB(1000);
     startTm = now.valueNow();
