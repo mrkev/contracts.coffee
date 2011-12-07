@@ -4,6 +4,8 @@
 # Sentinel value returned by updaters to stop propagation.
 doNotPropagate = {}
 
+root = exports ? this["flapjax"] = {}
+
 # Pulse: Stamp * Path * Obj
 Pulse = (stamp, value) ->
   # Timestamps are used by liftB (and ifE).  Since liftB may receive multiple
@@ -85,7 +87,7 @@ propagatePulse = (pulse, node) ->
   undefined
 
 # Event: Array Node b * ( (Pulse a -> Void) * Pulse b -> Void)
-EventStream = (nodes, updater) ->
+root.EventStream = EventStream = (nodes, updater) ->
   @updater = updater
   
   @sendsTo = [] #forward link
@@ -98,7 +100,7 @@ EventStream = (nodes, updater) ->
 #EventStream:: = new Object();
 
 # createNode: Array Node a * ( (Pulse b ->) * (Pulse a) -> Void) -> Node b
-exports.createNode = createNode = (nodes, updater) ->
+root.createNode = createNode = (nodes, updater) ->
   new EventStream nodes, updater
 
 genericAttachListener = (node, dependent) ->
@@ -144,7 +146,7 @@ EventStream::removeListener = (dependent, isWeak) ->
 
 
 sendEvent = (node, value) ->
-  if not node instanceof EventStream 
+  if not (node instanceof EventStream)
     throw 'sendEvent: expected Event as first arg'
   
   propagatePulse (new Pulse nextStamp(), value), node
@@ -159,7 +161,7 @@ zeroE = ->
     throw "zeroE : received a value; zeroE should not receive a value; the value was #{pulse.value}"
 
 
-exports.oneE = oneE = (val) ->
+root.oneE = oneE = (val) ->
   sent = false
   evt = createNode [], (pulse) ->
     throw 'oneE : received an extra value' if sent
@@ -215,7 +217,7 @@ EventStream::bindE = (k) ->
 EventStream::switchE = -> @bindE (v) -> v
 
 # This is up here so we can add things to its prototype that are in flapjax.combinators
-exports.Behavior = Behavior = (event, init, updater) ->
+root.Behavior = Behavior = (event, init, updater) ->
   if not event instanceof EventStream
     throw 'Behavior: expected event as second arg';
 
@@ -245,7 +247,7 @@ valueNow = (behavior) -> behavior.valueNow()
 Behavior::changes = -> this.underlying
 changes = (behave) -> behave.changes()
 
-exports.liftB = liftB = (fn, args...) ->
+root.liftB = liftB = (fn, args...) ->
   
   # dependencies
   constituentsE = (args.filter (v) -> v instanceof Behavior).map changes
@@ -279,7 +281,11 @@ Behavior::sendBehavior = (val) -> sendEvent @underlyingRaw, val
 sendBehavior = (b,v) -> b.sendBehavior v
 
 
-exports.receiverE = receiverE = ->
+# TODO test, signature
+root.timerB = timerB = (interval) -> startsWith(timerE(interval), (new Date()).getTime())
+
+
+root.receiverE = receiverE = ->
   evt = internalE()
   evt.sendEvent = (value) ->
     propagatePulse new Pulse(nextStamp(), value), evt
@@ -515,7 +521,7 @@ timerDisablers = []
 
 disableTimerNode = (node) -> timerDisablers[node.__timerId]()
 
-exports.disableTimer = disableTimer = (v) ->
+root.disableTimer = disableTimer = (v) ->
   if v instanceof Behavior
     disableTimerNode v.underlyingRaw
   else if  v instanceof EventStream
@@ -533,7 +539,7 @@ createTimerNodeStatic = (interval) ->
       isListening = false
     true
 
-  timer = setInterval listener, interval
+  timer = (window ? this).setInterval listener, interval
   timerDisablers[primEventE.__timerId] = -> clearInterval(timer)
   primEventE
 
@@ -565,14 +571,14 @@ timerE = (interval) ->
   else 
     createTimerNodeStatic interval
 
-exports.startsWith = startsWith = (e,init) ->
+root.startsWith = startsWith = (e,init) ->
   if not e instanceof EventStream
     throw 'startsWith: expected EventStream; received #{e}'
   e.startsWith init
 
 
 
-exports.timerB = timerB = (interval) -> startsWith timerE(interval), (new Date()).getTime()
+root.timerB = timerB = (interval) -> startsWith timerE(interval), (new Date()).getTime()
 
 # TODO optionally append to objects
 # createConstantB: a -> Behavior a
@@ -581,17 +587,189 @@ constantB = (val) -> new Behavior internalE(), val
 Behavior::ifB = (trueB,falseB) ->
   testB = @
   # TODO auto conversion for behaviour funcs
-  if not trueB instanceof Behavior
+  if not (trueB instanceof Behavior)
     trueB = constantB trueB
 
-  if not falseB instanceof Behavior
+  if not (falseB instanceof Behavior)
     falseB = constantB falseB
 
   liftB ((te,t,f) -> if te then t else f), testB, trueB, falseB
 
 
 ifB = (test,cons,altr) ->
-  if not test instanceof Behavior 
+  if not (test instanceof Behavior)
     test = constantB test
 
   test.ifB cons, altr
+
+
+addEvent = (obj, evType, fn) ->
+  #TODO encode mouseleave evt, formalize new evt interface
+  if obj.addEventListener
+    obj.addEventListener evType, fn, false
+    true
+  else if obj.attachEvent
+    obj.attachEvent "on"+evType, fn
+  else
+    return false
+
+#getObj: String U Dom -> Dom
+#throws 
+#  'getObj: expects a Dom obj or Dom id as first arg'
+#  'getObj: flapjax: cannot access object'
+#  'getObj: no obj to get
+#also known as '$'
+#TODO Maybe alternative?
+getObj = (name) ->
+  return name if typeof(name) is 'object'
+  throw 'getObj: expects a Dom obj or Dom id as first arg' if typeof name is 'null' or typeof name is 'undefined'
+    
+
+  res = (if document.getElementById 
+    document.getElementById(name)
+  else
+    if document.all 
+      document.all[name]
+    else
+      if document.layers 
+        document.layers[name] 
+      else
+        throw 'getObj: flapjax: cannot access object')
+
+  if res is null or res is undefined
+    throw 'getObj: no obj to get: #{name}'
+  res
+
+# extractEventStaticE: Dom * String -> Event
+extractEventStaticE = (domObj, eventName) ->
+  throw 'extractEventE : no event name specified' if not eventName
+  throw 'extractEventE : no DOM element specified' if not domObj
+  
+  domObj = getObj domObj
+  
+  primEventE = internalE()
+  
+  isListening = no
+
+  listener = (evt) ->
+    if not primEventE.weaklyHeld
+      sendEvent primEventE, evt or window.event
+    else 
+      removeEvent domObj, eventName, listener
+      isListening = no
+    # Important for IE; false would prevent things like a checkbox actually
+    # checking.
+    true
+  
+
+  primEventE.attachListener = (dependent) ->
+    if not isListening
+      addEvent domObj, eventName, listener
+      isListening = yes
+  
+    genericAttachListener primEventE, dependent
+
+  primEventE.removeListener = (dependent) ->
+    genericAttachListener primEventE, dependent
+
+    if  isListening and (primEventE.sendsTo.length is 0)
+      domObj.removeEventListener eventName, listener, false
+      isListening = no
+  
+  primEventE
+
+# extractEventE: [Behavior] Dom * String -> Event
+root.extractEventE = extractEventE = (domB, eventName) ->
+  if not (domB instanceof Behavior)
+    extractEventStaticE domB,eventName
+  else 
+    domE = domB.changes()
+    
+    eventEE = domE.mapE (dom) -> extractEventStaticE dom, eventName
+    resultE = eventEE.switchE()
+    sendEvent domE, domB.valueNow()
+    resultE
+
+
+
+
+# helper to reduce obj look ups
+# getDynObj: domNode . Array (id) -> domObj
+# obj * [] ->  obj
+# obj * ['position'] ->  obj
+# obj * ['style', 'color'] ->  obj.style
+getMostDom = (domObj, indices) ->
+  acc = getObj domObj
+  if indices is null or indices is undefined or indices.length < 1
+    acc
+  else 
+    i = 0
+    while(i < indices.length)
+      acc = acc[indices[i]];
+      i++
+    acc
+
+
+#into[index] = deepValueNow(from) via descending from object and mutating each field
+deepStaticUpdate = (into, from, index) ->
+  fV = if from instanceof Behavior then valueNow(from) else from
+
+  if typeof fV is 'object'
+    for i of fV
+      if not Object.prototype or not Object.prototype[i]
+        deepStaticUpdate (if index then into[index] else into), fV[i], i
+  else 
+    # old = into[index]
+    into[index] = fV
+  undefined
+
+
+#note: no object may be time varying, just the fields
+#into[index] = from
+#only updates on changes
+deepDynamicUpdate = (into, from, index) ->
+  fV = if from instanceof Behavior then valueNow from else from
+
+  if typeof fV is 'object'
+    if  from instanceof Behavior
+      throw 'deepDynamicUpdate: dynamic collections not supported'
+    for i of fV
+      if not Object.prototype or not Object.prototype[i]
+        deepDynamicUpdate (if index then into[index] else into), fV[i], i
+  else
+    if from instanceof Behavior
+      createNode(
+        [changes from],
+        (p) ->
+          if index
+            into[index] = p.value
+          else 
+            into = p.value
+          doNotPropagate)
+
+insertValue = (val, domObj, indices...) ->
+  parent = getMostDom domObj, indices
+  deepStaticUpdate parent, val, (if indices then indices[indices.length - 1] else undefined)
+
+#TODO convenience method (default to firstChild nodeValue) 
+root.insertValueE = insertValueE = (triggerE, domObj, indices...) ->
+  if not (triggerE instanceof EventStream)
+    throw 'insertValueE: expected Event as first arg'
+  
+  parent = getMostDom domObj, indices
+  
+  triggerE.mapE (v) ->
+    deepStaticUpdate parent, v, (if indices then indices[indices.length - 1] else undefined)
+
+#insertValueB: Behavior * domeNode . Array (id) -> void
+#TODO notify adapter of initial state change?
+root.insertValueB = insertValueB = (triggerB, domObj, indices...) ->
+  parent = getMostDom domObj, indices
+  
+  # NOW
+  deepStaticUpdate parent, triggerB, (if indices then indices[indices.length - 1] else undefined)
+  
+  #LATER
+  deepDynamicUpdate parent, triggerB, (if indices then indices[indices.length - 1] else undefined)
+
+  undefined
