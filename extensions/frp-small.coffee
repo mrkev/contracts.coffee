@@ -1,40 +1,34 @@
-if require?
-  {makeIdHandler, merge, numUnaryOps, numBinaryOps} = require './utils'
-else
-  {makeIdHandler, merge, numUnaryOps, numBinaryOps} = utils
+{makeIdHandler, merge, numUnaryOps, numBinaryOps} = utils
 
 reactiveSecret = {}
 streamSecret = {}
 
 root = global ? this
 
-wrapGet = (that, prop) ->
-  if prop instanceof Behavior
-    reactive prop
-  if prop instanceof EventStream
-    stream prop
-  else if typeof prop is 'function'
-    (args...) ->
-      r = prop.apply that, (for arg in args
-        rh = Proxy.unProxy reactiveSecret, arg
-        sh = Proxy.unProxy streamSecret, arg
-        if rh then rh.beh else if sh then sh.evt else arg)
+# wrap a flapjax value in a virtual value
+wrap = (x) ->
+  if x instanceof Behavior 
+    reactive x
+  else if x instanceof EventStream
+    stream x
+  else if typeof x is 'function'
+    (args...) => wrap x.apply @, (unwrap arg for arg in args)
+  else 
+    x 
 
-      if r instanceof Behavior 
-        reactive r 
-      else if r instanceof EventStream
-        stream r
-      else 
-        r
-  else
-    prop
+# unwrap a virtual value into flapjax value
+unwrap = (x) ->
+  rh = Proxy.unProxy reactiveSecret, x
+  sh = Proxy.unProxy streamSecret, x
+  if rh then rh.beh else if sh then sh.evt else x
 
 reactive = (x) -> 
   b = if x instanceof Behavior then x else startsWith receiverE(), x
 
   handler = merge (makeIdHandler b),
     beh: b
-    get: (r, name) -> wrapGet handler.beh, handler.beh[name]
+    # need to wrap.bind to make sure this is pointing to the behavior not the reactive
+    get: (r, name) -> (wrap.bind handler.beh) handler.beh[name]
     unary: (o) -> reactive (liftB numUnaryOps[o], @.beh)
     left: (o, r) ->
       h = Proxy.unProxy reactiveSecret, r
@@ -46,31 +40,18 @@ reactive = (x) ->
 
   Proxy.create handler, null, reactiveSecret
 
-
-
 stream = (e) ->
-  throw "not implemented yet" if not (e instanceof EventStream)
+  throw "streams must be built from EventStreams" if not (e instanceof EventStream)
   
   handler = merge (makeIdHandler e),
     evt: e
-    get: (r, name) -> wrapGet handler.evt, handler.evt[name]
+    # need to wrap.bind to make sure `this` is pointing to the evtStream not the stream
+    get: (r, name) -> (wrap.bind handler.evt) handler.evt[name]
   
   Proxy.create handler, null, streamSecret
 
-
-# root.reactive = reactive
-
-oTimerB = timerB
-root.timerB = (interval) -> 
-  reactive (oTimerB interval)
-
-oInsertValueB = insertValueB
-root.insertValueB = (value, dest, field) ->
-  rh = Proxy.unProxy reactiveSecret, value
-  if rh
-    oInsertValueB rh.beh, dest, field
-  else
-    throw "not implemented"
-
-o$E = $E
-root.$E = (el, evt) -> stream (extractEventE el, evt)
+# need to wrap some specific flapjax functions that 
+# are called directly (ie not as methods on reactive or stream)
+root.timerB = wrap timerB
+root.insertValueB = wrap insertValueB
+root.$E = wrap $E
