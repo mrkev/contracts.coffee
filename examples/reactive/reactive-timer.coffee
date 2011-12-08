@@ -1,6 +1,3 @@
-loadVirt.patch()
-
-
 window.run = ->
   now = timerB 1000
   startTm = now.valueNow()

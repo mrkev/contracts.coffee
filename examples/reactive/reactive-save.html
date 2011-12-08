@@ -1,6 +1,6 @@
 <html>
 <head>
-  <title>Reactive timer example</title>
+  <title>Reactive saving example</title>
 </head>
 <script type="text/javascript" src="../../lib/coffee-script/loadVirt.js"></script>
 <script type="text/javascript" src="../../lib/coffee-script/loadContracts.js"></script>
@@ -12,11 +12,10 @@
 <script type="text/javascript" src="../../extensions/frp/flapjax-impl.js"></script>
 <script type="text/javascript" src="../../lib/extensions/frp-small.js"></script>
 
-<script type="text/javascript" src="reactive-timer.js"></script>
+<script type="text/javascript" src="reactive-save.js"></script>
 <body onload="run();">
-  <p>
-    The timer is currently at: <span id="curTime"> </span>.
-  </p>
-  <input id="reset" type="button" value="Reset"></input>
+  <textarea name="editbox" id="edit" cols="30" rows="10"></textarea>
+  <br />
+  <input type="button" name="save" id="btnSave" value="save">
 </body>
 </html>
