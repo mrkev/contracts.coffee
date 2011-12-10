@@ -22,13 +22,14 @@ unwrap = (x) ->
   sh = Proxy.unProxy streamSecret, x
   if rh then rh.beh else if sh then sh.evt else x
 
-reactive = (x) -> 
+root.reactive = reactive = (x) -> 
   b = if x instanceof Behavior then x else startsWith receiverE(), x
 
   handler = merge (makeIdHandler b),
     beh: b
     # need to wrap.bind to make sure this is pointing to the behavior not the reactive
     get: (r, name) -> (wrap.bind handler.beh) handler.beh[name]
+    # todo: set, what to do about objects?
     unary: (o) -> reactive (liftB numUnaryOps[o], @.beh)
     left: (o, r) ->
       h = Proxy.unProxy reactiveSecret, r
@@ -37,6 +38,7 @@ reactive = (x) ->
       else
         reactive (liftB numBinaryOps[o], @.beh, r)
     right: (o, l) -> reactive (liftB numBinaryOps[o], l, @.beh)
+    test: (c) -> throw "Conditional on a reactive is not supported!"
 
   Proxy.create handler, null, reactiveSecret
 
@@ -53,7 +55,6 @@ stream = (e) ->
 # need to wrap some specific flapjax functions that 
 # are called directly (ie not as methods on reactive or stream)
 root.timerB = wrap timerB
-root.timerE = wrap timerE
 root.insertValueB = wrap insertValueB
 root.$E = wrap $E
 root.$B = wrap $B

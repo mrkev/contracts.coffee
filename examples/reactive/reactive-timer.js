@@ -27,4 +27,14 @@
     return insertValueB(elapsed, "curTime", "innerHTML");
   };
 
+  window.test = function() {
+    var o;
+    o = reactive({});
+    o.foo = "orig";
+    o.sendBehavior({
+      foo: "new"
+    });
+    return o.foo;
+  };
+
 }).call(this);
