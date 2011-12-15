@@ -19,7 +19,7 @@ NO      = -> no
 THIS    = -> this
 NEGATE  = -> @negated = not @negated; this
 
-CONTRACT_PREFIX = "Contracts.combinators."
+CONTRACT_PREFIX = "__contracts."
 
 #### Base
 
@@ -252,32 +252,48 @@ exports.Block = class Block extends Base
     o.level  = LEVEL_TOP
     @spaced  = yes
     code     = @compileWithDeclarations o
-    cpath = path.join path.dirname(fs.realpathSync(__filename)), 'loadContracts.js'
-    loadContracts = if o.contracts and o.withLib then (fs.readFileSync cpath, 'utf8') else ''
 
-    patchRequire = """
-      (function() {
-        var old_require;
-        if (typeof require !== 'undefined' && require !== null) {
-          old_require = require;
-          require = function(mod, filename) {
-            var key, m = old_require(mod);
-            for(key in m) {
-              if(typeof(m[key]) && m[key].hasOwnProperty('use')) {
-                m[key] = m[key].use(filename, mod);
-              }
-            }
-            return m;
-          };
-          for(var key in old_require) {
-            require[key] = old_require[key];
-          }
-        }
-      })();
+    # alias the contract lib to an internal prefix # (to distinguish between 
+    # contract.coffee usages of contracts and user usages of it)
+    # 
+    # yes copy-pasta for the base contracts but don't want to 
+    # prefix names and don't want to pollute the global object.
+    loadContracts = """
+      var __contracts, Undefined, Null, Num, Bool, Str, Odd, Even, Pos, Nat, Neg, Self, Any, None, __old_exports, __old_require;
+      if (typeof(window) !== 'undefined' && window !== null) {
+        __contracts = window.Contracts;
+      } else {
+        __contracts = require('contracts.js');
+      }
+      Undefined =  __contracts.Undefined;
+      Null      =  __contracts.Null;
+      Num       =  __contracts.Num;
+      Bool      =  __contracts.Bool;
+      Str       =  __contracts.Str;
+      Odd       =  __contracts.Odd;
+      Even      =  __contracts.Even;
+      Pos       =  __contracts.Pos;
+      Nat       =  __contracts.Nat;
+      Neg       =  __contracts.Neg;
+      Self      =  __contracts.Self;
+      Any       =  __contracts.Any;
+      None      =  __contracts.None;
+
+      __old_exports = exports;
+      exports = __contracts.makeContractsExports("#{o.filename}", __old_exports)
+      __old_require = require;
+      require = function() {
+        var module;
+        module = __old_require.apply(this, arguments);
+        return __contracts.use(module, "#{o.filename}");
+      };
     """
-
+      
     return code if o.bare
-    "(function() {#{patchRequire}\n#{loadContracts}\n#{code}\n}).call(this);\n"
+    if o.contracts
+      "(function() {#{loadContracts}\n(function() {\n#{code}\n}).call(this);\n}).call(this);\n"
+    else
+      "(function() {\n#{code}\n}).call(this);"
 
   # Compile the expressions body for the contents of a function, with
   # declarations of all inner variables pushed up to the top.
@@ -356,7 +372,7 @@ exports.OptionalContract = class OptionalContract extends Base
   children: ['value']
 
   compileNode: (o) ->
-    "#{if o.contractPrefix then CONTRACT_PREFIX else ''}opt(#{@value.compile o})"
+    "#{if o.contracts then CONTRACT_PREFIX else ''}opt(#{@value.compile o})"
 
 
 exports.ContractOp = class ContractOp extends Base
@@ -366,9 +382,9 @@ exports.ContractOp = class ContractOp extends Base
 
   compileNode: (o) ->
     if @op is '||'
-      "#{if o.contractPrefix then CONTRACT_PREFIX else ''}or(#{@first.compile o}, #{@second.compile o})"
+      "#{if o.contracts then CONTRACT_PREFIX else ''}or(#{@first.compile o}, #{@second.compile o})"
     else if @op is '&&'
-      "#{if o.contractPrefix then CONTRACT_PREFIX else ''}and(#{@first.compile o}, #{@second.compile o})"
+      "#{if o.contracts then CONTRACT_PREFIX else ''}and(#{@first.compile o}, #{@second.compile o})"
     else
       throw new SyntaxError "Unknown contract operator '#{@op}'"
 
@@ -377,7 +393,7 @@ exports.SelfContract = class SelfContract extends Base
   constructor: ->
 
   compileNode: (o) ->
-    "#{if o.contractPrefix then CONTRACT_PREFIX else ''}self"
+    "#{if o.contracts then CONTRACT_PREFIX else ''}self"
 
 exports.WrapContract = class WrapContract extends Base
   constructor: (@contract) ->
@@ -412,7 +428,7 @@ exports.FunctionContract = class FunctionContract extends Base
       @options.properties.push(makeObjectProp "newOnly", "true")
     else if @tags is 'newSafe'
       @options.properties.push(makeObjectProp "newSafe", "true")
-    "#{if o.contractPrefix then CONTRACT_PREFIX else ''}fun(#{params}, #{range}, #{@options.compile o})"
+    "#{if o.contracts then CONTRACT_PREFIX else ''}fun(#{params}, #{range}, #{@options.compile o})"
 
 
 exports.RestContract = class RestContract extends Base
@@ -421,7 +437,7 @@ exports.RestContract = class RestContract extends Base
   children: ['contract']
 
   compileNode: (o) ->
-    "#{if o.contractPrefix then CONTRACT_PREFIX else ''}___(#{@contract.compile o})"
+    "#{if o.contracts then CONTRACT_PREFIX else ''}___(#{@contract.compile o})"
 
 exports.ObjectContract = class ObjectContract extends Base
   constructor: (@oc, opts) ->
@@ -431,7 +447,7 @@ exports.ObjectContract = class ObjectContract extends Base
   children: ['oc']
 
   compileNode: (o) ->
-    "#{if o.contractPrefix then CONTRACT_PREFIX else ''}object(#{@oc.compile o}, #{@options.compile o})"
+    "#{if o.contracts then CONTRACT_PREFIX else ''}object(#{@oc.compile o}, #{@options.compile o})"
 
 exports.ArrayContract = class ArrayContract extends Base
   constructor: (@arc) ->
@@ -439,7 +455,7 @@ exports.ArrayContract = class ArrayContract extends Base
   children: ['arc']
 
   compileNode: (o) ->
-    "#{if o.contractPrefix then CONTRACT_PREFIX else ''}arr(#{@arc.compile o})"
+    "#{if o.contracts then CONTRACT_PREFIX else ''}arr(#{@arc.compile o})"
 
 
 exports.ContractValue = class ContractValue extends Base
@@ -451,7 +467,7 @@ exports.ContractValue = class ContractValue extends Base
     if not (@contract_var.base.value is @value_var.base.value)
       throw new SyntaxError "Variable name differs between value (#{@value_var.base.value}) and contract (#{@contract_var.base.value})"
     if o.contracts
-      "#{if o.contractPrefix then CONTRACT_PREFIX else ''}guard(#{@contract.compile(o, LEVEL_PAREN)},#{@value.compile(o, LEVEL_PAREN)})"
+      "#{if o.contracts then CONTRACT_PREFIX else ''}guard(#{@contract.compile(o, LEVEL_PAREN)},#{@value.compile(o, LEVEL_PAREN)})"
     else
       "{ use: function() { return #{@value.compile o, LEVEL_PAREN}; } }"
 
@@ -683,10 +699,6 @@ exports.Call = class Call extends Base
     args = (arg.compile o, LEVEL_LIST for arg in args).join ', '
     if @isSuper
       @superReference(o) + ".call(this#{ args and ', ' + args })"
-    else if o.contracts and @variable?.base?.value is 'require'
-      # helping out the contract modules by passing along the filename to a patched require
-      # which will setup the client/server automatically
-      (if @isNew then 'new ' else '') + @variable.compile(o, LEVEL_ACCESS) + "(#{args}, '#{o.filename}')"
     else
       (if @isNew then 'new ' else '') + @variable.compile(o, LEVEL_ACCESS) + "(#{args})"
 

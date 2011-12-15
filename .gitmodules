@@ -1,3 +1,0 @@
-[submodule "contracts.js"]
-	path = contracts.js
-	url = git://github.com/disnet/contracts.js.git

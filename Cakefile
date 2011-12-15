@@ -74,12 +74,6 @@ task 'build', 'build the CoffeeScript language from source', build = (cb) ->
   files = ('src/' + file for file in files when file.match(/\.coffee$/))
   run ['-c', '-o', 'lib/coffee-script'].concat(files), cb
 
-  contractPath = 'contracts.js/src/'
-  contractFiles = ['stacktrace.js', 'contracts.js', 'autoload.js']
-  loadContracts = (fs.readFileSync contractPath + file for file in contractFiles).join "\n"
-
-  fs.writeFileSync "#{lib}/loadContracts.js", loadContracts
-
 buildWebtests = ->  
   run ['-c', '-C', '-o', 'test/webtest', 'test/contracts.coffee']
 
@@ -245,7 +239,7 @@ runTests = (CoffeeScript) ->
     currentFile = filename = path.join 'test', file
     code = fs.readFileSync filename
     try
-      CoffeeScript.run code.toString(), {filename, contracts: true, withLib: true}
+      CoffeeScript.run code.toString(), {filename, contracts: true}
     catch error
       failures.push {filename, error}
   return !failures.length
