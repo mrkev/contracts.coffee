@@ -254,8 +254,6 @@ exports.Block = class Block extends Base
     o.level  = LEVEL_TOP
     @spaced  = yes
     code     = @compileWithDeclarations o
-    vpath = path.join path.dirname(fs.realpathSync(__filename)), 'loadVirt.js'
-    loadVirt = if o.virtualize then fs.readFileSync vpath, 'utf8' else ''
 
     # alias the contract lib to an internal prefix # (to distinguish between 
     # contract.coffee usages of contracts and user usages of it)
@@ -291,7 +289,6 @@ exports.Block = class Block extends Base
         module = __old_require.apply(this, arguments);
         return __contracts.use(module, "#{o.filename}");
       };
-      #{loadVirt}
     """
       
     return code if o.bare

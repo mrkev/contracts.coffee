@@ -59,7 +59,6 @@ reactive = (x) ->
     undefined
 
   p
-reactive = reactive.use "self"
 
 stream = (e) ->
   throw "not implemented yet" if not (e instanceof fj.EventStream)

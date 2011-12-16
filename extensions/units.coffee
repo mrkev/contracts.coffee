@@ -22,7 +22,6 @@ makeQuantity = (u, i, n) ->
       right: (o, l) -> rightOps[o] u, i, n, l
       test: -> n    # ignore uints in tests
     }, null, secret
-makeQuantity = makeQuantity.use "self"
 
 
 unaryOps = 
@@ -47,7 +46,6 @@ dropUnit = (u, i, n) ->
   h = Proxy.unProxy secret, n
   throw "bad units!" if not (h isnt false and h.unit is u and h.index is i)
   h.value
-dropUnit = dropUnit.use "self"
 
 # given a string to represent the unit will return a proxy
 # that represents one of that unit

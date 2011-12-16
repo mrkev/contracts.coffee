@@ -35,7 +35,6 @@ makeComplex = (r, i) ->
     getPropertyDescriptor: (name) -> undefined
   Proxy.create h, null, secret
 exports.makeComplex = makeComplex
-makeComplex = makeComplex.use "self"
 
 exports.isComplex :: (Any) -> Bool
 exports.isComplex = isComplex = (x) -> if (Proxy.unProxy secret, x) then true else false

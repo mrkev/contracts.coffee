@@ -59,7 +59,6 @@ makeReactive = (source, update, value = null) ->
       handler.value = upd 
       s.set upd for s in handler.sinks
   p
-makeReactive = makeReactive.use "self"
 
 
 

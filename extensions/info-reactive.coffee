@@ -12,7 +12,6 @@ Label = ?!(x) -> x is HIGH or x is LOW
 
 join :: (Label, Label) -> Label
 join = (a, b) -> if a is HIGH or b is HIGH then HIGH else LOW
-join = join.use "self"
 
 id = (x) -> x
 
@@ -38,7 +37,6 @@ getValue = (v, label) ->
     v[LOW]
   else
     v[label]
-getValue = getValue.use "self"
 
 
 # quasi-flapjax style FR with information flow
@@ -124,7 +122,6 @@ makeReactive = (source, update, value = null, label = LOW) ->
       handler.value[l] = upd 
       s.set upd for s in handler.sinks
   p
-makeReactive = makeReactive.use "self"
 
 # simulates a low output channel by just returning the low value of its argument
 exports.outputLow = (x) ->
