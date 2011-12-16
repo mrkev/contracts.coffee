@@ -255,7 +255,7 @@ exports.Block = class Block extends Base
     @spaced  = yes
     code     = @compileWithDeclarations o
     vpath = path.join path.dirname(fs.realpathSync(__filename)), 'loadVirt.js'
-    loadVirt = if o.virtualize fs.readFileSync vpath, 'utf8'
+    loadVirt = if o.virtualize then fs.readFileSync vpath, 'utf8' else ''
 
     # alias the contract lib to an internal prefix # (to distinguish between 
     # contract.coffee usages of contracts and user usages of it)
