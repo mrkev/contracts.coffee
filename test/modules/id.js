@@ -20,16 +20,20 @@ None      =  __contracts.None;
 
 if (typeof(exports) !== 'undefined' && exports !== null) {
   __old_exports = exports;
-  exports = __contracts.makeContractsExports("test/modules/id.coffee", __old_exports)
+} else {
+  __old_exports = {};
 }
+exports = __contracts.makeContractsExports("test/modules/id.coffee", __old_exports)
 if (typeof(require) !== 'undefined' && require !== null) {
   __old_require = require;
-  require = function() {
-    var module;
-    module = __old_require.apply(this, arguments);
-    return __contracts.use(module, "test/modules/id.coffee");
-  };
 }
+require = function(module) {
+  var module;
+  if (typeof(__old_require) === 'function') {
+    module = __old_require.apply(this, arguments);
+  }
+  return __contracts.use(module, "test/modules/id.coffee");
+};
 (function() {
 
   exports.id = __contracts.guard(__contracts.fun([Str], Str, {}),function(x) {
