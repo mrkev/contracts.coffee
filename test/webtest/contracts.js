@@ -18,14 +18,18 @@ Self      =  __contracts.Self;
 Any       =  __contracts.Any;
 None      =  __contracts.None;
 
-__old_exports = exports;
-exports = __contracts.makeContractsExports("test/contracts.coffee", __old_exports)
-__old_require = require;
-require = function() {
-  var module;
-  module = __old_require.apply(this, arguments);
-  return __contracts.use(module, "test/contracts.coffee");
-};
+if (typeof(exports) !== 'undefined' && exports !== null) {
+  __old_exports = exports;
+  exports = __contracts.makeContractsExports("test/contracts.coffee", __old_exports)
+}
+if (typeof(require) !== 'undefined' && require !== null) {
+  __old_require = require;
+  require = function() {
+    var module;
+    module = __old_require.apply(this, arguments);
+    return __contracts.use(module, "test/contracts.coffee");
+  };
+}
 (function() {
 
   test("function, first order", function() {
