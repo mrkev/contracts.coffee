@@ -1,8 +1,9 @@
 
-root = exports ? this["loadVirt"] = {}
+# note that this file should not be compiled with virtualization turned on 
+window.loadVirt = exports if window?
 
 # only patch Proxy once
-root.patch = ->
+exports.patch = ->
   if not Proxy.__vvalues?
     Proxy.__vvalues = true
 
