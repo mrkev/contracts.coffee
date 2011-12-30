@@ -84,11 +84,6 @@ buildExamples = ->
 task 'build:webtests', 'compiles the contracts testing files', ->
   buildWebtests()
  
-task 'build:extensions', 'build the virtual value extensions', (cb) ->
-  lib = "lib/extensions"
-  files = fs.readdirSync 'extensions'
-  files = ('extensions/' + file for file in files when file.match(/\.coffee$/))
-  run ['-c', '-C', '-V', '-o', 'lib/extensions'].concat(files), cb
 
 task 'build:full', 'rebuild the source twice, and run the tests', ->
   build ->
