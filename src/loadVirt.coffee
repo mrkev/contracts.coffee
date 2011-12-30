@@ -1,5 +1,5 @@
-
 # note that this file should not be compiled with virtualization turned on 
+
 window.loadVirt = exports if window?
 
 # only patch Proxy once

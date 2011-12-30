@@ -78,9 +78,6 @@ task 'build', 'build the CoffeeScript language from source', build = (cb) ->
 buildWebtests = ->  
   run ['-c', '-C', '-o', 'test/webtest', 'test/contracts.coffee']
 
-buildExamples = ->
-  run ['-c', '-C', '-V', '-o', 'examples/reactive', 'examples/reactive']
-
 task 'build:webtests', 'compiles the contracts testing files', ->
   buildWebtests()
  
@@ -254,7 +251,6 @@ runTests = (CoffeeScript) ->
       catch error
         failures.push {filename, error}
   runfiles 'test', {}
-  runfiles "test/virtualize", virtualize:true
   return !failures.length
 
 
