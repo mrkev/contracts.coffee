@@ -303,7 +303,7 @@ exports.Block = class Block extends Base
     if o.contracts
       "#{prelude}(function() {#{loadContracts}\n(function() {\n#{code}\n}).call(this);\n}).call(this);\n"
     else
-      "#{prelude}}(function() {\n#{code}\n}).call(this);"
+      "#{prelude}(function() {\n#{code}\n}).call(this);"
 
   # Compile the expressions body for the contents of a function, with
   # declarations of all inner variables pushed up to the top.
