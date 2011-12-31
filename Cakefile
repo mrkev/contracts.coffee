@@ -59,6 +59,8 @@ task 'install', 'install CoffeeScript into /usr/local (or --prefix)', (options) 
     "cp -rf bin lib LICENSE README package.json src #{lib}"
     "ln -sfn #{lib}/bin/coffee #{bin}/coffee"
     "ln -sfn #{lib}/bin/cake #{bin}/cake"
+    "ln -sfn #{lib}/bin/coffee-node #{bin}/coffee-node"
+    "ln -sfn #{lib}/bin/cake-node #{bin}/cake-node"
     "mkdir -p ~/.node_libraries"
     "ln -sfn #{lib}/lib/coffee-script #{node}"
   ].join(' && '), (err, stdout, stderr) ->
@@ -71,14 +73,11 @@ task 'build', 'build the CoffeeScript language from source', build = (cb) ->
   files = fs.readdirSync 'src'
   files = ('src/' + file for file in files when file.match(/\.coffee$/))
   run ['-c', '-o', 'lib/coffee-script'].concat(files), cb
-
-  contractPath = 'contracts.js/src/'
-  contractFiles = ['stacktrace.js', 'contracts.js', 'autoload.js']
-  loadContracts = (fs.readFileSync contractPath + file for file in contractFiles).join "\n"
-
-  fs.writeFileSync "#{lib}/loadContracts.js", loadContracts
+  contractLib = fs.readFileSync 'contracts.js/lib/contracts.js'
+  fs.writeFileSync 'lib/contracts/contracts.js', contractLib
 
 buildWebtests = ->  
+  run ['-c', '-C', 'test/webtest']
   run ['-c', '-C', '-o', 'test/webtest', 'test/contracts.coffee']
 
 task 'build:webtests', 'compiles the contracts testing files', ->
@@ -116,11 +115,19 @@ task 'build:browser', 'rebuild the merged script for inclusion in the browser', 
       };
     """
   code = """
-    this.CoffeeScript = function() {
-      function require(path){ return require[path]; }
-      #{code}
-      return require['./coffee-script']
-    }()
+    (function(root) {
+      var CoffeeScript = function() {
+        function require(path){ return require[path]; }
+        #{code}
+        return require['./coffee-script'];
+      }();
+
+      if (typeof define === 'function' && define.amd) {
+        define(function() { return CoffeeScript; });
+      } else { 
+        root.CoffeeScript = CoffeeScript; 
+      }
+    }(this));
   """
   unless process.env.MINIFY is 'false'
     {parser, uglify} = require 'uglify-js'
@@ -173,19 +180,9 @@ runTests = (CoffeeScript) ->
   passedTests = 0
   failures    = []
 
-  # Make "global" reference available to tests
-  global.global = global
-
-  # Mix in the assert module globally, to make it available for tests.
-  addGlobal = (name, func) ->
-    global[name] = ->
-      passedTests += 1
-      func arguments...
-
-  addGlobal name, func for name, func of require 'assert'
+  global[name] = func for name, func of require 'assert'
 
   # Convenience aliases.
-  global.eq = global.strictEqual
   global.CoffeeScript = CoffeeScript
 
   # Our test helper function for delimiting different test cases.
@@ -193,26 +190,29 @@ runTests = (CoffeeScript) ->
     try
       fn.test = {description, currentFile}
       fn.call(fn)
+      ++passedTests
     catch e
       e.description = description if description?
       e.source      = fn.toString() if fn.toString?
       failures.push filename: currentFile, error: e
 
-  # A recursive functional equivalence helper; uses egal for testing equivalence.
   # See http://wiki.ecmascript.org/doku.php?id=harmony:egal
-  arrayEqual = (a, b) ->
+  egal = (a, b) ->
     if a is b
-      # 0 isnt -0
       a isnt 0 or 1/a is 1/b
-    else if a instanceof Array and b instanceof Array
-      return no unless a.length is b.length
-      return no for el, idx in a when not arrayEqual el, b[idx]
-      yes
     else
-      # NaN is NaN
       a isnt a and b isnt b
 
-  global.arrayEq = (a, b, msg) -> ok arrayEqual(a,b), msg
+  # A recursive functional equivalence helper; uses egal for testing equivalence.
+  arrayEgal = (a, b) ->
+    if egal a, b then yes
+    else if a instanceof Array and b instanceof Array
+      return no unless a.length is b.length
+      return no for el, idx in a when not arrayEgal el, b[idx]
+      yes
+
+  global.eq      = (a, b, msg) -> ok egal(a, b), msg
+  global.arrayEq = (a, b, msg) -> ok arrayEgal(a,b), msg
 
   # When all the tests have run, collect and print errors.
   # If a stacktrace is available, output the compiled function source.
@@ -234,13 +234,17 @@ runTests = (CoffeeScript) ->
       console.log "  #{error.source}" if error.source
     return
 
+  files = fs.readdirSync 'test/modules'
+  files = ('test/modules/' + file for file in files when file.match(/\.coffee$/))
+  run ['-c', '-C', '-o', 'test/modules/'].concat(files)
+
   # Run every test in the `test` folder, recording failures.
   files = fs.readdirSync 'test'
   for file in files when file.match /\.coffee$/i
     currentFile = filename = path.join 'test', file
     code = fs.readFileSync filename
     try
-      CoffeeScript.run code.toString(), {filename, contracts: true, withLib: true}
+      CoffeeScript.run code.toString(), {filename, contracts: true}
     catch error
       failures.push {filename, error}
   return !failures.length

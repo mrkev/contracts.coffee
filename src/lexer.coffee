@@ -112,7 +112,7 @@ exports.Lexer = class Lexer
         id  = new String id
         id.reserved = yes
       else if id in RESERVED
-        @error "reserved word \"#{word}\""
+        @error "reserved word \"#{id}\""
 
     unless forcedIdentifier
       id  = COFFEE_ALIAS_MAP[id] if id in COFFEE_ALIASES
@@ -121,7 +121,7 @@ exports.Lexer = class Lexer
         when '==', '!='                           then 'COMPARE'
         when '&&', '||'                           then 'LOGIC'
         when 'true', 'false', 'null', 'undefined' then 'BOOL'
-        when 'break', 'continue', 'debugger'      then 'STATEMENT'
+        when 'break', 'continue'                  then 'STATEMENT'
         else  tag
 
     @token tag, id
@@ -133,8 +133,11 @@ exports.Lexer = class Lexer
   numberToken: ->
     return 0 unless match = NUMBER.exec @chunk
     number = match[0]
+    lexedLength = number.length
+    if binaryLiteral = /0b([01]+)/.exec number
+      number = (parseInt binaryLiteral[1], 2).toString()
     @token 'NUMBER', number
-    number.length
+    lexedLength
 
   # Matches strings, including multi-line strings. Ensures that quotation marks
   # are balanced within the string's contents, and within nested interpolations.
@@ -259,7 +262,7 @@ exports.Lexer = class Lexer
       diff = size - @indent + @outdebt
       @token 'INDENT', diff
       @indents.push diff
-      @ends   .push 'OUTDENT'
+      @ends.push 'OUTDENT'
       @outdebt = @indebt = 0
     else
       @indebt = 0
@@ -459,8 +462,8 @@ exports.Lexer = class Lexer
         nested.shift() if nested[0]?[0] is 'TERMINATOR'
         if len = nested.length
           if len > 1
-            nested.unshift ['(', '(']
-            nested.push    [')', ')']
+            nested.unshift ['(', '(', @line]
+            nested.push    [')', ')', @line]
           tokens.push ['TOKENS', nested]
       i += expr.length
       pi = i + 1
@@ -582,6 +585,7 @@ IDENTIFIER = /// ^
 
 NUMBER     = ///
   ^ 0x[\da-f]+ |                              # hex
+  ^ 0b[01]+ |                              # binary
   ^ \d*\.?\d+ (?:e[+-]?\d+)?  # decimal
 ///i
 

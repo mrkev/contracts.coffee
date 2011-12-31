@@ -1,12 +1,12 @@
 {
-  "name":         "coffee-script",
-  "description":  "Unfancy JavaScript",
-  "keywords":     ["javascript", "language", "coffeescript", "compiler"],
-  "author":       "Jeremy Ashkenas",
-  "version":      "1.1.3-pre",
+  "name":         "contracts.coffee",
+  "description":  "A Dialect of CoffeeScript with contracts",
+  "keywords":     ["javascript", "language", "coffeescript", "compiler", "contracts"],
+  "author":       "Tim Disney",
+  "version":      "0.1.0",
   "licenses":     [{
     "type":       "MIT",
-    "url":        "http://github.com/jashkenas/coffee-script/raw/master/LICENSE"
+    "url":        "https://raw.github.com/disnet/contracts.coffee/master/LICENSE"
   }],
   "engines":      {
     "node":       ">=0.4.0"
@@ -17,15 +17,17 @@
   "main" : "./lib/coffee-script/coffee-script",
   "bin":          {
     "coffee":     "./bin/coffee",
-    "cake":       "./bin/cake"
+    "cake":       "./bin/cake",
+    "coffee-node":     "./bin/coffee-node",
+    "cake-node":       "./bin/cake-node"
   },
-  "homepage":     "http://coffeescript.org",
+  "homepage":     "http://disnetdev.com/contracts.coffee/",
   "repository":   {
     "type": "git",
-    "url": "git://github.com/jashkenas/coffee-script.git"
+    "url": "git://github.com/disnet/contracts.coffee.git"
   },
   "devDependencies": {
-    "uglify-js":  "1.0.6",
-    "jison":      "0.2.11"
+    "uglify-js":  ">=1.0.0",
+    "jison":      ">=0.2.0"
   }
 }
