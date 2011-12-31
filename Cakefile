@@ -76,6 +76,7 @@ task 'build', 'build the CoffeeScript language from source', build = (cb) ->
   run ['-c', '-o', 'lib/coffee-script'].concat(files), cb
 
 buildWebtests = ->  
+  run ['-c', '-C', 'test/webtest']
   run ['-c', '-C', '-o', 'test/webtest', 'test/contracts.coffee']
 
 task 'build:webtests', 'compiles the contracts testing files', ->
