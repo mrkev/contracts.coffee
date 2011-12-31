@@ -4,8 +4,6 @@
 # the syntax tree into a string of JavaScript code, call `compile()` on the root.
 
 {Scope} = require './scope'
-path = require 'path'
-fs = require 'fs'
 {RESERVED} = require './lexer'
 
 # Import the helpers we plan to use.
@@ -279,12 +277,19 @@ exports.Block = class Block extends Base
       Any       =  __contracts.Any;
       None      =  __contracts.None;
 
-      __old_exports = exports;
+      if (typeof(exports) !== 'undefined' && exports !== null) {
+        __old_exports = exports;
+      } else {
+        __old_exports = {};
+      }
       exports = __contracts.makeContractsExports("#{o.filename}", __old_exports)
-      __old_require = require;
-      require = function() {
-        var module;
-        module = __old_require.apply(this, arguments);
+      if (typeof(require) !== 'undefined' && require !== null) {
+        __old_require = require;
+      }
+      require = function(module) {
+        if (typeof(__old_require) === 'function') {
+          module = __old_require.apply(this, arguments);
+        }
         return __contracts.use(module, "#{o.filename}");
       };
     """
