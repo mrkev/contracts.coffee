@@ -113,32 +113,32 @@ npm install -g contracts.coffee
 Now, compile some coffee with contracts!
 
 {% highlight bash %}
-coffee -cC MyContractedScript.coffee
+coffee -c --contracts MyContractedScript.coffee
 {% endhighlight %}
 
-Note the `-cC` flag. The `-c` says to compile to JavaScript and `-C`
-enables contracts in the compiled JavaScript. If you don't want
-contracts enabled (say in production) simply don't include the `-C`
+Note the `-c` and `--contracts` flag. The `-c` says to compile to JavaScript 
+and `--contracts` enables contracts in the compiled JavaScript. If you don't want
+contracts enabled (say in production) simply don't include the `--contracts`
 flag.
 
-You will also need to include `lib/loadContracts.js`. 
-So the header of your HTML file will look
-something like:
+If you are planning to run your code in the browser 
+you will need to include the `contracts.js` library (which can be found [here](https://github.com/disnet/contracts.coffee/blob/master/lib/contracts/contracts.js)).
+So the header of your HTML file will look something like:
 
 {% highlight html %}
 ...
-<script src="lib/loadContracts.js"
+<script src="lib/contracts.js"
     type="application/javascript"></script>
 <script src="MyContractedScript.js"
     type="application/javascript"></script>
 ...
 {% endhighlight %}
 
-Alternately, you can compile with the contract library concatenated into the generated
-JavaScript source by using the `--withlib` flag:
+If you are planning to run your code on node.js then you simply
+need to install `contracts.js` via npm:
 
 {% highlight bash %}
-coffee -cC --withlib MyContractedScript.coffee
+npm install contracts.js
 {% endhighlight %}
 
 Note that if you have an existing install of CoffeeScript,
@@ -148,14 +148,14 @@ up the old CoffeeScript compiler you can grab the source from
 just run contracts.coffee from its own directory:
 
 {% highlight bash %}
-bin/coffee -cC MyContractedScript.coffee
+bin/coffee -c --contracts MyContractedScript.coffee
 {% endhighlight %}
 
 And finally, note that contracts.coffee requires some pretty new
 features of JavaScript to get its job done (in particular
 [Proxies](https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Proxy))
-so it currently only works on Firefox 4+ and Node.js 0.6.0+ 
-(Proxy support is in V8 but it hasn't worked it way into Chrome just yet). 
+so it currently only works on Firefox 4+ and Node.js 0.5.10 (but not 0.6.x yet).
+Proxy support is in V8 but it hasn't worked it way into Chrome just yet.
 
 When using node you will need to supply two command line flags to enable
 Proxies (`--harmony_proxies`) and WeakMaps (`--harmony-weakmaps`). If you use the
@@ -163,11 +163,11 @@ Proxies (`--harmony_proxies`) and WeakMaps (`--harmony-weakmaps`). If you use th
 the full process looks like:
 
 {% highlight bash %}
-coffee -cC --withlib script.coffee
+coffee -c --contracts script.coffee
 node --harmony_proxies --harmony-weakmaps script.js
 {% endhighlight %}
 
-Note that since leaving off the `-C` flag will generate JavaScript
+Note that since leaving off the `--contracts` flag will generate JavaScript
 code with absolutely no trace of contracts (the code is exactly what
 vanilla CoffeeScript would generate), you can easily set up a
 production build with contracts disabled that can run in any browser

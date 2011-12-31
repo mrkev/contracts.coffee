@@ -176,36 +176,36 @@ Parent contracts:
 </code></pre>
 </div>
 <p>Now, compile some coffee with contracts!</p>
-<div class='highlight'><pre><code class='bash'>coffee -cC MyContractedScript.coffee
+<div class='highlight'><pre><code class='bash'>coffee -c --contracts MyContractedScript.coffee
 </code></pre>
 </div>
-<p>Note the <code>-cC</code> flag. The <code>-c</code> says to compile to JavaScript and <code>-C</code> enables contracts in the compiled JavaScript. If you don&#8217;t want contracts enabled (say in production) simply don&#8217;t include the <code>-C</code> flag.</p>
+<p>Note the <code>-c</code> and <code>--contracts</code> flag. The <code>-c</code> says to compile to JavaScript and <code>--contracts</code> enables contracts in the compiled JavaScript. If you don&#8217;t want contracts enabled (say in production) simply don&#8217;t include the <code>--contracts</code> flag.</p>
 
-<p>You will also need to include <code>lib/loadContracts.js</code>. So the header of your HTML file will look something like:</p>
+<p>If you are planning to run your code in the browser you will need to include the <code>contracts.js</code> library (which can be found <a href='https://github.com/disnet/contracts.coffee/blob/master/lib/contracts/contracts.js'>here</a>). So the header of your HTML file will look something like:</p>
 <div class='highlight'><pre><code class='html'>...
-<span class='nt'>&lt;script </span><span class='na'>src=</span><span class='s'>&quot;lib/loadContracts.js&quot;</span>
+<span class='nt'>&lt;script </span><span class='na'>src=</span><span class='s'>&quot;lib/contracts.js&quot;</span>
     <span class='na'>type=</span><span class='s'>&quot;application/javascript&quot;</span><span class='nt'>&gt;&lt;/script&gt;</span>
 <span class='nt'>&lt;script </span><span class='na'>src=</span><span class='s'>&quot;MyContractedScript.js&quot;</span>
     <span class='na'>type=</span><span class='s'>&quot;application/javascript&quot;</span><span class='nt'>&gt;&lt;/script&gt;</span>
 ...
 </code></pre>
 </div>
-<p>Alternately, you can compile with the contract library concatenated into the generated JavaScript source by using the <code>--withlib</code> flag:</p>
-<div class='highlight'><pre><code class='bash'>coffee -cC --withlib MyContractedScript.coffee
+<p>If you are planning to run your code on node.js then you simply need to install <code>contracts.js</code> via npm:</p>
+<div class='highlight'><pre><code class='bash'>npm install contracts.js
 </code></pre>
 </div>
 <p>Note that if you have an existing install of CoffeeScript, installing contracts.coffee will replace it. If you don&#8217;t want to give up the old CoffeeScript compiler you can grab the source from <a href='https://github.com/disnet/contracts.coffee'>github</a> and just run contracts.coffee from its own directory:</p>
-<div class='highlight'><pre><code class='bash'>bin/coffee -cC MyContractedScript.coffee
+<div class='highlight'><pre><code class='bash'>bin/coffee -c --contracts MyContractedScript.coffee
 </code></pre>
 </div>
-<p>And finally, note that contracts.coffee requires some pretty new features of JavaScript to get its job done (in particular <a href='https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Proxy'>Proxies</a>) so it currently only works on Firefox 4+ and Node.js 0.6.0+ (Proxy support is in V8 but it hasn&#8217;t worked it way into Chrome just yet).</p>
+<p>And finally, note that contracts.coffee requires some pretty new features of JavaScript to get its job done (in particular <a href='https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Proxy'>Proxies</a>) so it currently only works on Firefox 4+ and Node.js 0.5.10 (but not 0.6.x yet). Proxy support is in V8 but it hasn&#8217;t worked it way into Chrome just yet.</p>
 
 <p>When using node you will need to supply two command line flags to enable Proxies (<code>--harmony_proxies</code>) and WeakMaps (<code>--harmony-weakmaps</code>). If you use the <code>coffee</code> or <code>cake</code> scripts these flags will be enabled automatically for you, otherwise the full process looks like:</p>
-<div class='highlight'><pre><code class='bash'>coffee -cC --withlib script.coffee
+<div class='highlight'><pre><code class='bash'>coffee -c --contracts script.coffee
 node --harmony_proxies --harmony-weakmaps script.js
 </code></pre>
 </div>
-<p>Note that since leaving off the <code>-C</code> flag will generate JavaScript code with absolutely no trace of contracts (the code is exactly what vanilla CoffeeScript would generate), you can easily set up a production build with contracts disabled that can run in any browser or JavaScript environment and a development/testing build with contracts enabled that you run in Firefox to help track down bugs.</p>
+<p>Note that since leaving off the <code>--contracts</code> flag will generate JavaScript code with absolutely no trace of contracts (the code is exactly what vanilla CoffeeScript would generate), you can easily set up a production build with contracts disabled that can run in any browser or JavaScript environment and a development/testing build with contracts enabled that you run in Firefox to help track down bugs.</p>
 
 <h2 id='resources'>Resources</h2>
 
