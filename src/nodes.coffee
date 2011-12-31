@@ -279,19 +279,15 @@ exports.Block = class Block extends Base
 
       if (typeof(exports) !== 'undefined' && exports !== null) {
         __old_exports = exports;
-      } else {
-        __old_exports = {};
+        exports = __contracts.exports("#{o.filename}", __old_exports)
       }
-      exports = __contracts.makeContractsExports("#{o.filename}", __old_exports)
       if (typeof(require) !== 'undefined' && require !== null) {
         __old_require = require;
-      }
-      require = function(module) {
-        if (typeof(__old_require) === 'function') {
+        require = function(module) {
           module = __old_require.apply(this, arguments);
-        }
-        return __contracts.use(module, "#{o.filename}");
-      };
+          return __contracts.use(module, "#{o.filename}");
+        };
+      }
     """
       
     return code if o.bare
