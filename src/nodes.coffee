@@ -51,7 +51,7 @@ exports.Base = class Base
   # Statements converted into expressions via closure-wrapping share a scope
   # object with their parent closure, to preserve the expected lexical scope.
   compileClosure: (o) ->
-    if @jumps() or this instanceof Throw
+    if @jumps()
       throw SyntaxError 'cannot use a pure statement in an expression.'
     o.sharedScope = yes
     Closure.wrap(this).compileNode o
@@ -234,7 +234,7 @@ exports.Block = class Block extends Base
         codes.push node.compile o, LEVEL_LIST
     if top
       if @spaced
-        return '\n' + codes.join('\n\n') + '\n'
+        return "\n#{codes.join '\n\n'}\n"
       else
         return codes.join '\n'
     code = codes.join(', ') or 'void 0'
@@ -245,11 +245,20 @@ exports.Block = class Block extends Base
   # It would be better not to generate them in the first place, but for now,
   # clean up obvious double-parentheses.
   compileRoot: (o) ->
-    o.indent = @tab = if o.bare then '' else TAB
-    o.scope  = new Scope null, this, null
-    o.level  = LEVEL_TOP
-    @spaced  = yes
-    code     = @compileWithDeclarations o
+    o.indent  = if o.bare then '' else TAB
+    o.scope   = new Scope null, this, null
+    o.level   = LEVEL_TOP
+    @spaced   = yes
+    prelude   = ""
+    unless o.bare
+      preludeExps = for exp, i in @expressions
+        break unless exp.unwrap() instanceof Comment
+        exp
+      rest = @expressions[preludeExps.length...]
+      @expressions = preludeExps
+      prelude = "#{@compileNode merge(o, indent: '')}\n" if preludeExps.length
+      @expressions = rest
+    code = @compileWithDeclarations o
 
     # alias the contract lib to an internal prefix # (to distinguish between 
     # contract.coffee usages of contracts and user usages of it)
@@ -292,9 +301,9 @@ exports.Block = class Block extends Base
       
     return code if o.bare
     if o.contracts
-      "(function() {#{loadContracts}\n(function() {\n#{code}\n}).call(this);\n}).call(this);\n"
+      "#{prelude}(function() {#{loadContracts}\n(function() {\n#{code}\n}).call(this);\n}).call(this);\n"
     else
-      "(function() {\n#{code}\n}).call(this);"
+      "#{prelude}}(function() {\n#{code}\n}).call(this);"
 
   # Compile the expressions body for the contents of a function, with
   # declarations of all inner variables pushed up to the top.
@@ -305,20 +314,24 @@ exports.Block = class Block extends Base
       break unless exp instanceof Comment or exp instanceof Literal
     o = merge(o, level: LEVEL_TOP)
     if i
-      rest = @expressions.splice i, @expressions.length
-      code = @compileNode(o)
+      rest = @expressions.splice i, 9e9
+      [spaced, @spaced] = [@spaced, no]
+      [code  , @spaced] = [(@compileNode o), spaced]
       @expressions = rest
     post = @compileNode o
     {scope} = o
     if scope.expressions is this
       declars = o.scope.hasDeclarations()
       assigns = scope.hasAssignments
-      if (declars or assigns) and i
-        code += '\n'
-      if declars
-        code += "#{@tab}var #{ scope.declaredVariables().join(', ') };\n"
-      if assigns
-        code += "#{@tab}var #{ multident scope.assignedVariables().join(', '), @tab };\n"
+      if declars or assigns
+        code += '\n' if i
+        code += "#{@tab}var "
+        if declars
+          code += scope.declaredVariables().join ', '
+        if assigns
+          code += ",\n#{@tab + TAB}" if declars
+          code += scope.assignedVariables().join ",\n#{@tab + TAB}"
+        code += ';\n'
     code + post
 
   # Wrap up the given nodes as a **Block**, unless it already happens
@@ -350,8 +363,8 @@ exports.Literal = class Literal extends Base
     name is @value
 
   jumps: (o) ->
-    return no unless @isStatement()
-    if not (o and (o.loop or o.block and (@value isnt 'continue'))) then this else no
+    return this if @value is 'break' and not (o?.loop or o?.block)
+    return this if @value is 'continue' and not o?.loop
 
   compileNode: (o) ->
     code = if @isUndefined
@@ -1019,6 +1032,8 @@ exports.Class = class Class extends Base
         else
           if assign.variable.this
             func.static = yes
+            if func.bound
+              func.context = name
           else
             assign.variable = new Value(new Literal(name), [(new Access new Literal 'prototype'), new Access base ])
             if func instanceof Code and func.bound
@@ -1062,12 +1077,19 @@ exports.Class = class Class extends Base
     @walkBody name, o
     @ensureConstructor name
     @body.spaced = yes
-    @body.expressions.unshift new Extends lname, @parent if @parent
     @body.expressions.unshift @ctor unless @ctor instanceof Code
     @body.expressions.push lname
     @addBoundFunctions o
 
-    klass = new Parens Closure.wrap(@body), true
+    call  = Closure.wrap @body
+    
+    if @parent
+      @superClass = new Literal o.scope.freeVariable 'super', no
+      @body.expressions.unshift new Extends lname, @superClass
+      call.args.push @parent
+      call.variable.params.push new Param @superClass
+    
+    klass = new Parens call, yes
     klass = new Assign @variable, klass if @variable
     klass.compile o
 
@@ -1277,8 +1299,8 @@ exports.Code = class Code extends Base
     @body.makeReturn() unless wasEmpty or @noReturn
     if @bound
       if o.scope.parent.method?.bound
-        @bound = o.scope.parent.method.context
-      else
+        @bound = @context = o.scope.parent.method.context
+      else if not @static
         o.scope.parent.assign '_this', 'this'
     idt   = o.indent
     code  = 'function'
@@ -1518,7 +1540,7 @@ exports.Op = class Op extends Base
     "(#{code})"
 
   compileExistence: (o) ->
-    if @first.isComplex()
+    if @first.isComplex() and o.level > LEVEL_TOP
       ref = new Literal o.scope.freeVariable 'ref'
       fst = new Parens new Assign ref, @first
     else
@@ -1939,6 +1961,7 @@ Closure =
 
   literalArgs: (node) ->
     node instanceof Literal and node.value is 'arguments' and not node.asKey
+    
   literalThis: (node) ->
     (node instanceof Literal and node.value is 'this' and not node.asKey) or
       (node instanceof Code and node.bound)
@@ -1968,7 +1991,7 @@ UTILITIES =
 
   # Discover if an item is in an array.
   indexOf: -> """
-    Array.prototype.indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (#{utility 'hasProp'}.call(this, i) && this[i] === item) return i; } return -1; }
+    Array.prototype.indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; }
   """
 
   # Shortcuts to speed up the lookup time for native functions.

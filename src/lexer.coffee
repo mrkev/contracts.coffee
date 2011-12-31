@@ -112,7 +112,7 @@ exports.Lexer = class Lexer
         id  = new String id
         id.reserved = yes
       else if id in RESERVED
-        @error "reserved word \"#{word}\""
+        @error "reserved word \"#{id}\""
 
     unless forcedIdentifier
       id  = COFFEE_ALIAS_MAP[id] if id in COFFEE_ALIASES
@@ -121,7 +121,7 @@ exports.Lexer = class Lexer
         when '==', '!='                           then 'COMPARE'
         when '&&', '||'                           then 'LOGIC'
         when 'true', 'false', 'null', 'undefined' then 'BOOL'
-        when 'break', 'continue', 'debugger'      then 'STATEMENT'
+        when 'break', 'continue'                  then 'STATEMENT'
         else  tag
 
     @token tag, id
@@ -262,7 +262,7 @@ exports.Lexer = class Lexer
       diff = size - @indent + @outdebt
       @token 'INDENT', diff
       @indents.push diff
-      @ends   .push 'OUTDENT'
+      @ends.push 'OUTDENT'
       @outdebt = @indebt = 0
     else
       @indebt = 0
