@@ -116,7 +116,7 @@ Now, compile some coffee with contracts!
 coffee -c --contracts MyContractedScript.coffee
 {% endhighlight %}
 
-Note the `-c` and `--contracts` flag. The `-c` says to compile to JavaScript 
+Note the `-c` and `--contracts` flags. The `-c` says to compile to JavaScript 
 and `--contracts` enables contracts in the compiled JavaScript. If you don't want
 contracts enabled (say in production) simply don't include the `--contracts`
 flag.
@@ -193,18 +193,44 @@ How to Use
 
 In order to provide good error messages when things go wrong,
 contracts.coffee needs to know where contracted values are 
-used in your code. What this means practically is that before you can
-use a value that has a contract on it, you must first `use()` it:
+created and used in your code. It does this by keeping track
+of the module a value was created in when the it was first wrapped 
+in a contract along with the module where the value is eventually used.
+
+If you are running in node.js the appropriate module wiring is done
+automatically. You just need to use `require` and the `exports` 
+object like normal.
+
+If you are in the browser, some hand wiring is needed (future versions
+of contracts.coffee will automate this better).
+To do this the library provides
+two utility functions: `Contracts.exports` and `Contracts.use`.
+
+The `Contracts.exports(moduleName)` function creates an empty object 
+for you to add contracted and non-contracted values and keep track
+of the module name for use in later error messages.
 
 {% highlight coffeescript %}
 # Library.coffee
-window.id :: (Num) -> Num
-window.id = (x) -> x
+
+# create and name the exports object
+exports = Contracts.exports "Library"
+
+exports.id :: (Num) -> Num
+exports.id = (x) -> x
+
+# put the exports object on the global object 
+# for other modules to see and use
+window.MyLib = exports
 {% endhighlight %}
+
+The `Contracts.use(exportObject, moduleName)` function brings
+in the provided export object and assigns the correct user module
+name for use in later error messages.
 
 {% highlight coffeescript %}
 # Main.coffee
-id = window.id.use()
+{id} = Contracts.use window.MyLib, "Main"
 
 id 4     # ok
 id "foo" # Contract Violation...
@@ -212,46 +238,44 @@ id "foo" # Contract Violation...
 
 <pre style="color: red">
 Contract violation: expected &lt;Num&gt;, actual: "foo"
-Value guarded in: Library:3
-  -- blame is on: Main:2
+Value guarded in: Library
+  -- blame is on: Main
 Parent contracts:
 (Num) -&gt; Num 
 </pre>
 
-The `use()` function does the work of dynamically setting up the right
-file names to display in error messages.
-
-This is an unfortunate bit of syntax that we hope to do implicitly in
-the future with better compiler and module support.
-
-In general it is advisable to only put contracts on
-module exports but if you want to use them in the same module
-simply call `use()` immediately.
-
-Admittedly, in the example above finding the right file name is pretty trivial
+Admittedly, in the example above finding the right module name is pretty trivial
 (we could have just inspected the stacktrace). To see the real power
-of recording the right names with `use()` consider the following
+of recording the right names with `exports`/`use` consider the following
 example:
 
 {% highlight coffeescript linenos %}
 # CheckingLibrary.coffee
-window.checkAge :: (Num) -> Bool
-window.checkAge = (age) ->
+exports = Contracts.exports "CheckingLibrary"
+
+exports.checkAge :: (Num) -> Bool
+exports.checkAge = (age) ->
   # make sure the age makes sense
   age > 0 && age < 150 
+
+window.CheckingLibrary = exports
 {% endhighlight %}
 
 {% highlight coffeescript linenos %}
 # Validator.coffee
-window.validateForm :: ((Str) -> Bool, Str) -> Bool
-window.validateForm = (checker, fieldName) ->
+exports = Contracts.exports "Validator"
+
+exports.validateForm :: ((Str) -> Bool, Str) -> Bool
+exports.validateForm = (checker, fieldName) ->
   checker $(fieldName).val()   # failure is here 
+
+window.Validator = exports
 {% endhighlight %}
 
 {% highlight coffeescript linenos %}
 # Main.coffee
-checkAge = window.checkAge.use()
-validateForm = window.validateForm.use()
+{checkAge}      = Contracts.use CheckingLibrary, "Main"
+{validateForm}  = Contracts.use Validator, "Main"
 
 $("form").submit ->
   # checkAge takes Num but validateForm passes Str!
@@ -262,8 +286,8 @@ We get this contract violation:
 
 <pre style="color: red">
 Contract violation: expected &lt;Num&gt;, actual: "42"
-Value guarded in: CheckingLibrary:2
-  -- blame is on: Main:3
+Value guarded in: CheckingLibrary
+  -- blame is on: Main
 Parent contracts:
 (Num) -&gt; Bool
 </pre>
@@ -286,13 +310,11 @@ much impossible to correctly assign blame by just inspecting the
 stacktrace since the the point of failure is in a different location
 than the file actually at fault.
 
-
 But the error message gets it right!
 
-It gets it right because `use()` records the module name where the
-contracted values were `used()` and we correctly track all the module
-names through all the subsequent contract checks.
-
+It gets it right because we setup the module names with
+`exports`/`use` which allows the system to blame the offending
+module.
 
 <span id="simple"></span>
 Simple Contracts
@@ -653,6 +675,19 @@ takesRedBlack bst # might fail if the full
 {% endhighlight %}
 
 In duck-typing, functions work when given *any* object that has the properties the function needs (though the object might have other properties too). Contracts allow us to extend that to object invariants: functions work when given *any* object that has the required properties *and* satisfies the required invariants (though the object might satisfy other invariants too).
+
+
+<span id="log"></span>
+Change Log
+----------
+
+* [0.2.0]() (January 3rd, 2012)
+  * removed `.use()`, now using `Contracts.exports` and `Contracts.use`
+  * various bug fixes
+  * based off CoffeeScript 1.2.0
+* [0.1.0](https://github.com/disnet/contracts.coffee/tree/c0.1.0) (August 29th, 2011) 
+  * initial release
+  * based off CoffeeScript 1.1.2
 
 
 
