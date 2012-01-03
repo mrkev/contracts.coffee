@@ -26,7 +26,7 @@ Use the compiler:
     coffee -c --contracts /path/to/script.coffee
 
 If you are running in the browser then you'll need to load the 
-contract library (found in [lib/contracts/contracts.js](https://github.com/disnet/contracts.coffee/tree/master/lib/contracts))
+contracts library (found in [lib/contracts/contracts.js](https://github.com/disnet/contracts.coffee/tree/master/lib/contracts))
 
     <script type="text/javascript" src="contracts.js"></script>
 
