@@ -116,7 +116,7 @@ Now, compile some coffee with contracts!
 coffee -c --contracts MyContractedScript.coffee
 {% endhighlight %}
 
-Note the `-c` and `--contracts` flags. The `-c` says to compile to JavaScript 
+Note the `-c` and `--contracts` flags. The `-c` flag says to compile to JavaScript 
 and `--contracts` enables contracts in the compiled JavaScript. If you don't want
 contracts enabled (say in production) simply don't include the `--contracts`
 flag.
