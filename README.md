@@ -42,7 +42,7 @@ but other JavaScript engines should be adding support soon.
 Change Log
 ----------
 
-* [0.2.0]() (January 4th, 2012)
+* [0.2.0](https://github.com/disnet/contracts.coffee/tree/c0.2.0) (January 4th, 2012)
   * removed `.use()`, now using `Contracts.exports` and `Contracts.use`
   * various bug fixes
   * based off CoffeeScript 1.2.0
