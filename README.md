@@ -38,3 +38,14 @@ Note that contracts.coffee requires some pretty new features of JavaScript
 ([Proxies](https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Proxy) 
 in particular) so it currently only works on Firefox 4+ and node 0.5.10 (but not 0.6 yet) 
 but other JavaScript engines should be adding support soon.
+
+Change Log
+----------
+
+* [0.2.0]() (January 4th, 2012)
+  * removed `.use()`, now using `Contracts.exports` and `Contracts.use`
+  * various bug fixes
+  * based off CoffeeScript 1.2.0
+* [0.1.0](https://github.com/disnet/contracts.coffee/tree/c0.1.0) (August 29th, 2011) 
+  * initial release
+  * based off CoffeeScript 1.1.2
