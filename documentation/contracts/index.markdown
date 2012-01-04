@@ -193,9 +193,11 @@ How to Use
 
 In order to provide good error messages when things go wrong,
 contracts.coffee needs to know where contracted values are 
-created and used in your code. It does this by keeping track
-of the module a value was created in when the it was first wrapped 
-in a contract along with the module where the value is eventually used.
+created and used in your code. 
+It does this by enforcing a kind of module discipline and
+keeping track of which module a value was in
+when it was first wrapped up in a contract and which module
+uses the contracted value.
 
 If you are running in node.js the appropriate module wiring is done
 automatically. You just need to use `require` and the `exports` 
@@ -207,8 +209,9 @@ To do this the library provides
 two utility functions: `Contracts.exports` and `Contracts.use`.
 
 The `Contracts.exports(moduleName)` function creates an empty object 
-for you to add contracted and non-contracted values and keep track
-of the module name for use in later error messages.
+for you to use much like the node.js `exports` object.
+Any contracted values you add to it will reference `moduleName`
+in any contract violation messages.
 
 {% highlight coffeescript %}
 # Library.coffee
@@ -224,9 +227,9 @@ exports.id = (x) -> x
 window.MyLib = exports
 {% endhighlight %}
 
-The `Contracts.use(exportObject, moduleName)` function brings
-in the provided export object and assigns the correct user module
-name for use in later error messages.
+The `Contracts.use(exportObject, moduleName)` function takes an
+object created by `Contracts.exports` (or a normal object) and
+assigns the correct user module name for use in later error messages.
 
 {% highlight coffeescript %}
 # Main.coffee
@@ -681,7 +684,7 @@ In duck-typing, functions work when given *any* object that has the properties t
 Change Log
 ----------
 
-* [0.2.0]() (January 3rd, 2012)
+* [0.2.0]() (January 4th, 2012)
   * removed `.use()`, now using `Contracts.exports` and `Contracts.use`
   * various bug fixes
   * based off CoffeeScript 1.2.0

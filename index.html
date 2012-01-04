@@ -175,7 +175,7 @@ Parent contracts:
 <div class='highlight'><pre><code class='bash'>coffee -c --contracts MyContractedScript.coffee
 </code></pre>
 </div>
-<p>Note the <code>-c</code> and <code>--contracts</code> flags. The <code>-c</code> says to compile to JavaScript and <code>--contracts</code> enables contracts in the compiled JavaScript. If you don&#8217;t want contracts enabled (say in production) simply don&#8217;t include the <code>--contracts</code> flag.</p>
+<p>Note the <code>-c</code> and <code>--contracts</code> flags. The <code>-c</code> flag says to compile to JavaScript and <code>--contracts</code> enables contracts in the compiled JavaScript. If you don&#8217;t want contracts enabled (say in production) simply don&#8217;t include the <code>--contracts</code> flag.</p>
 
 <p>If you are planning to run your code in the browser you will need to include the <code>contracts.js</code> library (which can be found <a href='https://github.com/disnet/contracts.coffee/blob/master/lib/contracts/contracts.js'>here</a>). So the header of your HTML file will look something like:</p>
 <div class='highlight'><pre><code class='html'>...
@@ -215,13 +215,13 @@ node --harmony_proxies --harmony-weakmaps script.js
 <span id='use' />
 <h2 id='how_to_use'>How to Use</h2>
 
-<p>In order to provide good error messages when things go wrong, contracts.coffee needs to know where contracted values are created and used in your code. It does this by keeping track of the module a value was created in when the it was first wrapped in a contract along with the module where the value is eventually used.</p>
+<p>In order to provide good error messages when things go wrong, contracts.coffee needs to know where contracted values are created and used in your code. It does this by enforcing a kind of module discipline and keeping track of which module a value was in when it was first wrapped up in a contract and which module uses the contracted value.</p>
 
 <p>If you are running in node.js the appropriate module wiring is done automatically. You just need to use <code>require</code> and the <code>exports</code> object like normal.</p>
 
 <p>If you are in the browser, some hand wiring is needed (future versions of contracts.coffee will automate this better). To do this the library provides two utility functions: <code>Contracts.exports</code> and <code>Contracts.use</code>.</p>
 
-<p>The <code>Contracts.exports(moduleName)</code> function creates an empty object for you to add contracted and non-contracted values and keep track of the module name for use in later error messages.</p>
+<p>The <code>Contracts.exports(moduleName)</code> function creates an empty object for you to use much like the node.js <code>exports</code> object. Any contracted values you add to it will reference <code>moduleName</code> in any contract violation messages.</p>
 <div class='highlight'><pre><code class='coffeescript'><span class='c1'># Library.coffee</span>
 
 <span class='c1'># create and name the exports object</span>
@@ -235,7 +235,7 @@ node --harmony_proxies --harmony-weakmaps script.js
 <span class='nb'>window</span><span class='p'>.</span><span class='nv'>MyLib = </span><span class='nx'>exports</span>
 </code></pre>
 </div>
-<p>The <code>Contracts.use(exportObject, moduleName)</code> function brings in the provided export object and assigns the correct user module name for use in later error messages.</p>
+<p>The <code>Contracts.use(exportObject, moduleName)</code> function takes an object created by <code>Contracts.exports</code> (or a normal object) and assigns the correct user module name for use in later error messages.</p>
 <div class='highlight'><pre><code class='coffeescript'><span class='c1'># Main.coffee</span>
 <span class='p'>{</span><span class='nx'>id</span><span class='p'>}</span> <span class='o'>=</span> <span class='nx'>Contracts</span><span class='p'>.</span><span class='nx'>use</span> <span class='nb'>window</span><span class='p'>.</span><span class='nx'>MyLib</span><span class='p'>,</span> <span class='s2'>&quot;Main&quot;</span>
 
