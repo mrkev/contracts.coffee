@@ -25,20 +25,26 @@ None      =  __contracts.None;
 /*
 if (typeof(exports) !== 'undefined' && exports !== null) {
   __old_exports = exports;
-  exports = __contracts.exports("test/modules/id.coffee", __old_exports)
+  exports = __contracts.exports("test/webtest/scripts/modules/adder_user.coffee", __old_exports)
 }
 if (typeof(require) !== 'undefined' && require !== null) {
   __old_require = require;
   require = function(module) {
     module = __old_require.apply(this, arguments);
-    return __contracts.use(module, "test/modules/id.coffee");
+    return __contracts.use(module, "test/webtest/scripts/modules/adder_user.coffee");
   };
 }
 */
 (function() {
 
-  exports.id = __contracts.guard(__contracts.fun([Str], Str, {}),function(x) {
-    return x;
+  define(["modules/adder_module"], function(adder) {
+    var add;
+    add = adder.add;
+    return {
+      init: function() {
+        return add("foo");
+      }
+    };
   });
 
 }).call(this);
