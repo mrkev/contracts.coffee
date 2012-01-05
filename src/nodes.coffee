@@ -259,6 +259,17 @@ exports.Block = class Block extends Base
       prelude = "#{@compileNode merge(o, indent: '')}\n" if preludeExps.length
       @expressions = rest
     code = @compileWithDeclarations o
+    moduleShim = """
+      (function(cb) { 
+        if (typeof(define) === 'function' && define.amd) {
+          require(['contracts'], cb);
+        } else if (typeof(require) === 'function') {
+          cb(require('contracts.js'));
+        } else {
+          cb(window.contracts);
+        }
+      })
+    """
 
     # alias the contract lib to an internal prefix # (to distinguish between 
     # contract.coffee usages of contracts and user usages of it)
@@ -266,12 +277,8 @@ exports.Block = class Block extends Base
     # yes copy-pasta for the base contracts but don't want to 
     # prefix names and don't want to pollute the global object.
     loadContracts = """
-      var __contracts, Undefined, Null, Num, Bool, Str, Odd, Even, Pos, Nat, Neg, Self, Any, None, __old_exports, __old_require;
-      if (typeof(window) !== 'undefined' && window !== null) {
-        __contracts = window.Contracts;
-      } else {
-        __contracts = require('contracts.js');
-      }
+      var Undefined, Null, Num, Bool, Str, Odd, Even, Pos, Nat, Neg, Self, Any, None, __old_exports, __old_require;
+
       Undefined =  __contracts.Undefined;
       Null      =  __contracts.Null;
       Num       =  __contracts.Num;
@@ -286,6 +293,7 @@ exports.Block = class Block extends Base
       Any       =  __contracts.Any;
       None      =  __contracts.None;
 
+/*
       if (typeof(exports) !== 'undefined' && exports !== null) {
         __old_exports = exports;
         exports = __contracts.exports("#{o.filename}", __old_exports)
@@ -297,11 +305,12 @@ exports.Block = class Block extends Base
           return __contracts.use(module, "#{o.filename}");
         };
       }
+*/
     """
       
     return code if o.bare
     if o.contracts
-      "#{prelude}(function() {#{loadContracts}\n(function() {\n#{code}\n}).call(this);\n}).call(this);\n"
+      "#{prelude}(#{moduleShim}(function(__contracts) {#{loadContracts}\n(function() {\n#{code}\n}).call(this);\n}));\n"
     else
       "#{prelude}(function() {\n#{code}\n}).call(this);"
 

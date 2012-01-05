@@ -77,8 +77,10 @@ task 'build', 'build the CoffeeScript language from source', build = (cb) ->
   fs.writeFileSync 'lib/contracts/contracts.js', contractLib
 
 buildWebtests = ->  
-  run ['-c', '-C', 'test/webtest']
-  run ['-c', '-C', '-o', 'test/webtest', 'test/contracts.coffee']
+  contractLib = fs.readFileSync 'lib/contracts/contracts.js'
+  fs.writeFileSync 'test/webtest/scripts/contracts.js', contractLib
+  run ['-c', '-C', '-o', 'test/webtest/scripts', 'test/webtest/scripts']
+  run ['-c', '-C', '-o', 'test/webtest/scripts/tests/', 'test/contracts.coffee']
 
 task 'build:webtests', 'compiles the contracts testing files', ->
   buildWebtests()
