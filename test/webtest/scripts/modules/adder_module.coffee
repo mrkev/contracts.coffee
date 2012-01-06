@@ -1,7 +1,14 @@
-define ->
-  exports ::
-    add: (Num) -> Pos
-  exports =
-    add: (x) -> x + 10
+define [], ->
+  add :: (Num) -> Pos
+  add = (x) -> x + 10
 
-  exports
+  add: add
+
+
+# so how do we support:
+#
+# exports ::
+#   add: (Num) -> Pos
+# exports =
+#   add: (x) -> x + 10
+# return exports
