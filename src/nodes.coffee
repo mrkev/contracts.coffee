@@ -271,13 +271,15 @@ exports.Block = class Block extends Base
       })
     """
 
-    # alias the contract lib to an internal prefix # (to distinguish between 
+    # alias the contract lib to an internal prefix (to distinguish between 
     # contract.coffee usages of contracts and user usages of it)
     # 
     # yes copy-pasta for the base contracts but don't want to 
     # prefix names and don't want to pollute the global object.
+    # 
+    # also wrap the module functions to do the right contract module names wiring
     loadContracts = """
-      var Undefined, Null, Num, Bool, Str, Odd, Even, Pos, Nat, Neg, Self, Any, None, __old_exports, __old_require;
+      var Undefined, Null, Num, Bool, Str, Odd, Even, Pos, Nat, Neg, Self, Any, None, __define, __require, __exports; 
 
       Undefined =  __contracts.Undefined;
       Null      =  __contracts.Null;
@@ -293,24 +295,56 @@ exports.Block = class Block extends Base
       Any       =  __contracts.Any;
       None      =  __contracts.None;
 
-/*
-      if (typeof(exports) !== 'undefined' && exports !== null) {
-        __old_exports = exports;
-        exports = __contracts.exports("#{o.filename}", __old_exports)
-      }
-      if (typeof(require) !== 'undefined' && require !== null) {
-        __old_require = require;
-        require = function(module) {
-          module = __old_require.apply(this, arguments);
+      if (typeof(define) === 'function' && define.amd) {
+        // we're using requirejs
+
+        // Allow for anonymous functions
+        __define = function(name, deps, callback) {
+          var cb, wrapped_callback;
+
+          if(typeof(name) !== 'string') {
+            cb = deps;   
+          } else {
+            cb = callback;
+          }
+
+
+          wrapped_callback = function() {
+            var i, ret, used_arguments = [];
+            for (i = 0; i < arguments.length; i++) {
+              used_arguments[i] = __contracts.use(arguments[i], "#{o.filename}");
+            }
+            ret = cb.apply(this, used_arguments);
+            return __contracts.setExported(ret, "#{o.filename}");
+          }
+
+          if(!Array.isArray(deps)) {
+            deps = wrapped_callback; 
+          }
+          define(name, deps, wrapped_callback);
+        };
+      } else if (typeof(require) !== 'undefined' && typeof(exports) !== 'undefined') {
+        // we're using commonjs
+
+        __exports = __contracts.exports("#{o.filename}", exports)
+        __require = function(module) {
+          module = require.apply(this, arguments);
           return __contracts.use(module, "#{o.filename}");
         };
       }
-*/
     """
       
     return code if o.bare
     if o.contracts
-      "#{prelude}(#{moduleShim}(function(__contracts) {#{loadContracts}\n(function() {\n#{code}\n}).call(this);\n}));\n"
+      """
+        #{prelude}
+        (#{moduleShim}(function(__contracts) {
+          #{loadContracts}
+          (function(define, require, exports) {
+            #{code}
+          }).call(this, __define, __require, __exports);
+        }));
+      """
     else
       "#{prelude}(function() {\n#{code}\n}).call(this);"
 
