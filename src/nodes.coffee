@@ -526,7 +526,7 @@ exports.ContractValue = class ContractValue extends Base
     if o.contracts
       "#{if o.contracts then CONTRACT_PREFIX else ''}guard(#{@contract.compile(o, LEVEL_PAREN)},#{@value.compile(o, LEVEL_PAREN)})"
     else
-      "{ use: function() { return #{@value.compile o, LEVEL_PAREN}; } }"
+      "#{@value.compile o, LEVEL_PAREN}"
 
 #### Return
 
