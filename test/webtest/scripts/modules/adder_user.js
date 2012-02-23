@@ -1,5 +1,5 @@
 
-((function(cb) { 
+((function(cb) {
   if (typeof(define) === 'function' && define.amd) {
     require(['contracts'], cb);
   } else if (typeof(require) === 'function') {
@@ -8,7 +8,7 @@
     cb(window.contracts);
   }
 })(function(__contracts) {
-  var Undefined, Null, Num, Bool, Str, Odd, Even, Pos, Nat, Neg, Self, Any, None, __define, __require, __exports; 
+  var Undefined, Null, Num, Bool, Str, Odd, Even, Pos, Nat, Neg, Self, Any, None, __define, __require, __exports;
 
 Undefined =  __contracts.Undefined;
 Null      =  __contracts.Null;
@@ -32,7 +32,7 @@ if (typeof(define) === 'function' && define.amd) {
     var cb, wrapped_callback;
 
     if(typeof(name) !== 'string') {
-      cb = deps;   
+      cb = deps;
     } else {
       cb = callback;
     }
@@ -48,7 +48,7 @@ if (typeof(define) === 'function' && define.amd) {
     }
 
     if(!Array.isArray(deps)) {
-      deps = wrapped_callback; 
+      deps = wrapped_callback;
     }
     define(name, deps, wrapped_callback);
   };
