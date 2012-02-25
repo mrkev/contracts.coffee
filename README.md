@@ -20,6 +20,7 @@ Quick start
 Install via npm:
 
     npm install -g contracts.coffee
+    npm install contracts.js
 
 Use the compiler:
 
