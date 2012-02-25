@@ -28,7 +28,7 @@ BANNER = '''
 
 # The list of all the valid option flags that `coffee` knows how to handle.
 SWITCHES = [
-  ['-b', '--bare',            'compile without a top-level function wrapper']
+  ['-b', '--bare',            'compile without a top-level function wrapper (overrides --contracts)']
   ['-c', '--compile',         'compile to JavaScript and save as .js files']
   ['-e', '--eval',            'pass a string from the command line as input']
   ['-h', '--help',            'display this help message']
