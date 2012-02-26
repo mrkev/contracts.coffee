@@ -259,19 +259,28 @@ exports.Block = class Block extends Base
       prelude = "#{@compileNode merge(o, indent: '')}\n" if preludeExps.length
       @expressions = rest
     code = @compileWithDeclarations o
+    moduleShim = """
+      (function(cb) {
+        if (typeof(define) === 'function' && define.amd) {
+          require(['contracts'], cb);
+        } else if (typeof(require) === 'function') {
+          cb(require('contracts.js'));
+        } else {
+          cb(window.contracts);
+        }
+      })
+    """
 
-    # alias the contract lib to an internal prefix # (to distinguish between 
+    # alias the contract lib to an internal prefix (to distinguish between
     # contract.coffee usages of contracts and user usages of it)
-    # 
-    # yes copy-pasta for the base contracts but don't want to 
+    #
+    # yes copy-pasta for the base contracts but don't want to
     # prefix names and don't want to pollute the global object.
+    #
+    # also wrap the module functions to do the right contract module names wiring
     loadContracts = """
-      var __contracts, Undefined, Null, Num, Bool, Str, Odd, Even, Pos, Nat, Neg, Self, Any, None, __old_exports, __old_require;
-      if (typeof(window) !== 'undefined' && window !== null) {
-        __contracts = window.Contracts;
-      } else {
-        __contracts = require('contracts.js');
-      }
+      var Undefined, Null, Num, Bool, Str, Odd, Even, Pos, Nat, Neg, Self, Any, None, __define, __require, __exports;
+
       Undefined =  __contracts.Undefined;
       Null      =  __contracts.Null;
       Num       =  __contracts.Num;
@@ -286,22 +295,56 @@ exports.Block = class Block extends Base
       Any       =  __contracts.Any;
       None      =  __contracts.None;
 
-      if (typeof(exports) !== 'undefined' && exports !== null) {
-        __old_exports = exports;
-        exports = __contracts.exports("#{o.filename}", __old_exports)
-      }
-      if (typeof(require) !== 'undefined' && require !== null) {
-        __old_require = require;
-        require = function(module) {
-          module = __old_require.apply(this, arguments);
+      if (typeof(define) === 'function' && define.amd) {
+        // we're using requirejs
+
+        // Allow for anonymous functions
+        __define = function(name, deps, callback) {
+          var cb, wrapped_callback;
+
+          if(typeof(name) !== 'string') {
+            cb = deps;
+          } else {
+            cb = callback;
+          }
+
+
+          wrapped_callback = function() {
+            var i, ret, used_arguments = [];
+            for (i = 0; i < arguments.length; i++) {
+              used_arguments[i] = __contracts.use(arguments[i], "#{o.filename}");
+            }
+            ret = cb.apply(this, used_arguments);
+            return __contracts.setExported(ret, "#{o.filename}");
+          }
+
+          if(!Array.isArray(deps)) {
+            deps = wrapped_callback;
+          }
+          define(name, deps, wrapped_callback);
+        };
+      } else if (typeof(require) !== 'undefined' && typeof(exports) !== 'undefined') {
+        // we're using commonjs
+
+        __exports = __contracts.exports("#{o.filename}", exports)
+        __require = function(module) {
+          module = require.apply(this, arguments);
           return __contracts.use(module, "#{o.filename}");
         };
       }
     """
-      
+
     return code if o.bare
     if o.contracts
-      "#{prelude}(function() {#{loadContracts}\n(function() {\n#{code}\n}).call(this);\n}).call(this);\n"
+      """
+        #{prelude}
+        (#{moduleShim}(function(__contracts) {
+          #{loadContracts}
+          (function(define, require, exports) {
+            #{code}
+          }).call(this, __define, __require, __exports);
+        }));
+      """
     else
       "#{prelude}(function() {\n#{code}\n}).call(this);"
 
@@ -483,7 +526,7 @@ exports.ContractValue = class ContractValue extends Base
     if o.contracts
       "#{if o.contracts then CONTRACT_PREFIX else ''}guard(#{@contract.compile(o, LEVEL_PAREN)},#{@value.compile(o, LEVEL_PAREN)})"
     else
-      "{ use: function() { return #{@value.compile o, LEVEL_PAREN}; } }"
+      "#{@value.compile o, LEVEL_PAREN}"
 
 #### Return
 
@@ -1082,13 +1125,13 @@ exports.Class = class Class extends Base
     @addBoundFunctions o
 
     call  = Closure.wrap @body
-    
+
     if @parent
       @superClass = new Literal o.scope.freeVariable 'super', no
       @body.expressions.unshift new Extends lname, @superClass
       call.args.push @parent
       call.variable.params.push new Param @superClass
-    
+
     klass = new Parens call, yes
     klass = new Assign @variable, klass if @variable
     klass.compile o
@@ -1362,7 +1405,7 @@ exports.Splat = class Splat extends Base
 
   compile: (o) ->
     if @index? then @compileParam o else @name.compile o
-    
+
   unwrap: -> @name
 
   # Utility function that converts an arbitrary number of elements, mixed with
@@ -1516,9 +1559,9 @@ exports.Op = class Op extends Base
   unfoldSoak: (o) ->
     @operator in ['++', '--', 'delete'] and unfoldSoak o, this, 'first'
 
-  compileNode: (o) ->    
+  compileNode: (o) ->
     isChain = @isChainable() and @first.isChainable()
-    # In chains, there's no need to wrap bare obj literals in parens, 
+    # In chains, there's no need to wrap bare obj literals in parens,
     # as the chained expression is wrapped.
     @first.front = @front unless isChain
     return @compileUnary     o if @isUnary()
@@ -1555,7 +1598,7 @@ exports.Op = class Op extends Base
     parts.push ' ' if op in ['new', 'typeof', 'delete'] or
                       plusMinus and @first instanceof Op and @first.operator is op
     if (plusMinus && @first instanceof Op) or (op is 'new' and @first.isStatement o)
-      @first = new Parens @first 
+      @first = new Parens @first
     parts.push @first.compile o, LEVEL_OP
     parts.reverse() if @flip
     parts.join ''
@@ -1623,15 +1666,15 @@ exports.Try = class Try extends Base
     o.indent  += TAB
     errorPart = if @error then " (#{ @error.compile o }) " else ' '
     tryPart   = @attempt.compile o, LEVEL_TOP
-    
+
     catchPart = if @recovery
       o.scope.add @error.value, 'param' unless o.scope.check @error.value
       " catch#{errorPart}{\n#{ @recovery.compile o, LEVEL_TOP }\n#{@tab}}"
     else unless @ensure or @recovery
       ' catch (_error) {}'
-      
+
     ensurePart = if @ensure then " finally {\n#{ @ensure.compile o, LEVEL_TOP }\n#{@tab}}" else ''
-      
+
     """#{@tab}try {
     #{tryPart}
     #{@tab}}#{ catchPart or '' }#{ensurePart}"""
@@ -1961,7 +2004,7 @@ Closure =
 
   literalArgs: (node) ->
     node instanceof Literal and node.value is 'arguments' and not node.asKey
-    
+
   literalThis: (node) ->
     (node instanceof Literal and node.value is 'this' and not node.asKey) or
       (node instanceof Code and node.bound)

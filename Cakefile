@@ -56,7 +56,7 @@ task 'install', 'install CoffeeScript into /usr/local (or --prefix)', (options) 
   console.log   "Linking 'coffee' to #{bin}/coffee"
   exec([
     "mkdir -p #{lib} #{bin}"
-    "cp -rf bin lib LICENSE README package.json src #{lib}"
+    "cp -rf bin lib LICENSE README.md package.json src #{lib}"
     "ln -sfn #{lib}/bin/coffee #{bin}/coffee"
     "ln -sfn #{lib}/bin/cake #{bin}/cake"
     "ln -sfn #{lib}/bin/coffee-node #{bin}/coffee-node"
@@ -76,9 +76,12 @@ task 'build', 'build the CoffeeScript language from source', build = (cb) ->
   contractLib = fs.readFileSync 'contracts.js/lib/contracts.js'
   fs.writeFileSync 'lib/contracts/contracts.js', contractLib
 
-buildWebtests = ->  
-  run ['-c', '-C', 'test/webtest']
-  run ['-c', '-C', '-o', 'test/webtest', 'test/contracts.coffee']
+buildWebtests = ->
+  contractLib = fs.readFileSync 'lib/contracts/contracts.js'
+  fs.writeFileSync 'test/webtest/scripts/contracts.js', contractLib
+  run ['-c', '-C', '-o', 'test/webtest/scripts', 'test/webtest/scripts']
+  run ['-c', '-C', '-o', 'test/webtest/browserify', 'test/webtest/browserify']
+  run ['-c', '-C', '-o', 'test/webtest/scripts/tests/', 'test/contracts.coffee']
 
 task 'build:webtests', 'compiles the contracts testing files', ->
   buildWebtests()
@@ -124,8 +127,8 @@ task 'build:browser', 'rebuild the merged script for inclusion in the browser', 
 
       if (typeof define === 'function' && define.amd) {
         define(function() { return CoffeeScript; });
-      } else { 
-        root.CoffeeScript = CoffeeScript; 
+      } else {
+        root.CoffeeScript = CoffeeScript;
       }
     }(this));
   """

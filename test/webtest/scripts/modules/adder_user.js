@@ -41,10 +41,10 @@ if (typeof(define) === 'function' && define.amd) {
     wrapped_callback = function() {
       var i, ret, used_arguments = [];
       for (i = 0; i < arguments.length; i++) {
-        used_arguments[i] = __contracts.use(arguments[i], "test/modules/id.coffee");
+        used_arguments[i] = __contracts.use(arguments[i], "test/webtest/scripts/modules/adder_user.coffee");
       }
       ret = cb.apply(this, used_arguments);
-      return __contracts.setExported(ret, "test/modules/id.coffee");
+      return __contracts.setExported(ret, "test/webtest/scripts/modules/adder_user.coffee");
     }
 
     if(!Array.isArray(deps)) {
@@ -55,16 +55,22 @@ if (typeof(define) === 'function' && define.amd) {
 } else if (typeof(require) !== 'undefined' && typeof(exports) !== 'undefined') {
   // we're using commonjs
 
-  __exports = __contracts.exports("test/modules/id.coffee", exports)
+  __exports = __contracts.exports("test/webtest/scripts/modules/adder_user.coffee", exports)
   __require = function(module) {
     module = require.apply(this, arguments);
-    return __contracts.use(module, "test/modules/id.coffee");
+    return __contracts.use(module, "test/webtest/scripts/modules/adder_user.coffee");
   };
 }
   (function(define, require, exports) {
     
-  exports.id = __contracts.guard(__contracts.fun([Str], Str, {}),function(x) {
-    return x;
+  define(["modules/adder_module"], function(adder) {
+    var add;
+    add = adder.add;
+    return {
+      init: function() {
+        return add("foo");
+      }
+    };
   });
 
   }).call(this, __define, __require, __exports);
