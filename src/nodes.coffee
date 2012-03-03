@@ -19,6 +19,7 @@ NEGATE  = -> @negated = not @negated; this
 
 CONTRACT_PREFIX = "__contracts."
 
+
 #### Base
 
 # The **Base** is the abstract base class for all nodes in the syntax tree.
@@ -316,7 +317,7 @@ exports.Block = class Block extends Base
             }
             ret = cb.apply(this, used_arguments);
             return __contracts.setExported(ret, "#{o.filename}");
-          }
+          };
 
           if(!Array.isArray(deps)) {
             deps = wrapped_callback;

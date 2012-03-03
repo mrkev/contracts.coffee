@@ -45,7 +45,7 @@ if (typeof(define) === 'function' && define.amd) {
       }
       ret = cb.apply(this, used_arguments);
       return __contracts.setExported(ret, "test/modules/id.coffee");
-    }
+    };
 
     if(!Array.isArray(deps)) {
       deps = wrapped_callback;

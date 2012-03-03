@@ -210,9 +210,9 @@ watch = (source, base) ->
           compile()
           try
             watcher = fs.watch source, callback
-          catch e  
+          catch e
             watchErr e
-  catch e 
+  catch e
     watchErr e
 
 
@@ -281,7 +281,7 @@ writeJs = (source, js, base) ->
         timeLog "compiled #{source}"
   path.exists jsDir, (exists) ->
     if exists then compile() else exec "mkdir -p #{jsDir}", compile
-    
+
 # Convenience for cleaner setTimeouts.
 wait = (milliseconds, func) -> setTimeout func, milliseconds
 
