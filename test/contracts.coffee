@@ -393,6 +393,18 @@ test "binary search tree example", ->
 	  throws (-> findInBst bst, 100), "invariant is violated"
 	  throws (-> bst.node = 0) , "invariant is violated"
 
+test "classes should work too", ->
+  Person :: (Str) ==> {
+    name: (Any) -> Str
+  }
+  Person = class
+    constructor: (@firstName) ->
+    name: -> @firstName
+
+  p = new Person("bob")
+  eq (p.name() is "bob"), true
+  eq (p.name() is "frank"), false
+
 # test "using patched require in node", ->
 #   if not inBrowser?
 #     idmod = require './modules/id'

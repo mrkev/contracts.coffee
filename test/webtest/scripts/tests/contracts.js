@@ -599,5 +599,29 @@ if (typeof(define) === 'function' && define.amd) {
     }
   });
 
+  test("classes should work too", function() {
+    var Person, p;
+    Person = __contracts.guard(__contracts.fun([Str], __contracts.object({
+      name: __contracts.fun([Any], Str, {})
+    }, {}), {
+      newOnly: true
+    }),(function() {
+
+      function _Class(firstName) {
+        this.firstName = firstName;
+      }
+
+      _Class.prototype.name = function() {
+        return this.firstName;
+      };
+
+      return _Class;
+
+    })());
+    p = new Person("bob");
+    eq(p.name() === "bob", true);
+    return eq(p.name() === "frank", false);
+  });
+
   }).call(this, __define, __require, __exports);
 }));
