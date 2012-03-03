@@ -80,7 +80,6 @@ buildWebtests = ->
   contractLib = fs.readFileSync 'lib/contracts/contracts.js'
   fs.writeFileSync 'test/webtest/scripts/contracts.js', contractLib
   run ['-c', '-C', '-o', 'test/webtest/scripts', 'test/webtest/scripts']
-  run ['-c', '-C', '-o', 'test/webtest/browserify', 'test/webtest/browserify']
   run ['-c', '-C', '-o', 'test/webtest/scripts/tests/', 'test/contracts.coffee']
 
 task 'build:webtests', 'compiles the contracts testing files', ->
