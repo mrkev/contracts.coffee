@@ -67,7 +67,7 @@ test "function, higher order", ->
 
 test "function, call/new only", ->
 	# todo: v8 proxies currently (node 0.5.8) don't support call vs constructor
-	if inBrowser? 
+	if inBrowser?
 	  callOnly :: (Num) --> Num
 	  callOnly = (x) -> x
 
@@ -113,7 +113,7 @@ test "function, dependent", ->
 
 test "function, this contract", ->
 	# v8 function proxies don't currently set `this` right
-	if inBrowser? 
+	if inBrowser?
 	  f :: (Str, @{name: Str}) -> Str
 	  f = (x) -> @.name + x
 
