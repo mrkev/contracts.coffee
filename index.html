@@ -1,10 +1,11 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset='utf-8'>
 
   <title>disnet/contracts.coffee @ GitHub</title>
-  <link href='http://fonts.googleapis.com/css?family=Lobster|Gentium+Book+Basic' rel='stylesheet' type='text/css'>
+  <link href='http://fonts.googleapis.com/css?family=Gentium+Book+Basic' rel='stylesheet' type='text/css'>
+  <link href='http://fonts.googleapis.com/css?family=Lobster' rel='stylesheet' type='text/css'>
 
   <link href='documentation/contracts/styles/default.css' rel='stylesheet' type='text/css'>
   <link href='documentation/contracts/styles/main.css' rel='stylesheet' type='text/css'>
@@ -40,7 +41,10 @@
       <li><a href="#objects">Objects</a></li>
       <li><a href="#arrays">Arrays</a></li>
       <li><a href="#operators">Operators</a></li>
+      <li style="text-decoration: none;">&nbsp;</li>
       <li><a href="#naming">Naming</a></li>
+      <li><a href="#duck">Duck-Typing</a></li>
+      <li><a href="#log">Change Log</a></li>
       <li style="text-decoration: none;">&nbsp;</li>
       <li><span id="try_button">Try it now!</span></li>
 
@@ -49,7 +53,7 @@
       <li>
         <div style="position: absolute; left: 35px">
         <a href="http://www.mozilla.org/">
-          <img style="height: 27px" src="documentation/images/moz-research.png">
+          <img alt="Mozilla Research" style="height: 27px" src="documentation/images/moz-research.png">
         </a>
         </div>
       </li>
@@ -61,21 +65,16 @@
       <div id="repl_source_wrap">
         <textarea id="repl_source"># Wrap the function in a contract that
 # expects to be called with a number
-# and will return a number as the result.
+# and will return a positive number as 
+# the result.
 
-id :: (Num) -> Num
-id = (x) -> x          
+square :: (Num) -> Pos
+square = (x) -> x * x
 
-# Call "use" to initialize the contract.
-# See the use section of the docs
-# for more details about "use".
-
-id = id.use()
-
-# Violates the contract by calling id
+# Violates the contract by calling square
 # with a string instead of a number.
 
-id "foo"</textarea>
+square "42"</textarea>
         <div id="run_button">Run!</div>
         <div id="source_label" class="label">CoffeeScript</div>
       </div>
@@ -97,12 +96,12 @@ id "foo"</textarea>
     <h1><a href="http://github.com/disnet/contracts.coffee">contracts.coffee</a>
     </h1>
 
-    <p>Contracts.coffee is a dialect of CoffeeScript with built-in support for contracts.</p>
+    <p>Contracts.coffee is a dialect of <a href='http://jashkenas.github.com/coffee-script/'>CoffeeScript</a> with built-in support for contracts. It is inspired by the contract system found in <a href='http://racket-lang.org/'>Racket</a>.</p>
 
 <p>Contracts let you clearly&#8212;even beautifully&#8212;express how your code behaves, and free you from writing tons of boilerplate, defensive code.</p>
 
 <p>You can think of contracts as <code>assert</code> on steroids.</p>
-<span id='basics' />
+
 <h2 id='basics'>Basics</h2>
 
 <p>Here&#8217;s a simple example of a contract on a function:</p>
@@ -123,7 +122,7 @@ actual: "foo"
 Value guarded in: id_module:42
   -- blame is on: client_code:104
 Parent contracts:
-(Num) -> Num
+(Num) -&gt; Num
 </pre>
 <p>You can also put contracts on objects.</p>
 <div class='highlight'><pre><code class='coffeescript'><span class='nx'>person</span> <span class='o'>::</span>
@@ -168,97 +167,111 @@ Parent contracts:
 
 <p>Here&#8217;s what you need to actually start working with contracts.coffee.</p>
 
-<p>First, grab the source from github.</p>
-<div class='highlight'><pre><code class='bash'>git clone git://github.com/disnet/contracts.coffee.git
-<span class='nb'>cd </span>contracts.coffee
-git submodule init
-git submodule update
-</code></pre>
-</div>
-<p>Install <a href='https://github.com/joyent/node/wiki/Installation'>Node.js</a> and then contracts.coffee.</p>
-<div class='highlight'><pre><code class='bash'>sudo bin/cake install
+<p>First, if you don&#8217;t already have them, install <a href='https://github.com/joyent/node/wiki/Installation'>Node.js</a> and <a href='http://npmjs.org/'>npm</a>. Then install contracts.coffee using npm:</p>
+<div class='highlight'><pre><code class='bash'>npm install -g contracts.coffee
 </code></pre>
 </div>
 <p>Now, compile some coffee with contracts!</p>
-<div class='highlight'><pre><code class='bash'>coffee -cC MyContractedScript.coffee
+<div class='highlight'><pre><code class='bash'>coffee -c --contracts MyContractedScript.coffee
 </code></pre>
 </div>
-<p>Note the <code>-cC</code> flag. The <code>-c</code> says to compile to JavaScript and <code>-C</code> enables contracts in the compiled JavaScript. If you don&#8217;t want contracts enabled (say in production) simply don&#8217;t include the <code>-C</code> flag.</p>
+<p>Note the <code>-c</code> and <code>--contracts</code> flags. The <code>-c</code> flag says to compile to JavaScript and <code>--contracts</code> enables contracts in the compiled JavaScript. If you don&#8217;t want contracts enabled (say in production) simply don&#8217;t include the <code>--contracts</code> flag.</p>
 
-<p>You will also need to include <code>lib/loadContracts.js</code>. So the header of your HTML file will look something like:</p>
+<p>If you are planning to run your code in the browser you will need to include the <code>contracts.js</code> library (which can be found <a href='https://github.com/disnet/contracts.coffee/blob/master/lib/contracts/contracts.js'>here</a>). So the header of your HTML file will look something like:</p>
 <div class='highlight'><pre><code class='html'>...
-<span class='nt'>&lt;script </span><span class='na'>src=</span><span class='s'>&quot;lib/loadContracts.js&quot;</span>
+<span class='nt'>&lt;script </span><span class='na'>src=</span><span class='s'>&quot;lib/contracts.js&quot;</span>
     <span class='na'>type=</span><span class='s'>&quot;application/javascript&quot;</span><span class='nt'>&gt;&lt;/script&gt;</span>
 <span class='nt'>&lt;script </span><span class='na'>src=</span><span class='s'>&quot;MyContractedScript.js&quot;</span>
     <span class='na'>type=</span><span class='s'>&quot;application/javascript&quot;</span><span class='nt'>&gt;&lt;/script&gt;</span>
 ...
 </code></pre>
 </div>
-<p>Note that if you have an existing install of CoffeeScript, installing contracts.coffee will replace it. If you don&#8217;t want to give up the old CoffeeScript compiler you can just run contracts.coffee from its own directory:</p>
-<div class='highlight'><pre><code class='bash'>bin/coffee -cC MyContractedScript.coffee
+<p>If you are planning to run your code on node.js then you simply need to install <code>contracts.js</code> via npm:</p>
+<div class='highlight'><pre><code class='bash'>npm install contracts.js
 </code></pre>
 </div>
-<p>And finally, note that contracts.coffee requires some pretty new features of JavaScript to get its job done (in particular <a href='https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Proxy'>Proxies</a>) so it currently only works on Firefox 4+. Support for other JavaScript engines is coming soon.</p>
-
-<p>This means that if you attempt to run your contracted CoffeeScript under node/V8:</p>
-<div class='highlight'><pre><code class='bash'><span class='c'># note the -c flag is missing</span>
-coffee -C MyContractedScript.coffee
-<span class='c'># Compile error!!!</span>
+<p>Note that if you have an existing install of CoffeeScript, installing contracts.coffee will replace it. If you don&#8217;t want to give up the old CoffeeScript compiler you can grab the source from <a href='https://github.com/disnet/contracts.coffee'>github</a> and just run contracts.coffee from its own directory:</p>
+<div class='highlight'><pre><code class='bash'>bin/coffee -c --contracts MyContractedScript.coffee
 </code></pre>
 </div>
-<p>You will get a bunch of errors. So just compile to JavaScript and run it in Firefox for now.</p>
+<p>And finally, note that contracts.coffee requires some pretty new features of JavaScript to get its job done (in particular <a href='https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Proxy'>Proxies</a>) so it currently only works on Firefox 4+ and Node.js 0.5.10 (but not 0.6.x yet). Proxy support is in V8 but it hasn&#8217;t worked it way into Chrome just yet.</p>
 
-<p>Note that since leaving off the <code>-C</code> flag will generate JavaScript code with absolutely no trace of contracts (the code is exactly what vanilla CoffeeScript would generate), you can easily set up a production build with contracts disabled that can run in any browser or JavaScript environment and a development/testing build with contracts enabled that you run in Firefox to help track down bugs.</p>
-<span id='resources' />
+<p>When using node you will need to supply two command line flags to enable Proxies (<code>--harmony_proxies</code>) and WeakMaps (<code>--harmony-weakmaps</code>). If you use the <code>coffee</code> or <code>cake</code> scripts these flags will be enabled automatically for you, otherwise the full process looks like:</p>
+<div class='highlight'><pre><code class='bash'>coffee -c --contracts script.coffee
+node --harmony_proxies --harmony-weakmaps script.js
+</code></pre>
+</div>
+<p>Note that since leaving off the <code>--contracts</code> flag will generate JavaScript code with absolutely no trace of contracts (the code is exactly what vanilla CoffeeScript would generate), you can easily set up a production build with contracts disabled that can run in any browser or JavaScript environment and a development/testing build with contracts enabled that you run in Firefox to help track down bugs.</p>
+
 <h2 id='resources'>Resources</h2>
 
 <ul>
 <li><a href='https://github.com/disnet/contracts.coffee/issues?sort=created&amp;direction=desc&amp;state=open'>Issue Tracker</a> <br /> For filing bugs, requesting features and changes.</li>
 
 <li><a href='https://groups.google.com/forum/?hl=en#!forum/contractscoffee'>Google Group</a> <br /> For general discussion about contracts.coffee.</li>
+
+<li><a href='http://disnetdev.com/blog/'>disnet&#8217;s blog</a> <br /> Will sometimes post about contracts.coffee.</li>
 </ul>
 <span id='use' />
 <h2 id='how_to_use'>How to Use</h2>
 
-<p>In order to provide good error messages when things go wrong, contracts.coffee needs to know where contracted values are used in your code. What this means practically is that before you can use a value that has a contract on it, you must first <code>use()</code> it:</p>
+<p>In order to provide good error messages when things go wrong, contracts.coffee needs to know where contracted values are created and used in your code. It does this by enforcing a kind of module discipline and keeping track of which module a value was in when it was first wrapped up in a contract and which module uses the contracted value.</p>
+
+<p>If you are running in node.js the appropriate module wiring is done automatically. You just need to use <code>require</code> and the <code>exports</code> object like normal.</p>
+
+<p>If you are in the browser, some hand wiring is needed (future versions of contracts.coffee will automate this better). To do this the library provides two utility functions: <code>Contracts.exports</code> and <code>Contracts.use</code>.</p>
+
+<p>The <code>Contracts.exports(moduleName)</code> function creates an empty object for you to use much like the node.js <code>exports</code> object. Any contracted values you add to it will reference <code>moduleName</code> in any contract violation messages.</p>
 <div class='highlight'><pre><code class='coffeescript'><span class='c1'># Library.coffee</span>
-<span class='nb'>window</span><span class='p'>.</span><span class='nx'>id</span> <span class='o'>::</span> <span class='nf'>(Num) -&gt;</span> <span class='nx'>Num</span>
-<span class='nb'>window</span><span class='p'>.</span><span class='nv'>id = </span><span class='nf'>(x) -&gt;</span> <span class='nx'>x</span>
+
+<span class='c1'># create and name the exports object</span>
+<span class='nv'>exports = </span><span class='nx'>Contracts</span><span class='p'>.</span><span class='nx'>exports</span> <span class='s2'>&quot;Library&quot;</span>
+
+<span class='nx'>exports</span><span class='p'>.</span><span class='nx'>id</span> <span class='o'>::</span> <span class='nf'>(Num) -&gt;</span> <span class='nx'>Num</span>
+<span class='nv'>exports.id = </span><span class='nf'>(x) -&gt;</span> <span class='nx'>x</span>
+
+<span class='c1'># put the exports object on the global object </span>
+<span class='c1'># for other modules to see and use</span>
+<span class='nb'>window</span><span class='p'>.</span><span class='nv'>MyLib = </span><span class='nx'>exports</span>
 </code></pre>
-</div><div class='highlight'><pre><code class='coffeescript'><span class='c1'># Main.coffee</span>
-<span class='nv'>id = </span><span class='nb'>window</span><span class='p'>.</span><span class='nx'>id</span><span class='p'>.</span><span class='nx'>use</span><span class='p'>()</span>
+</div>
+<p>The <code>Contracts.use(exportObject, moduleName)</code> function takes an object created by <code>Contracts.exports</code> (or a normal object) and assigns the correct user module name for use in later error messages.</p>
+<div class='highlight'><pre><code class='coffeescript'><span class='c1'># Main.coffee</span>
+<span class='p'>{</span><span class='nx'>id</span><span class='p'>}</span> <span class='o'>=</span> <span class='nx'>Contracts</span><span class='p'>.</span><span class='nx'>use</span> <span class='nb'>window</span><span class='p'>.</span><span class='nx'>MyLib</span><span class='p'>,</span> <span class='s2'>&quot;Main&quot;</span>
 
 <span class='nx'>id</span> <span class='mi'>4</span>     <span class='c1'># ok</span>
 <span class='nx'>id</span> <span class='s2'>&quot;foo&quot;</span> <span class='c1'># Contract Violation...</span>
 </code></pre>
 </div><pre style='color: red'>
 Contract violation: expected &lt;Num&gt;, actual: "foo"
-Value guarded in: Library:3
-  -- blame is on: Main:2
+Value guarded in: Library
+  -- blame is on: Main
 Parent contracts:
-(Num) -> Num 
+(Num) -&gt; Num 
 </pre>
-<p>The <code>use()</code> function does the work of dynamically setting up the right file names to display in error messages.</p>
-
-<p>This is an unfortunate bit of syntax that we hope to do implicitly in the future with better compiler and module support.</p>
-
-<p>In general it is advisable to only put contracts on module exports but if you want to use them in the same module simply call <code>use()</code> immediately.</p>
-
-<p>Admittedly, in the example above finding the right file name is pretty trivial (we could have just inspected the stacktrace). To see the real power of recording the right names with <code>use()</code> consider the following example:</p>
+<p>Admittedly, in the example above finding the right module name is pretty trivial (we could have just inspected the stacktrace). To see the real power of recording the right names with <code>exports</code>/<code>use</code> consider the following example:</p>
 <div class='highlight'><pre><code class='coffeescript'><span class='lineno'>1</span> <span class='c1'># CheckingLibrary.coffee</span>
-<span class='lineno'>2</span> <span class='nb'>window</span><span class='p'>.</span><span class='nx'>checkAge</span> <span class='o'>::</span> <span class='nf'>(Num) -&gt;</span> <span class='nx'>Bool</span>
-<span class='lineno'>3</span> <span class='nb'>window</span><span class='p'>.</span><span class='nv'>checkAge = </span><span class='nf'>(age) -&gt;</span>
-<span class='lineno'>4</span>   <span class='c1'># make sure the age makes sense</span>
-<span class='lineno'>5</span>   <span class='nx'>age</span> <span class='o'>&gt;</span> <span class='mi'>0</span> <span class='o'>&amp;&amp;</span> <span class='nx'>age</span> <span class='o'>&lt;</span> <span class='mi'>150</span> 
+<span class='lineno'>2</span> <span class='nv'>exports = </span><span class='nx'>Contracts</span><span class='p'>.</span><span class='nx'>exports</span> <span class='s2'>&quot;CheckingLibrary&quot;</span>
+<span class='lineno'>3</span> 
+<span class='lineno'>4</span> <span class='nx'>exports</span><span class='p'>.</span><span class='nx'>checkAge</span> <span class='o'>::</span> <span class='nf'>(Num) -&gt;</span> <span class='nx'>Bool</span>
+<span class='lineno'>5</span> <span class='nv'>exports.checkAge = </span><span class='nf'>(age) -&gt;</span>
+<span class='lineno'>6</span>   <span class='c1'># make sure the age makes sense</span>
+<span class='lineno'>7</span>   <span class='nx'>age</span> <span class='o'>&gt;</span> <span class='mi'>0</span> <span class='o'>&amp;&amp;</span> <span class='nx'>age</span> <span class='o'>&lt;</span> <span class='mi'>150</span> 
+<span class='lineno'>8</span> 
+<span class='lineno'>9</span> <span class='nb'>window</span><span class='p'>.</span><span class='nv'>CheckingLibrary = </span><span class='nx'>exports</span>
 </code></pre>
 </div><div class='highlight'><pre><code class='coffeescript'><span class='lineno'>1</span> <span class='c1'># Validator.coffee</span>
-<span class='lineno'>2</span> <span class='nb'>window</span><span class='p'>.</span><span class='nx'>validateForm</span> <span class='o'>::</span> <span class='p'>(</span><span class='nf'>(Str) -&gt;</span> <span class='nx'>Bool</span><span class='p'>,</span> <span class='nx'>Str</span><span class='p'>)</span> <span class='o'>-&gt;</span> <span class='nx'>Bool</span>
-<span class='lineno'>3</span> <span class='nb'>window</span><span class='p'>.</span><span class='nv'>validateForm = </span><span class='nf'>(checker, fieldName) -&gt;</span>
-<span class='lineno'>4</span>   <span class='nx'>checker</span> <span class='nx'>$</span><span class='p'>(</span><span class='nx'>fieldName</span><span class='p'>).</span><span class='nx'>val</span><span class='p'>()</span>   <span class='c1'># failure is here </span>
+<span class='lineno'>2</span> <span class='nv'>exports = </span><span class='nx'>Contracts</span><span class='p'>.</span><span class='nx'>exports</span> <span class='s2'>&quot;Validator&quot;</span>
+<span class='lineno'>3</span> 
+<span class='lineno'>4</span> <span class='nx'>exports</span><span class='p'>.</span><span class='nx'>validateForm</span> <span class='o'>::</span> <span class='p'>(</span><span class='nf'>(Str) -&gt;</span> <span class='nx'>Bool</span><span class='p'>,</span> <span class='nx'>Str</span><span class='p'>)</span> <span class='o'>-&gt;</span> <span class='nx'>Bool</span>
+<span class='lineno'>5</span> <span class='nv'>exports.validateForm = </span><span class='nf'>(checker, fieldName) -&gt;</span>
+<span class='lineno'>6</span>   <span class='nx'>checker</span> <span class='nx'>$</span><span class='p'>(</span><span class='nx'>fieldName</span><span class='p'>).</span><span class='nx'>val</span><span class='p'>()</span>   <span class='c1'># failure is here </span>
+<span class='lineno'>7</span> 
+<span class='lineno'>8</span> <span class='nb'>window</span><span class='p'>.</span><span class='nv'>Validator = </span><span class='nx'>exports</span>
 </code></pre>
 </div><div class='highlight'><pre><code class='coffeescript'><span class='lineno'>1</span> <span class='c1'># Main.coffee</span>
-<span class='lineno'>2</span> <span class='nv'>checkAge = </span><span class='nb'>window</span><span class='p'>.</span><span class='nx'>checkAge</span><span class='p'>.</span><span class='nx'>use</span><span class='p'>()</span>
-<span class='lineno'>3</span> <span class='nv'>validateForm = </span><span class='nb'>window</span><span class='p'>.</span><span class='nx'>validateForm</span><span class='p'>.</span><span class='nx'>use</span><span class='p'>()</span>
+<span class='lineno'>2</span> <span class='p'>{</span><span class='nx'>checkAge</span><span class='p'>}</span>      <span class='o'>=</span> <span class='nx'>Contracts</span><span class='p'>.</span><span class='nx'>use</span> <span class='nx'>CheckingLibrary</span><span class='p'>,</span> <span class='s2'>&quot;Main&quot;</span>
+<span class='lineno'>3</span> <span class='p'>{</span><span class='nx'>validateForm</span><span class='p'>}</span>  <span class='o'>=</span> <span class='nx'>Contracts</span><span class='p'>.</span><span class='nx'>use</span> <span class='nx'>Validator</span><span class='p'>,</span> <span class='s2'>&quot;Main&quot;</span>
 <span class='lineno'>4</span> 
 <span class='lineno'>5</span> <span class='nx'>$</span><span class='p'>(</span><span class='s2'>&quot;form&quot;</span><span class='p'>).</span><span class='nx'>submit</span> <span class='o'>-&gt;</span>
 <span class='lineno'>6</span>   <span class='c1'># checkAge takes Num but validateForm passes Str!</span>
@@ -268,10 +281,10 @@ Parent contracts:
 <p>We get this contract violation:</p>
 <pre style='color: red'>
 Contract violation: expected &lt;Num&gt;, actual: "42"
-Value guarded in: CheckingLibrary:2
-  -- blame is on: Main:3
+Value guarded in: CheckingLibrary
+  -- blame is on: Main
 Parent contracts:
-(Num) -> Bool
+(Num) -&gt; Bool
 </pre>
 <p>Here we have a library that does some simple form validation. The <code>checkAge</code> library function checks ages to be within a reasonable range for humans and the <code>validateForm</code> function takes a field name and a checker function and checks the field&#8217;s value with the supplied checker.</p>
 
@@ -281,12 +294,12 @@ Parent contracts:
 
 <p>But the error message gets it right!</p>
 
-<p>It gets it right because <code>use()</code> records the module name where the contracted values were <code>used()</code> and we correctly track all the module names through all the subsequent contract checks.</p>
+<p>It gets it right because we setup the module names with <code>exports</code>/<code>use</code> which allows the system to blame the offending module.</p>
 <span id='simple' />
 <h2 id='simple_contracts'>Simple Contracts</h2>
 
 <p>In addition to the <code>Num</code> contract that checks for numbers, we also have <code>Str</code>, <code>Bool</code>, <code>Null</code>, <code>Undefined</code>, <code>Nat</code>, <code>Pos</code>, <code>Neg</code>, <code>Any</code> (everything is ok), and <code>None</code> (nothing is ok).</p>
-<span id='functions' />
+
 <h2 id='functions'>Functions</h2>
 
 <p>Basic functions:</p>
@@ -345,7 +358,7 @@ Parent contracts:
 </code></pre>
 </div>
 <p>Checks that <code>this</code> matches the given object contract.</p>
-<span id='objects' />
+
 <h2 id='objects'>Objects</h2>
 
 <p>Simple properties:</p>
@@ -392,7 +405,7 @@ Parent contracts:
 <p>Objects with functions that have pre and post conditions:</p>
 <div class='highlight'><pre><code class='coffeescript'><span class='nx'>o</span> <span class='o'>::</span>
   <span class='nv'>a: </span><span class='nx'>Num</span>
-  <span class='nv'>f: </span><span class='nf'>(Num) -&gt;</span> <span class='nx'>Num</span> <span class='o'>|</span>
+  <span class='nv'>f: </span><span class='nf'>(Num) -&gt;</span> <span class='nx'>Num</span> <span class='o'>-|</span>
       <span class='nv'>pre: </span><span class='nf'>(o) -&gt;</span> <span class='nx'>o</span><span class='p'>.</span><span class='nx'>a</span> <span class='o'>&gt;</span> <span class='mi'>10</span>
       <span class='nv'>post: </span><span class='nf'>(o) -&gt;</span> <span class='nx'>o</span><span class='p'>.</span><span class='nx'>a</span> <span class='o'>&gt;</span> <span class='mi'>20</span>
 <span class='nv'>o =</span>
@@ -405,18 +418,18 @@ Parent contracts:
 <p>Object invariants:</p>
 <div class='highlight'><pre><code class='coffeescript'><span class='nx'>o</span> <span class='o'>::</span>
   <span class='nv'>a: </span><span class='nx'>Num</span>
-  <span class='nv'>f: </span><span class='nf'>(Num) -&gt;</span> <span class='nx'>Num</span> <span class='o'>|</span>
+  <span class='nv'>f: </span><span class='nf'>(Num) -&gt;</span> <span class='nx'>Num</span> <span class='o'>-|</span>
       <span class='nv'>pre: </span><span class='nf'>(o) -&gt;</span> <span class='nx'>o</span><span class='p'>.</span><span class='nx'>a</span> <span class='o'>&gt;</span> <span class='mi'>10</span>
       <span class='nv'>post: </span><span class='nf'>(o) -&gt;</span> <span class='nx'>o</span><span class='p'>.</span><span class='nx'>a</span> <span class='o'>&gt;</span> <span class='mi'>20</span>
-  <span class='o'>|</span> <span class='nv'>invariant: </span><span class='o'>-&gt;</span>
+  <span class='o'>-|</span> <span class='nv'>invariant: </span><span class='o'>-&gt;</span>
     <span class='err'>@</span><span class='p'>.</span><span class='nx'>a</span> <span class='o'>&gt;</span> <span class='mi'>0</span> <span class='o'>and</span> <span class='err'>@</span><span class='p'>.</span><span class='nx'>a</span> <span class='o'>&lt;</span> <span class='mi'>100</span>
 <span class='nv'>o =</span>
   <span class='nv'>a: </span><span class='mi'>12</span>
   <span class='nv'>f: </span><span class='nf'>(x) -&gt;</span> <span class='err'>@</span><span class='p'>.</span><span class='nv'>a = </span><span class='err'>@</span><span class='p'>.</span><span class='nx'>a</span> <span class='o'>+</span> <span class='nx'>x</span>
 </code></pre>
 </div>
-<p>The invariant is checked whenever there is a possibility of <code>o</code> mutating (on property sets, delete, etc.).</p>
-<span id='arrays' />
+<p>The invariant is checked at contract application and whenever there is a possibility of <code>o</code> mutating (on property sets and delete).</p>
+
 <h2 id='arrays'>Arrays</h2>
 
 <p>Basic arrays:</p>
@@ -488,7 +501,90 @@ Parent contracts:
 
 <span class='nv'>f = </span><span class='nf'>(!Num) -&gt;</span> <span class='o'>!</span><span class='nx'>Str</span>
 </code></pre>
+</div><span id='duck' />
+<h2 id='ducktyping_invariants'>Duck-Typing Invariants</h2>
+
+<p>A full write-up on this topic is covered <a href='http://disnetdev.com/blog/2011/09/05/Duck-Typing-Invariants-In-contracts.coffee/'>here</a> but to whet your appetite: you can &#8220;duck-type&#8221; object invariants. Code can now say, &#8220;give me whatever object you want so long as it has <em>these</em> properties and satisfies <em>these</em> invariants&#8221;.</p>
+
+<p>Consider a binary search tree:</p>
+<div class='highlight'><pre><code class='coffeescript'><span class='c1'># A binary search tree is a binary tree </span>
+<span class='c1'># where each node is  greater than the </span>
+<span class='c1'># left child but less than the right child</span>
+<span class='nv'>BinarySearchTree = </span><span class='o'>?</span><span class='p'>(</span><span class='nx'>Null</span> <span class='o'>or</span> <span class='p'>{</span>
+  <span class='nv'>node: </span><span class='nx'>Num</span>
+  <span class='nv'>left: </span><span class='nx'>Self</span> <span class='o'>or</span> <span class='nx'>Null</span>
+  <span class='nv'>right: </span><span class='nx'>Self</span> <span class='o'>or</span> <span class='nx'>Null</span>
+  <span class='o'>-|</span> <span class='nv'>invariant: </span><span class='o'>-&gt;</span>
+    <span class='p'>(</span><span class='err'>@</span><span class='p'>.</span><span class='nx'>node</span> <span class='o'>&gt;</span> <span class='err'>@</span><span class='p'>.</span><span class='nx'>left</span><span class='p'>.</span><span class='nx'>node</span><span class='p'>)</span> <span class='o'>and</span> <span class='p'>(</span><span class='err'>@</span><span class='p'>.</span><span class='nx'>node</span> <span class='o'>&lt;</span> <span class='err'>@</span><span class='p'>.</span><span class='nx'>right</span><span class='p'>.</span><span class='nx'>node</span><span class='p'>)</span>
+<span class='p'>})</span>
+</code></pre>
 </div>
+<p>And a <a href='http://en.wikipedia.org/wiki/Red-black_tree'>red-black tree</a>:</p>
+<div class='highlight'><pre><code class='coffeescript'><span class='c1'># A red-black tree is a binary search tree </span>
+<span class='c1'># that keeps its balance</span>
+<span class='nv'>RedBlackTree = </span><span class='o'>?</span><span class='p'>(</span><span class='nx'>Null</span> <span class='o'>or</span> <span class='p'>{</span>
+  <span class='nv'>node: </span><span class='nx'>Num</span>
+  <span class='nv'>color: </span><span class='nx'>Str</span>
+  <span class='nv'>left: </span><span class='nx'>Self</span> <span class='o'>or</span> <span class='nx'>Null</span>
+  <span class='nv'>right: </span><span class='nx'>Self</span> <span class='o'>or</span> <span class='nx'>Null</span>
+  <span class='o'>-|</span> <span class='nv'>invariant: </span><span class='o'>-&gt;</span>
+    <span class='p'>(</span><span class='err'>@</span><span class='p'>.</span><span class='nx'>color</span> <span class='o'>is</span> <span class='s2'>&quot;red&quot;</span> <span class='o'>or</span> <span class='err'>@</span><span class='p'>.</span><span class='nx'>color</span> <span class='o'>is</span> <span class='s2'>&quot;black&quot;</span><span class='p'>)</span> <span class='o'>and</span>
+    <span class='p'>(</span><span class='k'>if</span> <span class='err'>@</span><span class='p'>.</span><span class='nx'>color</span> <span class='o'>is</span> <span class='s2'>&quot;red&quot;</span>
+      <span class='p'>(</span><span class='err'>@</span><span class='p'>.</span><span class='nx'>left</span><span class='p'>.</span><span class='nx'>color</span> <span class='o'>is</span> <span class='s2'>&quot;black&quot;</span> <span class='o'>and</span> 
+       <span class='err'>@</span><span class='p'>.</span><span class='nx'>right</span><span class='p'>.</span><span class='nx'>color</span> <span class='o'>is</span> <span class='s2'>&quot;black&quot;</span><span class='p'>)</span> 
+    <span class='k'>else</span> 
+      <span class='kc'>true</span>
+    <span class='p'>)</span> <span class='o'>and</span>
+    <span class='p'>(</span><span class='err'>@</span><span class='p'>.</span><span class='nx'>node</span> <span class='o'>&gt;=</span> <span class='err'>@</span><span class='p'>.</span><span class='nx'>left</span><span class='p'>.</span><span class='nx'>node</span><span class='p'>)</span> <span class='o'>and</span> 
+    <span class='p'>(</span><span class='err'>@</span><span class='p'>.</span><span class='nx'>node</span> <span class='o'>&gt;=</span> <span class='err'>@</span><span class='p'>.</span><span class='nx'>right</span><span class='p'>.</span><span class='nx'>node</span><span class='p'>)</span> <span class='o'>and</span>
+<span class='p'>})</span>
+</code></pre>
+</div>
+<p>The red-black tree is exactly the same as a binary search tree with some additional invariants. This means we have a kind of subtyping going on here: code that expects a binary search tree will also work with a red-black tree but <em>not</em> vica versa.</p>
+<div class='highlight'><pre><code class='coffeescript'><span class='nx'>takesBST</span> <span class='o'>::</span> <span class='nf'>(BinarySearchTree) -&gt;</span> <span class='nx'>Any</span>
+<span class='nv'>takesBST = </span><span class='nf'>(bst) -&gt;</span> <span class='p'>...</span>
+
+<span class='nx'>takesRedBlack</span> <span class='o'>::</span> <span class='nf'>(RedBlackTree) -&gt;</span> <span class='nx'>Any</span>
+<span class='nv'>takesRedBlack = </span><span class='nf'>(rbTree) -&gt;</span> <span class='p'>...</span>
+
+<span class='nv'>bst = </span><span class='nx'>makeBinarySearchTree</span><span class='p'>()</span>  
+<span class='nv'>rb = </span><span class='nx'>makeRedBlackTree</span><span class='p'>()</span>
+
+<span class='nx'>takesBST</span> <span class='nx'>bst</span> <span class='c1'># works fine</span>
+<span class='nx'>takesBST</span> <span class='nx'>rb</span>  <span class='c1'># works fine</span>
+
+<span class='nx'>takesRedBlack</span> <span class='nx'>rb</span>  <span class='c1'># works fine</span>
+<span class='nx'>takesRedBlack</span> <span class='nx'>bst</span> <span class='c1'># might fail if the full </span>
+                  <span class='c1'># red-black invariants don&#39;t hold!</span>
+</code></pre>
+</div>
+<p>In duck-typing, functions work when given <em>any</em> object that has the properties the function needs (though the object might have other properties too). Contracts allow us to extend that to object invariants: functions work when given <em>any</em> object that has the required properties <em>and</em> satisfies the required invariants (though the object might satisfy other invariants too).</p>
+<span id='log' />
+<h2 id='change_log'>Change Log</h2>
+
+<ul>
+<li>
+<p><a href='https://github.com/disnet/contracts.coffee/tree/c0.2.0'>0.2.0</a> (January 4th, 2012)</p>
+
+<ul>
+<li>removed <code>.use()</code>, now using <code>Contracts.exports</code> and <code>Contracts.use</code></li>
+
+<li>various bug fixes</li>
+
+<li>based off CoffeeScript 1.2.0</li>
+</ul>
+</li>
+
+<li>
+<p><a href='https://github.com/disnet/contracts.coffee/tree/c0.1.0'>0.1.0</a> (August 29th, 2011)</p>
+
+<ul>
+<li>initial release</li>
+
+<li>based off CoffeeScript 1.1.2</li>
+</ul>
+</li>
+</ul>
 
     <div class="footer">
       get the source code on GitHub : <a href="http://github.com/disnet/contracts.coffee">disnet/contracts.coffee</a>
@@ -505,12 +601,13 @@ Parent contracts:
       source = $('#repl_source').val()
       window.compiledJS = ''
       try
-        window.compiledJS = CoffeeScript.compile source, { bare: on, contracts: on, contractPrefix: off}
+        window.bareCompiledJS = CoffeeScript.compile source, { bare: on, contracts: on }
+        window.compiledJS = CoffeeScript.compile source, { bare: off, contracts: on }
         el = $('#repl_results')[0]
         if el.innerText
-          el.innerText = window.compiledJS
+          el.innerText = window.bareCompiledJS
         else
-          $(el).text window.compiledJS
+          $(el).text window.bareCompiledJS
         $('#blame pre').text("")
       catch error
         $('#blame pre').text(error.message)
@@ -558,5 +655,6 @@ Parent contracts:
 
   <script src="documentation/vendor/jquery-1.6.4.js"></script>
   <script src="extras/coffee-script.js"></script>
+  <script src="lib/contracts/contracts.js"></script>
 </body>
 </html>
