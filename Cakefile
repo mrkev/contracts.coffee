@@ -73,8 +73,12 @@ task 'build', 'build the CoffeeScript language from source', build = (cb) ->
   files = fs.readdirSync 'src'
   files = ('src/' + file for file in files when file.match(/\.coffee$/))
   run ['-c', '-o', 'lib/coffee-script'].concat(files), cb
-  contractLib = fs.readFileSync 'contracts.js/lib/contracts.js'
-  fs.writeFileSync 'lib/contracts/contracts.js', contractLib
+  exec "cake build", cwd: "./contracts.js", (err, stdout, stderr) ->
+    if err is null
+      contractLib = fs.readFileSync 'contracts.js/lib/contracts.js'
+      fs.writeFileSync 'lib/contracts/contracts.js', contractLib
+    else
+      console.log err
 
 buildWebtests = ->
   contractLib = fs.readFileSync 'lib/contracts/contracts.js'
