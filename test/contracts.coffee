@@ -399,3 +399,17 @@ test "binary search tree example", ->
 
 #     eq (idmod.id "foo"), "foo"
 #     throws (-> idmod.id 42)
+
+test "object contracts and builtins", ->
+  f :: ({foo: Str}) -> Str
+  f = (o) ->
+    o.foo
+
+  eq (f {foo: "bar"}), "bar", "correct object"
+  throws (-> f "string"), "string instead of an object, but should complain about missing property"
+
+test "object contracts on object-like builtins (currently failing)", ->
+  g :: ({toString: (Any) -> Str}) -> Str
+  g = (s) -> s.toString()
+
+  g "foo"
