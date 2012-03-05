@@ -599,5 +599,34 @@ if (typeof(define) === 'function' && define.amd) {
     }
   });
 
+  test("objects and primitives", function() {
+    var f;
+    f = __contracts.guard(__contracts.fun([
+      __contracts.object({
+        foo: Str
+      }, {})
+    ], Str, {}),function(o) {
+      return o.foo;
+    });
+    eq(f({
+      foo: "bar"
+    }), "bar", "correct object");
+    return throws((function() {
+      return f("string");
+    }), "string instead of an object, but should complain about missing property");
+  });
+
+  test("object contracts and object-like builtins (currently failing)", function() {
+    var g;
+    g = __contracts.guard(__contracts.fun([
+      __contracts.object({
+        toString: __contracts.fun([Any], Str, {})
+      }, {})
+    ], Str, {}),function(s) {
+      return s.toString();
+    });
+    return g("foo");
+  });
+
   }).call(this, __define, __require, __exports);
 }));

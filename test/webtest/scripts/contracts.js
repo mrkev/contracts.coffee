@@ -715,7 +715,7 @@ printStackTrace.implementation.prototype = {
       makeHandler = function(dom, rng, options) {
         var functionHandler;
         return functionHandler = function() {
-          var args, bf, boundArgs, clean_rng, i, res, thisc;
+          var args, bf, boundArgs, clean_rng, i, res, thisc, tmp;
           args = [];
           if (options && options.checkStack && !(options.checkStack(stack))) {
             throw new Error("stack checking failed");
@@ -750,7 +750,8 @@ printStackTrace.implementation.prototype = {
             } else {
               thisc = this;
             }
-            res = clean_rng.check(f.apply(thisc, args), pos, neg, parents, stack);
+            tmp = f.apply(thisc, args);
+            res = clean_rng.check(tmp, pos, neg, parents, stack);
           }
           if (typeof options.post === "function" && !options.post(this)) {
             blame(neg, pos, "failed postcondition: " + options.post.toString(), "[failed postcondition]", parents);
@@ -862,7 +863,18 @@ printStackTrace.implementation.prototype = {
       }
       for (prop in this.oc) {
         contractDesc = this.oc[prop];
-        objDesc = Utils.getPropertyDescriptor(obj, prop);
+        if ((typeof obj === 'object') || (typeof obj === 'function')) {
+          objDesc = Utils.getPropertyDescriptor(obj, prop);
+        } else if (typeof obj[prop] !== 'undefined') {
+          objDesc = {
+            value: obj[prop],
+            writable: true,
+            configurable: true,
+            enumerable: true
+          };
+        } else {
+          objDesc = null;
+        }
         if (contractDesc instanceof Contract) {
           value = contractDesc;
         } else {
