@@ -599,7 +599,7 @@ if (typeof(define) === 'function' && define.amd) {
     }
   });
 
-  test("objects and primitives", function() {
+  test("object contracts and builtins", function() {
     var f;
     f = __contracts.guard(__contracts.fun([
       __contracts.object({
@@ -616,7 +616,7 @@ if (typeof(define) === 'function' && define.amd) {
     }), "string instead of an object, but should complain about missing property");
   });
 
-  test("object contracts and object-like builtins (currently failing)", function() {
+  test("object contracts on object-like builtins (currently failing)", function() {
     var g;
     g = __contracts.guard(__contracts.fun([
       __contracts.object({
@@ -626,6 +626,27 @@ if (typeof(define) === 'function' && define.amd) {
       return s.toString();
     });
     return g("foo");
+  });
+
+  test("array contract ... with or", function() {
+    var Data, getData;
+    Data = __contracts.arr([__contracts.___(__contracts.or(Num, Str))]);
+    getData = __contracts.guard(__contracts.fun([Data], __contracts.or(Num, Str), {}),function(arr) {
+      return arr[0];
+    });
+    eq(getData([1, 2, 3]), 1);
+    eq(getData(["foo", 2, 3]), "foo");
+    throws((function() {
+      return getData([null, "string"]);
+    }));
+    throws((function() {
+      return getData([{}, 1, 2, 3]);
+    }));
+    return throws((function() {
+      return getData({
+        test: [1, 2, 3]
+      });
+    }));
   });
 
   }).call(this, __define, __require, __exports);

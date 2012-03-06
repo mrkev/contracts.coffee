@@ -715,7 +715,7 @@ printStackTrace.implementation.prototype = {
       makeHandler = function(dom, rng, options) {
         var functionHandler;
         return functionHandler = function() {
-          var args, bf, boundArgs, clean_rng, i, res, thisc, tmp;
+          var args, bf, boundArgs, clean_rng, i, res, thisc;
           args = [];
           if (options && options.checkStack && !(options.checkStack(stack))) {
             throw new Error("stack checking failed");
@@ -750,8 +750,7 @@ printStackTrace.implementation.prototype = {
             } else {
               thisc = this;
             }
-            tmp = f.apply(thisc, args);
-            res = clean_rng.check(tmp, pos, neg, parents, stack);
+            res = clean_rng.check(f.apply(thisc, args), pos, neg, parents, stack);
           }
           if (typeof options.post === "function" && !options.post(this)) {
             blame(neg, pos, "failed postcondition: " + options.post.toString(), "[failed postcondition]", parents);
@@ -1136,13 +1135,14 @@ printStackTrace.implementation.prototype = {
     c.flats = flats;
     c.ho = ho;
     c.equals = function(other) {
-      var pFlats, zipFlats;
+      var ho_eq, pFlats, zipFlats;
       if (!other instanceof Contract || other.ctype !== this.ctype) return false;
       zipFlats = Utils.zip(this.flats, other.flats);
       pFlats = (zipFlats.length !== 0) && zipFlats.every(function(zf) {
         return zf[0].equals(zf[1]);
       });
-      return pFlats && (this.ho.equals(other.ho));
+      ho_eq = this.ho.length === 1 && other.ho.length === 1 ? this.ho[0].equals(other.ho[0]) : true;
+      return pFlats && ho_eq;
     };
     return c;
   };
