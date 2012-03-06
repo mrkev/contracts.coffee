@@ -413,3 +413,16 @@ test "object contracts on object-like builtins (currently failing)", ->
   g = (s) -> s.toString()
 
   g "foo"
+
+test "array contract ... with or", ->
+  Data = ?([...Num or Str])
+
+  getData :: (Data) -> Num or Str
+  getData = (arr) -> arr[0]
+
+  eq (getData [1,2,3]), 1
+  eq (getData ["foo",2,3]), "foo"
+
+  throws (-> getData [null, "string"])
+  throws (-> getData [{},1,2,3])
+  throws (-> getData {test:[1,2,3]})
