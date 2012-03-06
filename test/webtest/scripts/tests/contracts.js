@@ -616,7 +616,7 @@ if (typeof(define) === 'function' && define.amd) {
     }), "string instead of an object, but should complain about missing property");
   });
 
-  test("object contracts on object-like builtins (currently failing)", function() {
+  test("object contracts on object-like primitives will blame", function() {
     var g;
     g = __contracts.guard(__contracts.fun([
       __contracts.object({
@@ -625,7 +625,9 @@ if (typeof(define) === 'function' && define.amd) {
     ], Str, {}),function(s) {
       return s.toString();
     });
-    return g("foo");
+    return throws((function() {
+      return g("foo");
+    }), "foo is a string but expects object");
   });
 
   test("array contract ... with or", function() {
