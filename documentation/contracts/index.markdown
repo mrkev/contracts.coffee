@@ -424,6 +424,22 @@ o =
   f: (x) -> x
 {% endhighlight %}
 
+**Note:** Putting an object contract on a primitive will always fail.
+  This might seem obvious at first but since many primitives have
+  methods, the following contract would seem reasonable:
+  
+{% highlight coffeescript %}
+f :: ({toString: (Any) -> Str}) -> Str
+f = (s) -> s.toString()
+
+f "a string"   # Contract violation
+f {}           # ok
+{% endhighlight %}
+
+Even though "a string" has a `toString` method the contract will
+always signal a violation. This is because JavaScript proxies can wrap
+objects but not primitives. 
+
 Optional properties:
 
 {% highlight coffeescript %}
