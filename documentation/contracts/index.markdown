@@ -2,8 +2,8 @@
 layout: default
 ---
 
-Contracts.coffee is a dialect of CoffeeScript with built-in
-support for contracts.
+Contracts.coffee is a dialect of [CoffeeScript](http://jashkenas.github.com/coffee-script/) with built-in
+support for contracts. It is inspired by the contract system found in [Racket](http://racket-lang.org/).
 
 Contracts let you clearly&mdash;even beautifully&mdash;express how
 your code behaves, and free you from writing tons of boilerplate,
@@ -12,7 +12,6 @@ defensive code.
 You can think of contracts as `assert` on
 steroids.
 
-<span id="basics"></span>
 Basics
 ------
 
@@ -43,7 +42,7 @@ actual: "foo"
 Value guarded in: id_module:42
   -- blame is on: client_code:104
 Parent contracts:
-(Num) -> Num
+(Num) -&gt; Num
 </pre>
 
 You can also put contracts on objects.
@@ -104,81 +103,77 @@ Quick Start
 
 Here's what you need to actually start working with contracts.coffee.
 
-First, grab the source from github.
+First, if you don't already have them, install [Node.js](https://github.com/joyent/node/wiki/Installation)
+and [npm](http://npmjs.org/). Then install contracts.coffee using npm:
 
 {% highlight bash %}
-git clone git://github.com/disnet/contracts.coffee.git
-cd contracts.coffee
-git submodule init
-git submodule update
-{% endhighlight %}
-
-Install [Node.js](https://github.com/joyent/node/wiki/Installation)
-and then contracts.coffee.
-
-{% highlight bash %}
-sudo bin/cake install
+npm install -g contracts.coffee
 {% endhighlight %}
 
 Now, compile some coffee with contracts!
 
 {% highlight bash %}
-coffee -cC MyContractedScript.coffee
+coffee -c --contracts MyContractedScript.coffee
 {% endhighlight %}
 
-Note the `-cC` flag. The `-c` says to compile to JavaScript and `-C`
-enables contracts in the compiled JavaScript. If you don't want
-contracts enabled (say in production) simply don't include the `-C`
+Note the `-c` and `--contracts` flags. The `-c` flag says to compile to JavaScript 
+and `--contracts` enables contracts in the compiled JavaScript. If you don't want
+contracts enabled (say in production) simply don't include the `--contracts`
 flag.
 
-You will also need to include `lib/loadContracts.js`. 
-So the header of your HTML file will look
-something like:
+If you are planning to run your code in the browser 
+you will need to include the `contracts.js` library (which can be found [here](https://github.com/disnet/contracts.coffee/blob/master/lib/contracts/contracts.js)).
+So the header of your HTML file will look something like:
 
 {% highlight html %}
 ...
-<script src="lib/loadContracts.js"
+<script src="lib/contracts.js"
     type="application/javascript"></script>
 <script src="MyContractedScript.js"
     type="application/javascript"></script>
 ...
 {% endhighlight %}
 
-Note that if you have an existing install of CoffeeScript,
-installing contracts.coffee will replace it. If you don't want to give
-up the old CoffeeScript compiler you can just run contracts.coffee
-from its own directory:
+If you are planning to run your code on node.js then you simply
+need to install `contracts.js` via npm:
 
 {% highlight bash %}
-bin/coffee -cC MyContractedScript.coffee
+npm install contracts.js
+{% endhighlight %}
+
+Note that if you have an existing install of CoffeeScript,
+installing contracts.coffee will replace it. If you don't want to give
+up the old CoffeeScript compiler you can grab the source from 
+[github](https://github.com/disnet/contracts.coffee) and 
+just run contracts.coffee from its own directory:
+
+{% highlight bash %}
+bin/coffee -c --contracts MyContractedScript.coffee
 {% endhighlight %}
 
 And finally, note that contracts.coffee requires some pretty new
 features of JavaScript to get its job done (in particular
 [Proxies](https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Proxy))
-so it currently only works on Firefox 4+. Support for other JavaScript
-engines is coming soon.
+so it currently only works on Firefox 4+ and Node.js 0.5.10 (but not 0.6.x yet).
+Proxy support is in V8 but it hasn't worked it way into Chrome just yet.
 
-This means that if you attempt to run your contracted CoffeeScript
-under node/V8:
+When using node you will need to supply two command line flags to enable
+Proxies (`--harmony_proxies`) and WeakMaps (`--harmony-weakmaps`). If you use the
+`coffee` or `cake` scripts these flags will be enabled automatically for you, otherwise
+the full process looks like:
 
 {% highlight bash %}
-# note the -c flag is missing
-coffee -C MyContractedScript.coffee
-# Compile error!!!
+coffee -c --contracts script.coffee
+node --harmony_proxies --harmony-weakmaps script.js
 {% endhighlight %}
 
-You will get a bunch of errors. So just compile to JavaScript and run
-it in Firefox for now.
-
-Note that since leaving off the `-C` flag will generate JavaScript
+Note that since leaving off the `--contracts` flag will generate JavaScript
 code with absolutely no trace of contracts (the code is exactly what
 vanilla CoffeeScript would generate), you can easily set up a
 production build with contracts disabled that can run in any browser
 or JavaScript environment and a development/testing build with
 contracts enabled that you run in Firefox to help track down bugs.
 
-<span id="resources"></span>
 Resources
 ---------
 
@@ -188,6 +183,9 @@ Resources
 *  [Google Group](https://groups.google.com/forum/?hl=en#!forum/contractscoffee)
    <br />
    For general discussion about contracts.coffee.
+*  [disnet's blog](http://disnetdev.com/blog/)
+   <br />
+   Will sometimes post about contracts.coffee.
 
 <span id="use"></span>
 How to Use
@@ -195,18 +193,47 @@ How to Use
 
 In order to provide good error messages when things go wrong,
 contracts.coffee needs to know where contracted values are 
-used in your code. What this means practically is that before you can
-use a value that has a contract on it, you must first `use()` it:
+created and used in your code. 
+It does this by enforcing a kind of module discipline and
+keeping track of which module a value was in
+when it was first wrapped up in a contract and which module
+uses the contracted value.
+
+If you are running in node.js the appropriate module wiring is done
+automatically. You just need to use `require` and the `exports` 
+object like normal.
+
+If you are in the browser, some hand wiring is needed (future versions
+of contracts.coffee will automate this better).
+To do this the library provides
+two utility functions: `Contracts.exports` and `Contracts.use`.
+
+The `Contracts.exports(moduleName)` function creates an empty object 
+for you to use much like the node.js `exports` object.
+Any contracted values you add to it will reference `moduleName`
+in any contract violation messages.
 
 {% highlight coffeescript %}
 # Library.coffee
-window.id :: (Num) -> Num
-window.id = (x) -> x
+
+# create and name the exports object
+exports = Contracts.exports "Library"
+
+exports.id :: (Num) -> Num
+exports.id = (x) -> x
+
+# put the exports object on the global object 
+# for other modules to see and use
+window.MyLib = exports
 {% endhighlight %}
+
+The `Contracts.use(exportObject, moduleName)` function takes an
+object created by `Contracts.exports` (or a normal object) and
+assigns the correct user module name for use in later error messages.
 
 {% highlight coffeescript %}
 # Main.coffee
-id = window.id.use()
+{id} = Contracts.use window.MyLib, "Main"
 
 id 4     # ok
 id "foo" # Contract Violation...
@@ -214,46 +241,44 @@ id "foo" # Contract Violation...
 
 <pre style="color: red">
 Contract violation: expected &lt;Num&gt;, actual: "foo"
-Value guarded in: Library:3
-  -- blame is on: Main:2
+Value guarded in: Library
+  -- blame is on: Main
 Parent contracts:
-(Num) -> Num 
+(Num) -&gt; Num 
 </pre>
 
-The `use()` function does the work of dynamically setting up the right
-file names to display in error messages.
-
-This is an unfortunate bit of syntax that we hope to do implicitly in
-the future with better compiler and module support.
-
-In general it is advisable to only put contracts on
-module exports but if you want to use them in the same module
-simply call `use()` immediately.
-
-Admittedly, in the example above finding the right file name is pretty trivial
+Admittedly, in the example above finding the right module name is pretty trivial
 (we could have just inspected the stacktrace). To see the real power
-of recording the right names with `use()` consider the following
+of recording the right names with `exports`/`use` consider the following
 example:
 
 {% highlight coffeescript linenos %}
 # CheckingLibrary.coffee
-window.checkAge :: (Num) -> Bool
-window.checkAge = (age) ->
+exports = Contracts.exports "CheckingLibrary"
+
+exports.checkAge :: (Num) -> Bool
+exports.checkAge = (age) ->
   # make sure the age makes sense
   age > 0 && age < 150 
+
+window.CheckingLibrary = exports
 {% endhighlight %}
 
 {% highlight coffeescript linenos %}
 # Validator.coffee
-window.validateForm :: ((Str) -> Bool, Str) -> Bool
-window.validateForm = (checker, fieldName) ->
+exports = Contracts.exports "Validator"
+
+exports.validateForm :: ((Str) -> Bool, Str) -> Bool
+exports.validateForm = (checker, fieldName) ->
   checker $(fieldName).val()   # failure is here 
+
+window.Validator = exports
 {% endhighlight %}
 
 {% highlight coffeescript linenos %}
 # Main.coffee
-checkAge = window.checkAge.use()
-validateForm = window.validateForm.use()
+{checkAge}      = Contracts.use CheckingLibrary, "Main"
+{validateForm}  = Contracts.use Validator, "Main"
 
 $("form").submit ->
   # checkAge takes Num but validateForm passes Str!
@@ -264,10 +289,10 @@ We get this contract violation:
 
 <pre style="color: red">
 Contract violation: expected &lt;Num&gt;, actual: "42"
-Value guarded in: CheckingLibrary:2
-  -- blame is on: Main:3
+Value guarded in: CheckingLibrary
+  -- blame is on: Main
 Parent contracts:
-(Num) -> Bool
+(Num) -&gt; Bool
 </pre>
 
 Here we have a library that does some simple form validation.
@@ -288,13 +313,11 @@ much impossible to correctly assign blame by just inspecting the
 stacktrace since the the point of failure is in a different location
 than the file actually at fault.
 
-
 But the error message gets it right!
 
-It gets it right because `use()` records the module name where the
-contracted values were `used()` and we correctly track all the module
-names through all the subsequent contract checks.
-
+It gets it right because we setup the module names with
+`exports`/`use` which allows the system to blame the offending
+module.
 
 <span id="simple"></span>
 Simple Contracts
@@ -304,7 +327,6 @@ In addition to the `Num` contract that checks for numbers, we
 also have `Str`, `Bool`, `Null`, `Undefined`, `Nat`, `Pos`, `Neg`,
 `Any` (everything is ok), and `None` (nothing is ok).
 
-<span id="functions"></span>
 Functions
 ---------
 
@@ -386,7 +408,6 @@ o.f()
 
 Checks that `this` matches the given object contract.
 
-<span id="objects"></span>
 Objects
 -------
 
@@ -446,7 +467,7 @@ Objects with functions that have pre and post conditions:
 {% highlight coffeescript %}
 o ::
   a: Num
-  f: (Num) -> Num |
+  f: (Num) -> Num -|
       pre: (o) -> o.a > 10
       post: (o) -> o.a > 20
 o =
@@ -463,20 +484,19 @@ Object invariants:
 {% highlight coffeescript %}
 o ::
   a: Num
-  f: (Num) -> Num |
+  f: (Num) -> Num -|
       pre: (o) -> o.a > 10
       post: (o) -> o.a > 20
-  | invariant: ->
+  -| invariant: ->
     @.a > 0 and @.a < 100
 o =
   a: 12
   f: (x) -> @.a = @.a + x
 {% endhighlight %}
 
-The invariant is checked whenever there is a possibility of `o`
-mutating (on property sets, delete, etc.).
+The invariant is checked at contract application and whenever there is a possibility of `o`
+mutating (on property sets and delete).
 
-<span id="arrays"></span>
 Arrays
 ------
 
@@ -593,4 +613,84 @@ f = (!Num) -> !Str
 {% endhighlight %}
 
      
+<span id="duck"></span>
+Duck-Typing Invariants
+----------------------
   
+A full write-up on this topic is covered [here](http://disnetdev.com/blog/2011/09/05/Duck-Typing-Invariants-In-contracts.coffee/) but to whet your appetite: you can "duck-type" object invariants. Code can now say, "give me whatever object you want so long as it has *these* properties and satisfies *these* invariants".
+
+Consider a binary search tree:
+
+{% highlight coffeescript %}
+# A binary search tree is a binary tree 
+# where each node is  greater than the 
+# left child but less than the right child
+BinarySearchTree = ?(Null or {
+  node: Num
+  left: Self or Null
+  right: Self or Null
+  -| invariant: ->
+    (@.node > @.left.node) and (@.node < @.right.node)
+})
+{% endhighlight %}
+
+And a [red-black tree](http://en.wikipedia.org/wiki/Red-black_tree):
+
+{% highlight coffeescript %}
+# A red-black tree is a binary search tree 
+# that keeps its balance
+RedBlackTree = ?(Null or {
+  node: Num
+  color: Str
+  left: Self or Null
+  right: Self or Null
+  -| invariant: ->
+    (@.color is "red" or @.color is "black") and
+    (if @.color is "red"
+      (@.left.color is "black" and 
+       @.right.color is "black") 
+    else 
+      true
+    ) and
+    (@.node >= @.left.node) and 
+    (@.node >= @.right.node) and
+})
+{% endhighlight %}
+
+The red-black tree is exactly the same as a binary search tree with some additional invariants. This means we have a kind of subtyping going on here: code that expects a binary search tree will also work with a red-black tree but *not* vica versa.
+
+{% highlight coffeescript %}
+takesBST :: (BinarySearchTree) -> Any
+takesBST = (bst) -> ...
+
+takesRedBlack :: (RedBlackTree) -> Any
+takesRedBlack = (rbTree) -> ...
+
+bst = makeBinarySearchTree()  
+rb = makeRedBlackTree()
+
+takesBST bst # works fine
+takesBST rb  # works fine
+
+takesRedBlack rb  # works fine
+takesRedBlack bst # might fail if the full 
+                  # red-black invariants don't hold!
+{% endhighlight %}
+
+In duck-typing, functions work when given *any* object that has the properties the function needs (though the object might have other properties too). Contracts allow us to extend that to object invariants: functions work when given *any* object that has the required properties *and* satisfies the required invariants (though the object might satisfy other invariants too).
+
+
+<span id="log"></span>
+Change Log
+----------
+
+* [0.2.0](https://github.com/disnet/contracts.coffee/tree/c0.2.0) (January 4th, 2012)
+  * removed `.use()`, now using `Contracts.exports` and `Contracts.use`
+  * various bug fixes
+  * based off CoffeeScript 1.2.0
+* [0.1.0](https://github.com/disnet/contracts.coffee/tree/c0.1.0) (August 29th, 2011) 
+  * initial release
+  * based off CoffeeScript 1.1.2
+
+
+

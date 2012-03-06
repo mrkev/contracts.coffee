@@ -623,5 +623,57 @@ if (typeof(define) === 'function' && define.amd) {
     return eq(p.name() === "frank", false);
   });
 
+  test("object contracts and builtins", function() {
+    var f;
+    f = __contracts.guard(__contracts.fun([
+      __contracts.object({
+        foo: Str
+      }, {})
+    ], Str, {}),function(o) {
+      return o.foo;
+    });
+    eq(f({
+      foo: "bar"
+    }), "bar", "correct object");
+    return throws((function() {
+      return f("string");
+    }), "string instead of an object, but should complain about missing property");
+  });
+
+  test("object contracts on object-like primitives will blame", function() {
+    var g;
+    g = __contracts.guard(__contracts.fun([
+      __contracts.object({
+        toString: __contracts.fun([Any], Str, {})
+      }, {})
+    ], Str, {}),function(s) {
+      return s.toString();
+    });
+    return throws((function() {
+      return g("foo");
+    }), "foo is a string but expects object");
+  });
+
+  test("array contract ... with or", function() {
+    var Data, getData;
+    Data = __contracts.arr([__contracts.___(__contracts.or(Num, Str))]);
+    getData = __contracts.guard(__contracts.fun([Data], __contracts.or(Num, Str), {}),function(arr) {
+      return arr[0];
+    });
+    eq(getData([1, 2, 3]), 1);
+    eq(getData(["foo", 2, 3]), "foo");
+    throws((function() {
+      return getData([null, "string"]);
+    }));
+    throws((function() {
+      return getData([{}, 1, 2, 3]);
+    }));
+    return throws((function() {
+      return getData({
+        test: [1, 2, 3]
+      });
+    }));
+  });
+
   }).call(this, __define, __require, __exports);
 }));

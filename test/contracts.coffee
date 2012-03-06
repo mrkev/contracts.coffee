@@ -411,3 +411,32 @@ test "classes should work too", ->
 
 #     eq (idmod.id "foo"), "foo"
 #     throws (-> idmod.id 42)
+
+test "object contracts and builtins", ->
+  f :: ({foo: Str}) -> Str
+  f = (o) ->
+    o.foo
+
+  eq (f {foo: "bar"}), "bar", "correct object"
+  throws (-> f "string"), "string instead of an object, but should complain about missing property"
+
+test "object contracts on object-like primitives will blame", ->
+  g :: ({toString: (Any) -> Str}) -> Str
+  g = (s) -> s.toString()
+
+  # even though a string has `toString` proxies force us
+  # to only accept objects (and functions/arrays)
+  throws (-> g "foo"), "foo is a string but expects object"
+
+test "array contract ... with or", ->
+  Data = ?([...Num or Str])
+
+  getData :: (Data) -> Num or Str
+  getData = (arr) -> arr[0]
+
+  eq (getData [1,2,3]), 1
+  eq (getData ["foo",2,3]), "foo"
+
+  throws (-> getData [null, "string"])
+  throws (-> getData [{},1,2,3])
+  throws (-> getData {test:[1,2,3]})

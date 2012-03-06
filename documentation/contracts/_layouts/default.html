@@ -1,10 +1,11 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset='utf-8'>
 
   <title>disnet/contracts.coffee @ GitHub</title>
-  <link href='http://fonts.googleapis.com/css?family=Lobster|Gentium+Book+Basic' rel='stylesheet' type='text/css'>
+  <link href='http://fonts.googleapis.com/css?family=Gentium+Book+Basic' rel='stylesheet' type='text/css'>
+  <link href='http://fonts.googleapis.com/css?family=Lobster' rel='stylesheet' type='text/css'>
 
   <link href='documentation/contracts/styles/default.css' rel='stylesheet' type='text/css'>
   <link href='documentation/contracts/styles/main.css' rel='stylesheet' type='text/css'>
@@ -40,7 +41,10 @@
       <li><a href="#objects">Objects</a></li>
       <li><a href="#arrays">Arrays</a></li>
       <li><a href="#operators">Operators</a></li>
+      <li style="text-decoration: none;">&nbsp;</li>
       <li><a href="#naming">Naming</a></li>
+      <li><a href="#duck">Duck-Typing</a></li>
+      <li><a href="#log">Change Log</a></li>
       <li style="text-decoration: none;">&nbsp;</li>
       <li><span id="try_button">Try it now!</span></li>
 
@@ -49,7 +53,7 @@
       <li>
         <div style="position: absolute; left: 35px">
         <a href="http://www.mozilla.org/">
-          <img style="height: 27px" src="documentation/images/moz-research.png">
+          <img alt="Mozilla Research" style="height: 27px" src="documentation/images/moz-research.png">
         </a>
         </div>
       </li>
@@ -61,21 +65,16 @@
       <div id="repl_source_wrap">
         <textarea id="repl_source"># Wrap the function in a contract that
 # expects to be called with a number
-# and will return a number as the result.
+# and will return a positive number as 
+# the result.
 
-id :: (Num) -> Num
-id = (x) -> x          
+square :: (Num) -> Pos
+square = (x) -> x * x
 
-# Call "use" to initialize the contract.
-# See the use section of the docs
-# for more details about "use".
-
-id = id.use()
-
-# Violates the contract by calling id
+# Violates the contract by calling square
 # with a string instead of a number.
 
-id "foo"</textarea>
+square "42"</textarea>
         <div id="run_button">Run!</div>
         <div id="source_label" class="label">CoffeeScript</div>
       </div>
@@ -114,12 +113,13 @@ id "foo"</textarea>
       source = $('#repl_source').val()
       window.compiledJS = ''
       try
-        window.compiledJS = CoffeeScript.compile source, { bare: on, contracts: on, contractPrefix: off}
+        window.bareCompiledJS = CoffeeScript.compile source, { bare: on, contracts: on }
+        window.compiledJS = CoffeeScript.compile source, { bare: off, contracts: on }
         el = $('#repl_results')[0]
         if el.innerText
-          el.innerText = window.compiledJS
+          el.innerText = window.bareCompiledJS
         else
-          $(el).text window.compiledJS
+          $(el).text window.bareCompiledJS
         $('#blame pre').text("")
       catch error
         $('#blame pre').text(error.message)
@@ -165,8 +165,8 @@ id "foo"</textarea>
 
   </script>
 
-  <script src="documentation/vendor/jquery-1.4.2.js"></script>
+  <script src="documentation/vendor/jquery-1.6.4.js"></script>
   <script src="extras/coffee-script.js"></script>
-  <script src="lib/loadContracts.js"></script>
+  <script src="lib/contracts/contracts.js"></script>
 </body>
 </html>
