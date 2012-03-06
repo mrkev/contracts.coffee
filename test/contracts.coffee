@@ -408,11 +408,13 @@ test "object contracts and builtins", ->
   eq (f {foo: "bar"}), "bar", "correct object"
   throws (-> f "string"), "string instead of an object, but should complain about missing property"
 
-test "object contracts on object-like builtins (currently failing)", ->
+test "object contracts on object-like primitives will blame", ->
   g :: ({toString: (Any) -> Str}) -> Str
   g = (s) -> s.toString()
 
-  g "foo"
+  # even though a string has `toString` proxies force us
+  # to only accept objects (and functions/arrays)
+  throws (-> g "foo"), "foo is a string but expects object"
 
 test "array contract ... with or", ->
   Data = ?([...Num or Str])
