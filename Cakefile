@@ -72,13 +72,14 @@ task 'build', 'build the CoffeeScript language from source', build = (cb) ->
   lib = "lib/coffee-script"
   files = fs.readdirSync 'src'
   files = ('src/' + file for file in files when file.match(/\.coffee$/))
-  run ['-c', '-o', 'lib/coffee-script'].concat(files), cb
-  exec "cake build", cwd: "./contracts.js", (err, stdout, stderr) ->
-    if err is null
-      contractLib = fs.readFileSync 'contracts.js/lib/contracts.js'
-      fs.writeFileSync 'lib/contracts/contracts.js', contractLib
-    else
-      console.log err
+  run ['-c', '-o', 'lib/coffee-script'].concat(files), ->
+    exec "cake build", cwd: "./contracts.js", (err, stdout, stderr) ->
+      if err is null
+        contractLib = fs.readFileSync 'contracts.js/lib/contracts.js'
+        fs.writeFileSync 'lib/contracts/contracts.js', contractLib
+        cb() if typeof cb is 'function'
+      else
+        console.log err
 
 buildWebtests = ->
   contractLib = fs.readFileSync 'lib/contracts/contracts.js'
@@ -257,8 +258,9 @@ runTests = (CoffeeScript) ->
 
 
 task 'test', 'run the CoffeeScript language test suite', ->
-  buildWebtests()
-  runTests CoffeeScript
+  build ->
+    buildWebtests()
+    runTests CoffeeScript
 
 
 task 'test:browser', 'run the test suite against the merged browser script', ->
