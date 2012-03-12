@@ -462,3 +462,27 @@ test "dont touch the arguments object", ->
   a :: (Any) -> Any
   a = (b) -> arguments.length
   eq (a 'b', 'c', 'd'), 3, "the arguments object should be untouched by a contract"
+
+test "this contract on custom contracts", ->
+  Cust = ?{name: Str}
+  CustBad = ?{age: Num}
+
+  f_single :: (@Cust) -> Str
+  f_single = -> @name
+
+  f_mult :: (Str, @Cust) -> Str
+  f_mult = (s) -> @name
+
+  f_bad :: (@CustBad) -> Num
+  f_bad = -> @age
+
+  o =
+    name: "Bob"
+    single: f_single
+    mult: f_mult
+    bad: f_bad
+
+  # failing on node 0.5.10 but fine on FF. Old V8 bug?
+  ok (o.single() is "Bob")
+  ok (o.mult("foo") is "Bob")
+  blames (-> o.bad())
