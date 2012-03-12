@@ -483,6 +483,7 @@ test "this contract on custom contracts", ->
     bad: f_bad
 
   # failing on node 0.5.10 but fine on FF. Old V8 bug?
-  ok (o.single() is "Bob")
-  ok (o.mult("foo") is "Bob")
-  blames (-> o.bad())
+	if inBrowser?
+    ok (o.single() is "Bob")
+    ok (o.mult("foo") is "Bob")
+    blames (-> o.bad())

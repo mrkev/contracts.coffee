@@ -733,18 +733,21 @@ if (typeof(define) === 'function' && define.amd) {
     }),function() {
       return this.age;
     });
-    o = {
+    return o = {
       name: "Bob",
       single: f_single,
       mult: f_mult,
       bad: f_bad
     };
+  });
+
+  if (typeof inBrowser !== "undefined" && inBrowser !== null) {
     ok(o.single() === "Bob");
     ok(o.mult("foo") === "Bob");
-    return blames((function() {
+    blames((function() {
       return o.bad();
     }));
-  });
+  }
 
   }).call(this, __define, __require, __exports);
 }));
