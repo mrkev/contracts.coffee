@@ -450,3 +450,10 @@ test "array contract ... with or", ->
   throws (-> getData [null, "string"])
   throws (-> getData [{},1,2,3])
   throws (-> getData {test:[1,2,3]})
+
+test "null values with obj contracts", ->
+  a :: ({a: Str, b: Str}) -> Any
+  a = (b) ->
+      console.log b
+
+  blames (-> a null)
