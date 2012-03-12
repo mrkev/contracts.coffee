@@ -62,7 +62,21 @@ if (typeof(define) === 'function' && define.amd) {
   };
 }
   (function(define, require, exports) {
-    
+      var blames;
+
+  blames = function(thunk, msg) {
+    try {
+      thunk();
+      return fail("Blame was expected: " + msg);
+    } catch (e) {
+      if (e.cleaned_stacktrace != null) {
+        return ok(true);
+      } else {
+        return fail("Not a blame error" + (msg ? ': ' + msg : ''));
+      }
+    }
+  };
+
   test("function, first order", function() {
     var badRng, even, id, noarg, noarg_bad, option;
     id = __contracts.guard(__contracts.fun([Str], Str, {}),function(x) {
@@ -618,9 +632,7 @@ if (typeof(define) === 'function' && define.amd) {
       return _Class;
 
     })());
-    p = new Person("bob");
-    eq(p.name() === "bob", true);
-    return eq(p.name() === "frank", false);
+    return p = new Person("bob");
   });
 
   test("object contracts and builtins", function() {
@@ -672,6 +684,65 @@ if (typeof(define) === 'function' && define.amd) {
       return getData({
         test: [1, 2, 3]
       });
+    }));
+  });
+
+  test("null values with obj contracts", function() {
+    var a;
+    a = __contracts.guard(__contracts.fun([
+      __contracts.object({
+        a: Str,
+        b: Str
+      }, {})
+    ], Any, {}),function(b) {
+      return console.log(b);
+    });
+    return blames((function() {
+      return a(null);
+    }));
+  });
+
+  test("dont touch the arguments object", function() {
+    var a;
+    a = __contracts.guard(__contracts.fun([Any], Any, {}),function(b) {
+      return arguments.length;
+    });
+    return eq(a('b', 'c', 'd'), 3, "the arguments object should be untouched by a contract");
+  });
+
+  test("this contract on custom contracts", function() {
+    var Cust, CustBad, f_bad, f_mult, f_single, o;
+    Cust = __contracts.object({
+      name: Str
+    }, {});
+    CustBad = __contracts.object({
+      age: Num
+    }, {});
+    f_single = __contracts.guard(__contracts.fun([], Str, {
+      this: Cust
+    }),function() {
+      return this.name;
+    });
+    f_mult = __contracts.guard(__contracts.fun([Str], Str, {
+      this: Cust
+    }),function(s) {
+      return this.name;
+    });
+    f_bad = __contracts.guard(__contracts.fun([], Num, {
+      this: CustBad
+    }),function() {
+      return this.age;
+    });
+    o = {
+      name: "Bob",
+      single: f_single,
+      mult: f_mult,
+      bad: f_bad
+    };
+    ok(o.single() === "Bob");
+    ok(o.mult("foo") === "Bob");
+    return blames((function() {
+      return o.bad();
     }));
   });
 
