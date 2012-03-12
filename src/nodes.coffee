@@ -459,7 +459,10 @@ exports.WrapContract = class WrapContract extends Base
   children: ['contract']
 
   compileNode: (o) ->
-    "(#{@contract.compile o}).toContract()"
+    if o.contracts
+      "(#{@contract.compile o}).toContract()"
+    else
+      "(#{@contract.compile o})"
 
 makeObjectProp = (name, value) ->
   new Assign new Value(new Literal name), new Value(new Literal value), 'object'
