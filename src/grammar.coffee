@@ -236,6 +236,8 @@ grammar =
 
   ThisContract: [
     o 'THIS_CONTRACT ObjectContract', -> $2
+    o 'THIS_CONTRACT Identifier', -> $2
+    o ', THIS_CONTRACT Identifier', -> $3
     o ', THIS_CONTRACT ObjectContract', -> $3
   ]
 

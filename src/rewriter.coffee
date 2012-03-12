@@ -262,7 +262,7 @@ class exports.Rewriter
       inContract = true if token[0] is 'CONTRACT_SIG'
       inContract = false if token[0] is 'TERMINATOR'
 
-      token[0] = 'THIS_CONTRACT' if token[1] is '@' and inContract and tokens[i+1][0] is "{"
+      token[0] = 'THIS_CONTRACT' if token[1] is '@' and inContract
       1
   # Generate the indentation tokens, based on another token on the same line.
   indentation: (token) ->
