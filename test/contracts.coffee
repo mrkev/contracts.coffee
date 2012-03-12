@@ -457,3 +457,8 @@ test "null values with obj contracts", ->
       console.log b
 
   blames (-> a null)
+
+test "dont touch the arguments object", ->
+  a :: (Any) -> Any
+  a = (b) -> arguments.length
+  eq (a 'b', 'c', 'd'), 3, "the arguments object should be untouched by a contract"
