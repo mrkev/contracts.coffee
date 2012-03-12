@@ -1,5 +1,15 @@
 # requires recent "unstable" versions of node (v0.5.8+) to work
 
+blames = (thunk, msg) ->
+  try
+    thunk()
+    fail "Blame was expected: #{msg}"
+  catch e
+    if e.cleaned_stacktrace?
+      ok true
+    else
+      fail "Not a blame error#{if msg then ': ' + msg else ''}"
+
 test "function, first order", ->
   id :: (Str) -> Str
   id = (x) -> x
