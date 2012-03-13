@@ -96,22 +96,22 @@ test "function, dependent", ->
 
   # inc :: (Num) -> !gt
 
-  inc :: (Num) -> !(result) -> result > $1
+  inc :: (Num) -> !(result, params) -> result > params[0]
   inc = (x) -> x + 1
 
   eq (inc 42), 43, "abides by contract"
 
-  bad_inc :: (Num) -> !(result) -> result > $1
+  bad_inc :: (Num) -> !(result, params) -> result > params[0]
   bad_inc = (x) -> x - 1
 
   throws (-> bad_inc 42), "violates dependent contract"
 
-  bad_inc :: (Str, Num) -> !(result) -> result > $2
+  bad_inc :: (Str, Num) -> !(result, params) -> result > params[1]
   bad_inc = (x, y) -> y - 1
 
   throws (-> bad_inc "foo", 42), "violates multi arg dependent contract"
 
-  neg :: (Bool or Num) -> !(r) -> typeof r is typeof $1
+  neg :: (Bool or Num) -> !(r, p) -> typeof r is typeof p[0]
   neg = (x) ->
     if typeof x is 'number'
       0 - x

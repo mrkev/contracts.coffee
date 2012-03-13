@@ -480,9 +480,16 @@ exports.FunctionContract = class FunctionContract extends Base
   compileNode: (o) ->
     params = @dom.compile o
     range = @rng.compile o
-    if @rng instanceof WrapContract # dependent function contract case
-      depargs = ("$#{n}" for n in [1..@dom.objects.length]).join(", ")
-      range = "function(#{depargs}) { return #{range}; }"
+    if @rng instanceof WrapContract and @rng.contract instanceof Code # dependent function contract case
+      if @rng?.contract?.params[1]?
+        paramsName = @rng.contract.params[1].compile o
+        delete @rng.contract.params[1]
+        @rng.contract.params.length = 1
+      else
+        paramsName = ""
+      # recompile since we modified @rng
+      range = @rng.compile o
+      range = "function(#{paramsName}) { return #{range}; }"
     if @tags is 'callOnly'
       @options.properties.push(makeObjectProp "callOnly", "true")
     else if @tags is 'newOnly'
