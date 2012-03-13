@@ -193,30 +193,30 @@ if (typeof(define) === 'function' && define.amd) {
 
   test("function, dependent", function() {
     var bad_inc, inc, neg;
-    inc = __contracts.guard(__contracts.fun([Num], function($1) { return (function(result) {
-      return result > $1;
+    inc = __contracts.guard(__contracts.fun([Num], function(params) { return (function(result) {
+      return result > params[0];
     }).toContract(); }, {}),function(x) {
       return x + 1;
     });
     eq(inc(42), 43, "abides by contract");
-    bad_inc = __contracts.guard(__contracts.fun([Num], function($1) { return (function(result) {
-      return result > $1;
+    bad_inc = __contracts.guard(__contracts.fun([Num], function(params) { return (function(result) {
+      return result > params[0];
     }).toContract(); }, {}),function(x) {
       return x - 1;
     });
     throws((function() {
       return bad_inc(42);
     }), "violates dependent contract");
-    bad_inc = __contracts.guard(__contracts.fun([Str, Num], function($1, $2) { return (function(result) {
-      return result > $2;
+    bad_inc = __contracts.guard(__contracts.fun([Str, Num], function(params) { return (function(result) {
+      return result > params[1];
     }).toContract(); }, {}),function(x, y) {
       return y - 1;
     });
     throws((function() {
       return bad_inc("foo", 42);
     }), "violates multi arg dependent contract");
-    neg = __contracts.guard(__contracts.fun([__contracts.or(Bool, Num)], function($1) { return (function(r) {
-      return typeof r === typeof $1;
+    neg = __contracts.guard(__contracts.fun([__contracts.or(Bool, Num)], function(p) { return (function(r) {
+      return typeof r === typeof p[0];
     }).toContract(); }, {}),function(x) {
       if (typeof x === 'number') {
         return 0 - x;
@@ -530,7 +530,7 @@ if (typeof(define) === 'function' && define.amd) {
     MyEven = function(x) {
       return x % 2 === 0;
     };
-    idEven = __contracts.guard(__contracts.fun([(MyEven).toContract()], function($1) { return (MyEven).toContract(); }, {}),function(x) {
+    idEven = __contracts.guard(__contracts.fun([(MyEven).toContract()], (MyEven).toContract(), {}),function(x) {
       return x;
     });
     eq(idEven(4), 4, "abides by contract");
