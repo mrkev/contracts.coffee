@@ -73,13 +73,19 @@ task 'build', 'build the CoffeeScript language from source', build = (cb) ->
   files = fs.readdirSync 'src'
   files = ('src/' + file for file in files when file.match(/\.coffee$/))
   run ['-c', '-o', 'lib/coffee-script'].concat(files), ->
-    exec "cake build", cwd: "./contracts.js", (err, stdout, stderr) ->
-      if err is null
-        contractLib = fs.readFileSync 'contracts.js/lib/contracts.js'
-        fs.writeFileSync 'lib/contracts/contracts.js', contractLib
-        cb() if typeof cb is 'function'
-      else
-        console.log err
+    if path.existsSync("./contracts.js/Cakefile")
+      exec "cake build", cwd: "./contracts.js", (err, stdout, stderr) ->
+        if err is null
+          contractLib = fs.readFileSync 'contracts.js/lib/contracts.js'
+          fs.writeFileSync 'lib/contracts/contracts.js', contractLib
+          cb() if typeof cb is 'function'
+        else
+          console.log err
+    else
+      console.log "The contracts.js submodule has not been checked out!"
+      console.log "You probably want to run: git submodule init && git submodule update"
+      console.log "Aborting build..."
+      process.exit 1
 
 buildWebtests = ->
   contractLib = fs.readFileSync 'lib/contracts/contracts.js'
