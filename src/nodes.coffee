@@ -425,6 +425,16 @@ exports.Literal = class Literal extends Base
   toString: ->
     ' "' + @value + '"'
 
+exports.EscapeContract = class EscapeContract extends Base
+  constructor: (@value) ->
+
+  children: ['value']
+
+  compileNode: (o) ->
+    @value.compile o
+
+
+
 exports.OptionalContract = class OptionalContract extends Base
   constructor: (@value) ->
 
@@ -1154,7 +1164,7 @@ exports.Class = class Class extends Base
 # property of an object -- including within object literals.
 exports.Assign = class Assign extends Base
   constructor: (@variable, @value, @context, options) ->
-    @escapeContract = options?.escape
+    @escapeContract = @value instanceof EscapeContract
     @param = options and options.param
     @subpattern = options and options.subpattern
 

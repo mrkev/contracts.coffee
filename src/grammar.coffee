@@ -89,6 +89,7 @@ grammar =
     o 'Value'
     o 'Invocation'
     o 'Code'
+    o 'EscapeContract'
     o 'AssignContract'
     o 'Operation'
     o 'Assign'
@@ -135,7 +136,7 @@ grammar =
   ]
 
   EscapeContract: [
-    o '? ContractExpression', -> $2
+    o '? ContractExpression', -> new EscapeContract $2
   ]
 
   AssignContract: [
@@ -255,7 +256,6 @@ grammar =
 
   # Assignment of a variable, property, or index to a value.
   Assign: [
-    o 'Assignable = EscapeContract',            -> new Assign $1, $3, undefined, escape: true
     o 'Assignable = Expression',                -> new Assign $1, $3
     o 'Assignable = TERMINATOR Expression',     -> new Assign $1, $4
     o 'Assignable = INDENT Expression OUTDENT', -> new Assign $1, $4
