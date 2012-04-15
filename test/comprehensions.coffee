@@ -460,3 +460,42 @@ test "#1850: inner `for` should not be expression-ized if `return`ing", ->
     for b in [1..9]
       c = Math.sqrt a*a + b*b
       return String [a, b, c] unless c % 1
+
+test "#1910: loop index should be mutable within a loop iteration and immutable between loop iterations", ->
+  n = 1
+  iterations = 0
+  arr = [0..n]
+  for v, k in arr
+    ++iterations
+    v = k = 5
+    eq 5, k
+  eq 2, k
+  eq 2, iterations
+
+  iterations = 0
+  for v in [0..n]
+    ++iterations
+  eq 2, k
+  eq 2, iterations
+
+  arr = ([v, v + 1] for v in [0..5])
+  iterations = 0
+  for own [v0, v1], k in arr when v0
+    k += 3
+    ++iterations
+  eq 6, k
+  eq 5, iterations
+
+test "#2007: Return object literal from comprehension", ->
+  y = for x in [1, 2]
+    foo: "foo" + x
+  eq 2, y.length
+  eq "foo1", y[0].foo
+  eq "foo2", y[1].foo
+
+  x = 2
+  y = while x
+    x: --x
+  eq 2, y.length
+  eq 1, y[0].x
+  eq 0, y[1].x

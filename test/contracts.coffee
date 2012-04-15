@@ -1,5 +1,15 @@
 # requires recent "unstable" versions of node (v0.5.8+) to work
 
+blames = (thunk, msg) ->
+  try
+    thunk()
+    fail "Blame was expected: #{msg}"
+  catch e
+    if e.cleaned_stacktrace?
+      ok true
+    else
+      fail "Not a blame error#{if msg then ': ' + msg else ''}"
+
 test "function, first order", ->
   id :: (Str) -> Str
   id = (x) -> x
@@ -86,22 +96,22 @@ test "function, dependent", ->
 
   # inc :: (Num) -> !gt
 
-  inc :: (Num) -> !(result) -> result > $1
+  inc :: (Num) -> !(result, params) -> result > params[0]
   inc = (x) -> x + 1
 
   eq (inc 42), 43, "abides by contract"
 
-  bad_inc :: (Num) -> !(result) -> result > $1
+  bad_inc :: (Num) -> !(result, params) -> result > params[0]
   bad_inc = (x) -> x - 1
 
   throws (-> bad_inc 42), "violates dependent contract"
 
-  bad_inc :: (Str, Num) -> !(result) -> result > $2
+  bad_inc :: (Str, Num) -> !(result, params) -> result > params[1]
   bad_inc = (x, y) -> y - 1
 
   throws (-> bad_inc "foo", 42), "violates multi arg dependent contract"
 
-  neg :: (Bool or Num) -> !(r) -> typeof r is typeof $1
+  neg :: (Bool or Num) -> !(r, p) -> typeof r is typeof p[0]
   neg = (x) ->
     if typeof x is 'number'
       0 - x
@@ -393,6 +403,18 @@ test "binary search tree example", ->
 	  throws (-> findInBst bst, 100), "invariant is violated"
 	  throws (-> bst.node = 0) , "invariant is violated"
 
+test "classes should work too", ->
+  Person :: (Str) ==> {
+    name: (Any) -> Str
+  }
+  Person = class
+    constructor: (@firstName) ->
+    name: -> @firstName
+
+  p = new Person("bob")
+  # eq (p.name() is "bob"), true
+  # eq (p.name() is "frank"), false
+
 # test "using patched require in node", ->
 #   if not inBrowser?
 #     idmod = require './modules/id'
@@ -428,3 +450,40 @@ test "array contract ... with or", ->
   throws (-> getData [null, "string"])
   throws (-> getData [{},1,2,3])
   throws (-> getData {test:[1,2,3]})
+
+test "null values with obj contracts", ->
+  a :: ({a: Str, b: Str}) -> Any
+  a = (b) ->
+      console.log b
+
+  blames (-> a null)
+
+test "dont touch the arguments object", ->
+  a :: (Any) -> Any
+  a = (b) -> arguments.length
+  eq (a 'b', 'c', 'd'), 3, "the arguments object should be untouched by a contract"
+
+test "this contract on custom contracts", ->
+  Cust = ?{name: Str}
+  CustBad = ?{age: Num}
+
+  f_single :: (@Cust) -> Str
+  f_single = -> @name
+
+  f_mult :: (Str, @Cust) -> Str
+  f_mult = (s) -> @name
+
+  f_bad :: (@CustBad) -> Num
+  f_bad = -> @age
+
+  o =
+    name: "Bob"
+    single: f_single
+    mult: f_mult
+    bad: f_bad
+
+  # failing on node 0.5.10 but fine on FF. Old V8 bug?
+	if inBrowser?
+    ok (o.single() is "Bob")
+    ok (o.mult("foo") is "Bob")
+    blames (-> o.bad())
