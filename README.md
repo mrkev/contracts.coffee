@@ -51,7 +51,7 @@ Change Log
   * [change](https://github.com/disnet/contracts.coffee/issues/8) to dependent function contracts
   * various contracts.coffee bug fixes: [#27](https://github.com/disnet/contracts.coffee/issues/27), [#41](https://github.com/disnet/contracts.coffee/issues/41), [#33](https://github.com/disnet/contracts.coffee/issues/33), [#31](https://github.com/disnet/contracts.coffee/issues/31),
   * various contracts.js bug fixes: [#9](https://github.com/disnet/contracts.js/pull/9), [#8](https://github.com/disnet/contracts.js/pull/8), [#7](https://github.com/disnet/contracts.js/pull/7), [#6](https://github.com/disnet/contracts.js/pull/6), [#5](https://github.com/disnet/contracts.js/pull/5), [#4](https://github.com/disnet/contracts.js/pull/4)
-  * experimental support for require.js
+  * experimental support for require.js (see [here](https://github.com/disnet/contracts.coffee/tree/master/test/webtest) for example use)
   * based off CoffeeScript 1.3.1
 * [0.2.0](https://github.com/disnet/contracts.coffee/tree/c0.2.0) (January 4th, 2012)
   * removed `.use()`, now using `Contracts.exports` and `Contracts.use`
