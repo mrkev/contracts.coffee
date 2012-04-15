@@ -464,6 +464,7 @@ grammar =
     o 'Expression RangeDots Expression',        -> new Range $1, $3, $2
     o 'Expression RangeDots',                   -> new Range $1, null, $2
     o 'RangeDots Expression',                   -> new Range null, $2, $1
+    o 'RangeDots',                              -> new Range null, null, $1
   ]
 
   # The **ArgList** is both the list of objects passed into a function call,
@@ -651,7 +652,7 @@ grammar =
     o 'Expression LOGIC    Expression',         -> new Op $2, $1, $3
     o 'Expression RELATION Expression',         ->
       if $2.charAt(0) is '!'
-        new Op($2.slice(1), $1, $3).invert()
+        new Op($2[1..], $1, $3).invert()
       else
         new Op $2, $1, $3
 
@@ -689,7 +690,7 @@ operators = [
   ['nonassoc',  'INDENT', 'OUTDENT']
   ['right',     '=', ':', 'COMPOUND_ASSIGN', 'RETURN', 'THROW', 'EXTENDS']
   ['right',     'FORIN', 'FOROF', 'BY', 'WHEN']
-  ['right',     'IF', 'ELSE', 'FOR', 'DO', 'WHILE', 'UNTIL', 'LOOP', 'SUPER', 'CLASS']
+  ['right',     'IF', 'ELSE', 'FOR', 'WHILE', 'UNTIL', 'LOOP', 'SUPER', 'CLASS']
   ['right',     'POST_IF']
 ]
 
