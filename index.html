@@ -89,7 +89,6 @@ square "42"</textarea>
       <pre></pre></div>
   </div>
 
-<<<<<<< HEAD
   <div id="main">
   <div id="container">
 
@@ -344,11 +343,11 @@ Parent contracts:
 </code></pre>
 </div>
 <p>Dependent functions:</p>
-<div class='highlight'><pre><code class='coffeescript'><span class='nx'>inc</span> <span class='o'>::</span> <span class='nf'>(Num) -&gt;</span> <span class='o'>!</span><span class='nf'>(result) -&gt;</span> <span class='nx'>result</span> <span class='o'>&gt;</span> <span class='nx'>$1</span>
+<div class='highlight'><pre><code class='coffeescript'><span class='nx'>inc</span> <span class='o'>::</span> <span class='nf'>(Num) -&gt;</span> <span class='o'>!</span><span class='nf'>(result, args) -&gt;</span> <span class='nx'>result</span> <span class='o'>&gt;</span> <span class='nx'>args</span><span class='p'>[</span><span class='mi'>0</span><span class='p'>]</span>
 <span class='nv'>inc = </span><span class='nf'>(n) -&gt;</span> <span class='nx'>n</span> <span class='o'>+</span> <span class='mi'>1</span>
 </code></pre>
 </div>
-<p>The variable <code>$1</code> is the first argument passed to the function (<code>$2</code> would be the second argument, <code>$3</code> the third, and so on). This allows us to compare the result of the function to its arguments. Note that the test is run after the function has completed so if any of the arguments were mutated during the function&#8217;s execution the test could give spurious results.</p>
+<p>The variable <code>args[0]</code> is the first argument passed to the function (<code>args[1]</code> would be the second argument, <code>args[2]</code> the third, and so on). This allows us to compare the result of the function to its arguments. Note that the test is run after the function has completed so if any of the arguments were mutated during the function&#8217;s execution the test could give spurious results.</p>
 
 <p>The <code>this</code> contract:</p>
 <div class='highlight'><pre><code class='coffeescript'><span class='nx'>f</span> <span class='o'>::</span> <span class='nf'>(Str, @{name: Str}) -&gt;</span> <span class='nx'>Str</span>
@@ -373,6 +372,16 @@ Parent contracts:
   <span class='nv'>f: </span><span class='nf'>(x) -&gt;</span> <span class='nx'>x</span>
 </code></pre>
 </div>
+<p><strong>Note:</strong> Putting an object contract on a primitive will always fail. This might seem obvious at first but since many primitives have methods, the following contract would seem reasonable:</p>
+<div class='highlight'><pre><code class='coffeescript'><span class='nx'>f</span> <span class='o'>::</span> <span class='p'>({</span><span class='nv'>toString: </span><span class='nf'>(Any) -&gt;</span> <span class='nx'>Str</span><span class='p'>})</span> <span class='o'>-&gt;</span> <span class='nx'>Str</span>
+<span class='nv'>f = </span><span class='nf'>(s) -&gt;</span> <span class='nx'>s</span><span class='p'>.</span><span class='nx'>toString</span><span class='p'>()</span>
+
+<span class='nx'>f</span> <span class='s2'>&quot;a string&quot;</span>   <span class='c1'># Contract violation</span>
+<span class='nx'>f</span> <span class='p'>{}</span>           <span class='c1'># ok</span>
+</code></pre>
+</div>
+<p>Even though &#8220;a string&#8221; has a <code>toString</code> method the contract will always signal a violation. This is because JavaScript proxies can wrap objects but not primitives.</p>
+
 <p>Optional properties:</p>
 <div class='highlight'><pre><code class='coffeescript'><span class='nx'>o</span> <span class='o'>::</span>
   <span class='nv'>a: </span><span class='nx'>Str</span>
@@ -564,6 +573,22 @@ Parent contracts:
 <h2 id='change_log'>Change Log</h2>
 
 <ul>
+<li>
+<p><a href=''>0.3.0</a> (March 15th, 2012)</p>
+
+<ul>
+<li><a href='https://github.com/disnet/contracts.coffee/issues/8'>change</a> to dependent function contracts</li>
+
+<li>various contracts.coffee bug fixes: <a href='https://github.com/disnet/contracts.coffee/issues/27'>#27</a>, <a href='https://github.com/disnet/contracts.coffee/issues/41'>#41</a>, <a href='https://github.com/disnet/contracts.coffee/issues/33'>#33</a>, <a href='https://github.com/disnet/contracts.coffee/issues/31'>#31</a>,</li>
+
+<li>various contracts.js bug fixes: <a href='https://github.com/disnet/contracts.js/pull/9'>#9</a>, <a href='https://github.com/disnet/contracts.js/pull/8'>#8</a>, <a href='https://github.com/disnet/contracts.js/pull/7'>#7</a>, <a href='https://github.com/disnet/contracts.js/pull/6'>#6</a>, <a href='https://github.com/disnet/contracts.js/pull/5'>#5</a>, <a href='https://github.com/disnet/contracts.js/pull/4'>#4</a></li>
+
+<li>experimental support for require.js</li>
+
+<li>based off CoffeeScript 1.3.1</li>
+</ul>
+</li>
+
 <li>
 <p><a href='https://github.com/disnet/contracts.coffee/tree/c0.2.0'>0.2.0</a> (January 4th, 2012)</p>
 

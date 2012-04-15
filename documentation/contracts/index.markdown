@@ -385,12 +385,12 @@ g = new f 42  # ok
 Dependent functions:
 
 {% highlight coffeescript %}
-inc :: (Num) -> !(result) -> result > $1
+inc :: (Num) -> !(result, args) -> result > args[0]
 inc = (n) -> n + 1
 {% endhighlight %}
 
-The variable `$1` is the first argument passed to the function (`$2`
-would be the second argument, `$3` the third, and so on). This allows
+The variable `args[0]` is the first argument passed to the function (`args[1]`
+would be the second argument, `args[2]` the third, and so on). This allows
 us to compare the result of the function to its arguments. Note that
 the test is run after the function has completed so if any of the
 arguments were mutated during the function's execution the test could
@@ -700,6 +700,12 @@ In duck-typing, functions work when given *any* object that has the properties t
 Change Log
 ----------
 
+* [0.3.0]() (March 15th, 2012)
+  * [change](https://github.com/disnet/contracts.coffee/issues/8) to dependent function contracts
+  * various contracts.coffee bug fixes: [#27](https://github.com/disnet/contracts.coffee/issues/27), [#41](https://github.com/disnet/contracts.coffee/issues/41), [#33](https://github.com/disnet/contracts.coffee/issues/33), [#31](https://github.com/disnet/contracts.coffee/issues/31),
+  * various contracts.js bug fixes: [#9](https://github.com/disnet/contracts.js/pull/9), [#8](https://github.com/disnet/contracts.js/pull/8), [#7](https://github.com/disnet/contracts.js/pull/7), [#6](https://github.com/disnet/contracts.js/pull/6), [#5](https://github.com/disnet/contracts.js/pull/5), [#4](https://github.com/disnet/contracts.js/pull/4)
+  * experimental support for require.js
+  * based off CoffeeScript 1.3.1
 * [0.2.0](https://github.com/disnet/contracts.coffee/tree/c0.2.0) (January 4th, 2012)
   * removed `.use()`, now using `Contracts.exports` and `Contracts.use`
   * various bug fixes
