@@ -362,8 +362,12 @@ if (typeof(define) === 'function' && define.amd) {
         a: 1,
         b: "foo",
         f: function(x) {
-          if (x === 44) this.a = -1;
-          if (x === 22) this.b = "bar";
+          if (x === 44) {
+            this.a = -1;
+          }
+          if (x === 22) {
+            this.b = "bar";
+          }
           return x + 10;
         }
       });
