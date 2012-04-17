@@ -186,6 +186,12 @@ Parent contracts:
 ...
 </code></pre>
 </div>
+<p>Contracts.coffee also has experimental support for <a href='http://requirejs.org/'>require.js</a>. Just load the &#8220;contracts&#8221; module first in <code>main.js</code>. So your <code>main.js</code> will look something like:</p>
+<div class='highlight'><pre><code class='javascript'><span class='nx'>require</span><span class='p'>([</span><span class='s2'>&quot;contracts&quot;</span><span class='p'>,</span> <span class='s2'>&quot;MyModule&quot;</span><span class='p'>],</span> <span class='kd'>function</span><span class='p'>(</span><span class='nx'>c</span><span class='p'>,</span> <span class='nx'>myMod</span><span class='p'>)</span> <span class='p'>{</span>
+    <span class='c1'>// ...</span>
+<span class='p'>});</span>
+</code></pre>
+</div>
 <p>If you are planning to run your code on node.js then you simply need to install <code>contracts.js</code> via npm:</p>
 <div class='highlight'><pre><code class='bash'>npm install contracts.js
 </code></pre>
@@ -217,19 +223,19 @@ node --harmony_proxies --harmony-weakmaps script.js
 
 <p>In order to provide good error messages when things go wrong, contracts.coffee needs to know where contracted values are created and used in your code. It does this by enforcing a kind of module discipline and keeping track of which module a value was in when it was first wrapped up in a contract and which module uses the contracted value.</p>
 
-<p>Since JavaScript doesn&#8217;t (yet) have a module system, contracts.coffee has to handle it on its own. The good news is that most of the time you&#8217;ll never notice.</p>
+<p>Since JavaScript doesn&#8217;t (yet) have modules, contracts.coffee must enforce a notion of modules on its own. The good news is that for the common cases you&#8217;ll never have to deal with this.</p>
 
 <ul>
 <li>
-<p>If you are running in node.js, the appropriate module wiring is done automatically. You just need to use <code>require</code> and the <code>exports</code> object like normal. Module names are taken from file names.</p>
+<p>If you are running in node.js the appropriate module wiring is done automatically. You just need to use <code>require</code> and the <code>exports</code> object like normal.</p>
 </li>
 
 <li>
-<p>If you are in the browser and using <a href='http://requirejs.org/'>require.js</a>, everything is handled for you as well. Just remember to include &#8220;contracts&#8221; as the first library. (checkout an <a href='https://github.com/disnet/contracts.coffee/tree/master/test/webtest'>example</a> of contracts.coffee and require.js in action)</p>
+<p>If you are running in the browser and using <a href='http://requirejs.org/'>require.js</a>, then the wiring is also automatically handled for you. Just be sure to include &#8220;contracts&#8221; as your first loaded module. (Here is an <a href='https://github.com/disnet/contracts.coffee/tree/master/test/webtest'>example</a> of this in action)</p>
 </li>
 
 <li>
-<p>If you are in some other situation you will need to do the wiring yourself. The library provides some helper utilities documented <a href=''>here</a>.</p>
+<p>If you have some other situation then you will need to do the module wiring by hand. This is documented over <a href='https://github.com/disnet/contracts.coffee/wiki/Manual-Modules'>here</a>.</p>
 </li>
 </ul>
 <span id='simple' />

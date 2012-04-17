@@ -134,6 +134,17 @@ So the header of your HTML file will look something like:
 ...
 {% endhighlight %}
 
+
+Contracts.coffee also has experimental support for
+[require.js](http://requirejs.org/). Just load the "contracts" module
+first in `main.js`. So your `main.js` will look something like:
+
+{% highlight javascript %}
+require(["contracts", "MyModule"], function(c, myMod) {
+    // ...
+});
+{% endhighlight %}
+
 If you are planning to run your code on node.js then you simply
 need to install `contracts.js` via npm:
 
@@ -213,7 +224,7 @@ common cases you'll never have to deal with this.
   as your first loaded module. (Here is an [example](https://github.com/disnet/contracts.coffee/tree/master/test/webtest) of this in action)
   
 * If you have some other situation then you will need to do the module
-  wiring by hand. This is documented over [here]().
+  wiring by hand. This is documented over [here](https://github.com/disnet/contracts.coffee/wiki/Manual-Modules).
 
 <span id="simple"></span>
 Simple Contracts
