@@ -217,84 +217,21 @@ node --harmony_proxies --harmony-weakmaps script.js
 
 <p>In order to provide good error messages when things go wrong, contracts.coffee needs to know where contracted values are created and used in your code. It does this by enforcing a kind of module discipline and keeping track of which module a value was in when it was first wrapped up in a contract and which module uses the contracted value.</p>
 
-<p>If you are running in node.js the appropriate module wiring is done automatically. You just need to use <code>require</code> and the <code>exports</code> object like normal.</p>
+<p>Since JavaScript doesn&#8217;t (yet) have a module system, contracts.coffee has to handle it on its own. The good news is that most of the time you&#8217;ll never notice.</p>
 
-<p>If you are in the browser, some hand wiring is needed (future versions of contracts.coffee will automate this better). To do this the library provides two utility functions: <code>Contracts.exports</code> and <code>Contracts.use</code>.</p>
+<ul>
+<li>
+<p>If you are running in node.js, the appropriate module wiring is done automatically. You just need to use <code>require</code> and the <code>exports</code> object like normal. Module names are taken from file names.</p>
+</li>
 
-<p>The <code>Contracts.exports(moduleName)</code> function creates an empty object for you to use much like the node.js <code>exports</code> object. Any contracted values you add to it will reference <code>moduleName</code> in any contract violation messages.</p>
-<div class='highlight'><pre><code class='coffeescript'><span class='c1'># Library.coffee</span>
+<li>
+<p>If you are in the browser and using <a href='http://requirejs.org/'>require.js</a>, everything is handled for you as well. Just remember to include &#8220;contracts&#8221; as the first library. (checkout an <a href='https://github.com/disnet/contracts.coffee/tree/master/test/webtest'>example</a> of contracts.coffee and require.js in action)</p>
+</li>
 
-<span class='c1'># create and name the exports object</span>
-<span class='nv'>exports = </span><span class='nx'>Contracts</span><span class='p'>.</span><span class='nx'>exports</span> <span class='s2'>&quot;Library&quot;</span>
-
-<span class='nx'>exports</span><span class='p'>.</span><span class='nx'>id</span> <span class='o'>::</span> <span class='nf'>(Num) -&gt;</span> <span class='nx'>Num</span>
-<span class='nv'>exports.id = </span><span class='nf'>(x) -&gt;</span> <span class='nx'>x</span>
-
-<span class='c1'># put the exports object on the global object </span>
-<span class='c1'># for other modules to see and use</span>
-<span class='nb'>window</span><span class='p'>.</span><span class='nv'>MyLib = </span><span class='nx'>exports</span>
-</code></pre>
-</div>
-<p>The <code>Contracts.use(exportObject, moduleName)</code> function takes an object created by <code>Contracts.exports</code> (or a normal object) and assigns the correct user module name for use in later error messages.</p>
-<div class='highlight'><pre><code class='coffeescript'><span class='c1'># Main.coffee</span>
-<span class='p'>{</span><span class='nx'>id</span><span class='p'>}</span> <span class='o'>=</span> <span class='nx'>Contracts</span><span class='p'>.</span><span class='nx'>use</span> <span class='nb'>window</span><span class='p'>.</span><span class='nx'>MyLib</span><span class='p'>,</span> <span class='s2'>&quot;Main&quot;</span>
-
-<span class='nx'>id</span> <span class='mi'>4</span>     <span class='c1'># ok</span>
-<span class='nx'>id</span> <span class='s2'>&quot;foo&quot;</span> <span class='c1'># Contract Violation...</span>
-</code></pre>
-</div><pre style='color: red'>
-Contract violation: expected &lt;Num&gt;, actual: "foo"
-Value guarded in: Library
-  -- blame is on: Main
-Parent contracts:
-(Num) -&gt; Num 
-</pre>
-<p>Admittedly, in the example above finding the right module name is pretty trivial (we could have just inspected the stacktrace). To see the real power of recording the right names with <code>exports</code>/<code>use</code> consider the following example:</p>
-<div class='highlight'><pre><code class='coffeescript'><span class='lineno'>1</span> <span class='c1'># CheckingLibrary.coffee</span>
-<span class='lineno'>2</span> <span class='nv'>exports = </span><span class='nx'>Contracts</span><span class='p'>.</span><span class='nx'>exports</span> <span class='s2'>&quot;CheckingLibrary&quot;</span>
-<span class='lineno'>3</span> 
-<span class='lineno'>4</span> <span class='nx'>exports</span><span class='p'>.</span><span class='nx'>checkAge</span> <span class='o'>::</span> <span class='nf'>(Num) -&gt;</span> <span class='nx'>Bool</span>
-<span class='lineno'>5</span> <span class='nv'>exports.checkAge = </span><span class='nf'>(age) -&gt;</span>
-<span class='lineno'>6</span>   <span class='c1'># make sure the age makes sense</span>
-<span class='lineno'>7</span>   <span class='nx'>age</span> <span class='o'>&gt;</span> <span class='mi'>0</span> <span class='o'>&amp;&amp;</span> <span class='nx'>age</span> <span class='o'>&lt;</span> <span class='mi'>150</span> 
-<span class='lineno'>8</span> 
-<span class='lineno'>9</span> <span class='nb'>window</span><span class='p'>.</span><span class='nv'>CheckingLibrary = </span><span class='nx'>exports</span>
-</code></pre>
-</div><div class='highlight'><pre><code class='coffeescript'><span class='lineno'>1</span> <span class='c1'># Validator.coffee</span>
-<span class='lineno'>2</span> <span class='nv'>exports = </span><span class='nx'>Contracts</span><span class='p'>.</span><span class='nx'>exports</span> <span class='s2'>&quot;Validator&quot;</span>
-<span class='lineno'>3</span> 
-<span class='lineno'>4</span> <span class='nx'>exports</span><span class='p'>.</span><span class='nx'>validateForm</span> <span class='o'>::</span> <span class='p'>(</span><span class='nf'>(Str) -&gt;</span> <span class='nx'>Bool</span><span class='p'>,</span> <span class='nx'>Str</span><span class='p'>)</span> <span class='o'>-&gt;</span> <span class='nx'>Bool</span>
-<span class='lineno'>5</span> <span class='nv'>exports.validateForm = </span><span class='nf'>(checker, fieldName) -&gt;</span>
-<span class='lineno'>6</span>   <span class='nx'>checker</span> <span class='nx'>$</span><span class='p'>(</span><span class='nx'>fieldName</span><span class='p'>).</span><span class='nx'>val</span><span class='p'>()</span>   <span class='c1'># failure is here </span>
-<span class='lineno'>7</span> 
-<span class='lineno'>8</span> <span class='nb'>window</span><span class='p'>.</span><span class='nv'>Validator = </span><span class='nx'>exports</span>
-</code></pre>
-</div><div class='highlight'><pre><code class='coffeescript'><span class='lineno'>1</span> <span class='c1'># Main.coffee</span>
-<span class='lineno'>2</span> <span class='p'>{</span><span class='nx'>checkAge</span><span class='p'>}</span>      <span class='o'>=</span> <span class='nx'>Contracts</span><span class='p'>.</span><span class='nx'>use</span> <span class='nx'>CheckingLibrary</span><span class='p'>,</span> <span class='s2'>&quot;Main&quot;</span>
-<span class='lineno'>3</span> <span class='p'>{</span><span class='nx'>validateForm</span><span class='p'>}</span>  <span class='o'>=</span> <span class='nx'>Contracts</span><span class='p'>.</span><span class='nx'>use</span> <span class='nx'>Validator</span><span class='p'>,</span> <span class='s2'>&quot;Main&quot;</span>
-<span class='lineno'>4</span> 
-<span class='lineno'>5</span> <span class='nx'>$</span><span class='p'>(</span><span class='s2'>&quot;form&quot;</span><span class='p'>).</span><span class='nx'>submit</span> <span class='o'>-&gt;</span>
-<span class='lineno'>6</span>   <span class='c1'># checkAge takes Num but validateForm passes Str!</span>
-<span class='lineno'>7</span>   <span class='nx'>validateForm</span> <span class='nx'>checkAge</span><span class='p'>,</span> <span class='s2'>&quot;#age&quot;</span>
-</code></pre>
-</div>
-<p>We get this contract violation:</p>
-<pre style='color: red'>
-Contract violation: expected &lt;Num&gt;, actual: "42"
-Value guarded in: CheckingLibrary
-  -- blame is on: Main
-Parent contracts:
-(Num) -&gt; Bool
-</pre>
-<p>Here we have a library that does some simple form validation. The <code>checkAge</code> library function checks ages to be within a reasonable range for humans and the <code>validateForm</code> function takes a field name and a checker function and checks the field&#8217;s value with the supplied checker.</p>
-
-<p>The problem happens when <code>Main.coffee</code> sets up the form submit handler to call <code>validateForm</code> (which expects a checker that takes strings) with <code>checkAge</code> (which takes numbers).</p>
-
-<p>Notice that the violation happens at <code>Validator.coffee:4</code> when the checker is called with a string but the module at fault is actually <code>Main.coffee</code> (since it was responsible for providing <code>Validator.coffee</code> with the right checker). In this case it is pretty much impossible to correctly assign blame by just inspecting the stacktrace since the the point of failure is in a different location than the file actually at fault.</p>
-
-<p>But the error message gets it right!</p>
-
-<p>It gets it right because we setup the module names with <code>exports</code>/<code>use</code> which allows the system to blame the offending module.</p>
+<li>
+<p>If you are in some other situation you will need to do the wiring yourself. The library provides some helper utilities documented <a href=''>here</a>.</p>
+</li>
+</ul>
 <span id='simple' />
 <h2 id='simple_contracts'>Simple Contracts</h2>
 
