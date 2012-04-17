@@ -164,6 +164,10 @@ task 'doc:underscore', 'rebuild the Underscore.coffee documentation page', ->
   exec 'docco examples/underscore.coffee && cp -rf docs documentation && rm -r docs', (err) ->
     throw err if err
 
+task 'doc:contracts', 'rebuild the contracts.coffee documentation', ->
+  exec 'jekyll documentation/contracts documentation/contracts/_site && cp documentation/contracts/_site/index.html index.html', (err) ->
+    throw err if err
+
 task 'bench', 'quick benchmark of compilation time', ->
   {Rewriter} = require './lib/coffee-script/rewriter'
   co     = sources.map((name) -> fs.readFileSync name).join '\n'
