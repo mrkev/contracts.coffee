@@ -199,125 +199,21 @@ keeping track of which module a value was in
 when it was first wrapped up in a contract and which module
 uses the contracted value.
 
-If you are running in node.js the appropriate module wiring is done
-automatically. You just need to use `require` and the `exports` 
-object like normal.
+Since JavaScript doesn't (yet) have modules, contracts.coffee must
+enforce a notion of modules on its own. The good news is that for the
+common cases you'll never have to deal with this.
 
-If you are in the browser, some hand wiring is needed (future versions
-of contracts.coffee will automate this better).
-To do this the library provides
-two utility functions: `Contracts.exports` and `Contracts.use`.
-
-The `Contracts.exports(moduleName)` function creates an empty object 
-for you to use much like the node.js `exports` object.
-Any contracted values you add to it will reference `moduleName`
-in any contract violation messages.
-
-{% highlight coffeescript %}
-# Library.coffee
-
-# create and name the exports object
-exports = Contracts.exports "Library"
-
-exports.id :: (Num) -> Num
-exports.id = (x) -> x
-
-# put the exports object on the global object 
-# for other modules to see and use
-window.MyLib = exports
-{% endhighlight %}
-
-The `Contracts.use(exportObject, moduleName)` function takes an
-object created by `Contracts.exports` (or a normal object) and
-assigns the correct user module name for use in later error messages.
-
-{% highlight coffeescript %}
-# Main.coffee
-{id} = Contracts.use window.MyLib, "Main"
-
-id 4     # ok
-id "foo" # Contract Violation...
-{% endhighlight %}
-
-<pre style="color: red">
-Contract violation: expected &lt;Num&gt;, actual: "foo"
-Value guarded in: Library
-  -- blame is on: Main
-Parent contracts:
-(Num) -&gt; Num 
-</pre>
-
-Admittedly, in the example above finding the right module name is pretty trivial
-(we could have just inspected the stacktrace). To see the real power
-of recording the right names with `exports`/`use` consider the following
-example:
-
-{% highlight coffeescript linenos %}
-# CheckingLibrary.coffee
-exports = Contracts.exports "CheckingLibrary"
-
-exports.checkAge :: (Num) -> Bool
-exports.checkAge = (age) ->
-  # make sure the age makes sense
-  age > 0 && age < 150 
-
-window.CheckingLibrary = exports
-{% endhighlight %}
-
-{% highlight coffeescript linenos %}
-# Validator.coffee
-exports = Contracts.exports "Validator"
-
-exports.validateForm :: ((Str) -> Bool, Str) -> Bool
-exports.validateForm = (checker, fieldName) ->
-  checker $(fieldName).val()   # failure is here 
-
-window.Validator = exports
-{% endhighlight %}
-
-{% highlight coffeescript linenos %}
-# Main.coffee
-{checkAge}      = Contracts.use CheckingLibrary, "Main"
-{validateForm}  = Contracts.use Validator, "Main"
-
-$("form").submit ->
-  # checkAge takes Num but validateForm passes Str!
-  validateForm checkAge, "#age"
-{% endhighlight %}
-
-We get this contract violation:
-
-<pre style="color: red">
-Contract violation: expected &lt;Num&gt;, actual: "42"
-Value guarded in: CheckingLibrary
-  -- blame is on: Main
-Parent contracts:
-(Num) -&gt; Bool
-</pre>
-
-Here we have a library that does some simple form validation.
-The `checkAge` library function checks ages to be within a reasonable
-range for humans and the `validateForm` function takes a field name
-and a checker function and checks the field's value with the supplied
-checker.
-
-The problem happens when `Main.coffee` sets up the form submit handler to call
-`validateForm` (which expects a checker that takes strings) with
-`checkAge` (which takes numbers).
-
-Notice that the violation happens at `Validator.coffee:4` when the
-checker is called with a string but the module at fault is actually
-`Main.coffee` (since it was responsible for providing
-`Validator.coffee` with the right checker). In this case it is pretty
-much impossible to correctly assign blame by just inspecting the
-stacktrace since the the point of failure is in a different location
-than the file actually at fault.
-
-But the error message gets it right!
-
-It gets it right because we setup the module names with
-`exports`/`use` which allows the system to blame the offending
-module.
+* If you are running in node.js the appropriate module wiring is done
+  automatically. You just need to use `require` and the `exports` 
+  object like normal.
+  
+* If you are running in the browser and using
+  [require.js](http://requirejs.org/), then the wiring is also
+  automatically handled for you. Just be sure to include "contracts"
+  as your first loaded module. (Here is an [example](https://github.com/disnet/contracts.coffee/tree/master/test/webtest) of this in action)
+  
+* If you have some other situation then you will need to do the module
+  wiring by hand. This is documented over [here]().
 
 <span id="simple"></span>
 Simple Contracts
