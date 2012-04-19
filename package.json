@@ -3,7 +3,7 @@
   "description":  "A Dialect of CoffeeScript with contracts",
   "keywords":     ["javascript", "language", "coffeescript", "compiler", "contracts"],
   "author":       "Tim Disney",
-  "version":      "0.2.0",
+  "version":      "0.3.0",
   "licenses":     [{
     "type":       "MIT",
     "url":        "https://raw.github.com/disnet/contracts.coffee/master/LICENSE"
