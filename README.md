@@ -41,8 +41,9 @@ If you are running in node.js then you'll need to install the contracts.js packa
 
 Note that contracts.coffee requires some pretty new features of JavaScript 
 ([Proxies](https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Proxy) 
-in particular) so it currently only works on Firefox 4+ and node 0.5.10 (but not 0.6 yet) 
-but other JavaScript engines should be adding support soon.
+in particular) so it currently only works on Firefox 4+, node.js 0.5.x and 0.7.x (but not 0.6),
+and recent versions of Chrome (though you'll need to enable the
+experimental JavaScript flag in about:flags).
 
 Change Log
 ----------
