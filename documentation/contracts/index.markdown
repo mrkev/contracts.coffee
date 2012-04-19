@@ -165,8 +165,10 @@ bin/coffee -c --contracts MyContractedScript.coffee
 And finally, note that contracts.coffee requires some pretty new
 features of JavaScript to get its job done (in particular
 [Proxies](https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Proxy))
-so it currently only works on Firefox 4+ and Node.js 0.5.10 (but not 0.6.x yet).
-Proxy support is in V8 but it hasn't worked it way into Chrome just yet.
+so it currently only works on Firefox 4+, Node.js 0.5.x and 0.7.x (but
+not 0.6.x),
+and recent versions of Chrome (though at the moment you'll need to enable the
+experimental JavaScript flag in about:flags).
 
 When using node you will need to supply two command line flags to enable
 Proxies (`--harmony_proxies`) and WeakMaps (`--harmony-weakmaps`). If you use the
