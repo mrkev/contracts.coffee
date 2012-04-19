@@ -171,13 +171,14 @@ and recent versions of Chrome (though at the moment you'll need to enable the
 experimental JavaScript flag in about:flags).
 
 When using node you will need to supply two command line flags to enable
-Proxies (`--harmony_proxies`) and WeakMaps (`--harmony-weakmaps`). If you use the
+Proxies (`--harmony_proxies`) and WeakMaps (`--harmony-weakmaps` in
+node.js 0.5.x or `--harmony-collections` in 0.7.x). If you use the
 `coffee` or `cake` scripts these flags will be enabled automatically for you, otherwise
 the full process looks like:
 
 {% highlight bash %}
 coffee -c --contracts script.coffee
-node --harmony_proxies --harmony-weakmaps script.js
+node --harmony_proxies --harmony-collections script.js
 {% endhighlight %}
 
 Note that since leaving off the `--contracts` flag will generate JavaScript

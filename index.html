@@ -202,9 +202,9 @@ Parent contracts:
 </div>
 <p>And finally, note that contracts.coffee requires some pretty new features of JavaScript to get its job done (in particular <a href='https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Proxy'>Proxies</a>) so it currently only works on Firefox 4+, Node.js 0.5.x and 0.7.x (but not 0.6.x), and recent versions of Chrome (though at the moment you&#8217;ll need to enable the experimental JavaScript flag in about:flags).</p>
 
-<p>When using node you will need to supply two command line flags to enable Proxies (<code>--harmony_proxies</code>) and WeakMaps (<code>--harmony-weakmaps</code>). If you use the <code>coffee</code> or <code>cake</code> scripts these flags will be enabled automatically for you, otherwise the full process looks like:</p>
+<p>When using node you will need to supply two command line flags to enable Proxies (<code>--harmony_proxies</code>) and WeakMaps (<code>--harmony-weakmaps</code> in node.js 0.5.x or <code>--harmony-collections</code> in 0.7.x). If you use the <code>coffee</code> or <code>cake</code> scripts these flags will be enabled automatically for you, otherwise the full process looks like:</p>
 <div class='highlight'><pre><code class='bash'>coffee -c --contracts script.coffee
-node --harmony_proxies --harmony-weakmaps script.js
+node --harmony_proxies --harmony-collections script.js
 </code></pre>
 </div>
 <p>Note that since leaving off the <code>--contracts</code> flag will generate JavaScript code with absolutely no trace of contracts (the code is exactly what vanilla CoffeeScript would generate), you can easily set up a production build with contracts disabled that can run in any browser or JavaScript environment and a development/testing build with contracts enabled that you run in Firefox to help track down bugs.</p>
