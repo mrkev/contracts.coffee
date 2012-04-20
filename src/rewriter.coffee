@@ -28,7 +28,7 @@ class exports.Rewriter
     @tagPostfixConditionals()
     @addImplicitBraces()
     @addImplicitParentheses()
-    @cleanContractExpr()
+    # @cleanContractExpr()
     @tokens
 
   # Rewrite the token stream, looking one token ahead and behind.
