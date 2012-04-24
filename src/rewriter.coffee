@@ -28,7 +28,6 @@ class exports.Rewriter
     @tagPostfixConditionals()
     @addImplicitBraces()
     @addImplicitParentheses()
-    @cleanContractExpr()
     @tokens
 
   # Rewrite the token stream, looking one token ahead and behind.
@@ -254,14 +253,6 @@ class exports.Rewriter
       token[0] = 'CONTRACT_SIG'
       1
 
-  cleanContractExpr: ->
-    inContract = false
-    @scanTokens (token, i, tokens) ->
-      inContract = true if token[0] is 'CONTRACT_SIG'
-      inContract = false if token[0] is 'TERMINATOR'
-
-      token[0] = 'THIS_CONTRACT' if token[1] is '@' and inContract
-      1
   # Generate the indentation tokens, based on another token on the same line.
   indentation: (token, implicit = no) ->
     indent  = ['INDENT', 2, token[2]]

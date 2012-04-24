@@ -148,6 +148,7 @@ grammar =
 
   ContractExpression: [
     o 'Identifier', -> new Value $1
+    o '@ Identifier', -> new ThisContract new Value $2
     o 'ContractExpression ?', -> new OptionalContract $1
     o '( ContractExpression )', -> $2
     o 'ContractExpression LOGIC ContractExpression', -> new ContractOp $2, $1, $3
@@ -161,6 +162,7 @@ grammar =
           null
     o 'FunctionContract', -> $1
     o 'ObjectContract', -> $1
+    o '@ ObjectContract', -> new ThisContract $2
     o '[ ]',                                    -> new ArrayContract new Arr []
     o '[ ContractArgList OptComma ]',           -> new ArrayContract new Arr $2
   ]
@@ -175,25 +177,17 @@ grammar =
   FunctionContract: [
     o 'PARAM_START ContractList PARAM_END ContractFunGlyph
          INDENT ContractExpression OUTDENT', ->
-         new FunctionContract (new Arr $2), $6, $4
+         new FunctionContract $2, $6, $4
 
     o 'PARAM_START ContractList PARAM_END ContractFunGlyph
          INDENT ContractExpression FunctionOptions OUTDENT', ->
-         new FunctionContract (new Arr $2), $6, $4, $7
-
-    o 'PARAM_START ContractList ThisContract PARAM_END ContractFunGlyph
-         INDENT ContractExpression OUTDENT', ->
-         new FunctionContract (new Arr $2), $7, $5, undefined, $3
-
-    o 'PARAM_START ContractList ThisContract PARAM_END ContractFunGlyph
-         INDENT ContractExpression FunctionOptions OUTDENT', ->
-         new FunctionContract (new Arr $2), $7, $5, $8, $3
+         new FunctionContract $2, $6, $4, $7
 
     o 'ContractFunGlyph INDENT ContractExpression OUTDENT', ->
-        new FunctionContract (new Arr []), $3, $1
+        new FunctionContract [], $3, $1
 
     o 'ContractFunGlyph INDENT ContractExpression FunctionOptions OUTDENT', ->
-        new FunctionContract (new Arr []), $3, $1, $4
+        new FunctionContract [], $3, $1, $4
   ]
   FunctionOptions: [
     o 'CONTRACT_OPT INDENT { AssignList } OUTDENT', ->
@@ -232,13 +226,6 @@ grammar =
     o 'ObjAssignable :
        INDENT ContractExpression OUTDENT',  -> new Assign new Value($1), $4, 'object'
     o 'Comment'
-  ]
-
-  ThisContract: [
-    o 'THIS_CONTRACT ObjectContract', -> $2
-    o 'THIS_CONTRACT Identifier', -> $2
-    o ', THIS_CONTRACT Identifier', -> $3
-    o ', THIS_CONTRACT ObjectContract', -> $3
   ]
 
   ContractList: [

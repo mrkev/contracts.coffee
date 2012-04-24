@@ -481,13 +481,27 @@ exports.WrapContract = class WrapContract extends Base
 makeObjectProp = (name, value) ->
   new Assign new Value(new Literal name), new Value(new Literal value), 'object'
 
+
+exports.ThisContract = class ThisContract extends Base
+  constructor: (@val) ->
+
+  children: ['val']
+
+  compileNode: (o) -> @val.compile o
+
 exports.FunctionContract = class FunctionContract extends Base
-  constructor: (@dom, @rng, @tags, opts, thisContract) ->
+  constructor: (@dom, @rng, @tags, opts) ->
     opts = (opts or [])
-    if thisContract
-      tc = new Assign new Value(new Literal "this"), thisContract, 'object'
-      opts = opts.concat(tc)
+    # pull out thisContract from the domain
+    thisContract = (dom for dom in @dom if dom instanceof ThisContract)
+    throw new SyntaxError "too many 'this' contracts" if thisContract?.length > 1
+    if thisContract?.length is 1
+      tc = new Assign new Value(new Literal "this"), thisContract[0].val, 'object'
+      opts = opts.concat tc
     @options = new Obj opts
+
+    # remove thisContract from the domain contracts
+    @dom = new Arr (dom for dom in @dom if not (dom instanceof ThisContract))
 
   children: ['dom', 'rng', 'options']
 
