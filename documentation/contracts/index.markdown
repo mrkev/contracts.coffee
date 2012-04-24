@@ -350,6 +350,12 @@ Even though "a string" has a `toString` method the contract will
 always signal a violation. This is because JavaScript proxies can wrap
 objects but not primitives. 
 
+In addition due to a limitation in the current JavaScript engines implementations
+of proxies, you cannot put a contract on the `Date` object. This is
+expected to be fixed in future implementations. 
+See [this issue](https://github.com/disnet/contracts.coffee/issues/44) to
+track progress on this.
+
 Optional properties:
 
 {% highlight coffeescript %}

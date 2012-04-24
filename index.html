@@ -325,6 +325,8 @@ node --harmony_proxies --harmony-collections script.js
 </div>
 <p>Even though &#8220;a string&#8221; has a <code>toString</code> method the contract will always signal a violation. This is because JavaScript proxies can wrap objects but not primitives.</p>
 
+<p>In addition due to a limitation in the current JavaScript engines implementations of proxies, you cannot put a contract on the <code>Date</code> object. This is expected to be fixed in future implementations. See <a href='https://github.com/disnet/contracts.coffee/issues/44'>this issue</a> to track progress on this.</p>
+
 <p>Optional properties:</p>
 <div class='highlight'><pre><code class='coffeescript'><span class='nx'>o</span> <span class='o'>::</span>
   <span class='nv'>a: </span><span class='nx'>Str</span>
