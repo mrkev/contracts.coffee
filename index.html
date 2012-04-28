@@ -42,6 +42,7 @@
       <li><a href="#arrays">Arrays</a></li>
       <li><a href="#operators">Operators</a></li>
       <li style="text-decoration: none;">&nbsp;</li>
+      <li><a href="#checking">Check-Time</a></li>
       <li><a href="#naming">Naming</a></li>
       <li><a href="#duck">Duck-Typing</a></li>
       <li><a href="#log">Change Log</a></li>
@@ -423,7 +424,47 @@ node --harmony_proxies --harmony-collections script.js
 </code></pre>
 </div>
 <p>The <code>a</code> property must pass both the <code>Num</code> and <code>Even</code> contracts. Just like <code>or</code> you cannot use multiple function/object contracts with <code>and</code>.</p>
-<span id='naming' />
+<span id='checking' />
+<h2 id='checktime_of_contracts'>Check-Time of Contracts</h2>
+
+<p>The actual point in time when a contract is checked depends on the kind of contract.</p>
+
+<ul>
+<li>Simple contracts (<em>e.g.</em> <code>Num</code>, <code>Str</code>, and contracts created via <code>!</code>) are checked immediately.</li>
+
+<li>Function contracts are checked when the function is called.</li>
+
+<li>Object contracts are immediately checked to make sure all their properties exist. The individual property contracts are checked each time the property is accessed.</li>
+
+<li>Array contracts are checked in the same way as object contracts.</li>
+</ul>
+
+<p>For example, this means that if a function <code>f</code> takes another function <code>g</code> as an argument, it will delay checking of <code>g</code> until <code>g</code> is actually invoked.</p>
+<div class='highlight'><pre><code class='coffeescript'><span class='nx'>f</span> <span class='o'>::</span> <span class='p'>(</span><span class='nf'>(Num) -&gt;</span> <span class='nx'>Num</span><span class='p'>,</span> <span class='nf'>(Str) -&gt;</span> <span class='nx'>Str</span><span class='p'>)</span> <span class='o'>-&gt;</span> <span class='nx'>Num</span>
+<span class='nv'>f = </span><span class='nf'>(g, h) -&gt;</span> <span class='nx'>g</span> <span class='mi'>42</span>
+
+<span class='nv'>num = </span><span class='nf'>(x) -&gt;</span> <span class='s2'>&quot;string&quot;</span>
+<span class='nv'>str = </span><span class='nf'>(x) -&gt;</span> <span class='mi'>42</span>
+
+<span class='nx'>f</span> <span class='nx'>str</span><span class='p'>,</span> <span class='nx'>num</span>  <span class='c1'># fails when g is called inside f</span>
+<span class='nx'>f</span> <span class='nx'>num</span><span class='p'>,</span> <span class='nx'>num</span>  <span class='c1'># since h is never called it never fails</span>
+            <span class='c1'># even though it would violate its contract</span>
+</code></pre>
+</div>
+<p>A function returning an object will immediately check for the existence of properties but delay checking that they match their contract until accessed.</p>
+<div class='highlight'><pre><code class='coffeescript'><span class='nx'>f</span> <span class='o'>::</span> <span class='nf'>(Num) -&gt;</span> <span class='p'>{</span><span class='nv'>a: </span><span class='nx'>Str</span><span class='p'>,</span> <span class='nv'>b: </span><span class='nx'>Num</span><span class='p'>}</span>
+<span class='nv'>f = </span><span class='nf'>(x) -&gt;</span> <span class='p'>{</span><span class='nv'>a: </span><span class='s2'>&quot;foo&quot;</span><span class='p'>}</span>
+
+<span class='c1'># fails as soon as f returns since b is missing</span>
+<span class='nx'>f</span> <span class='mi'>42</span>
+
+<span class='nx'>g</span> <span class='o'>::</span> <span class='nf'>(Num) -&gt;</span> <span class='p'>{</span><span class='nv'>a: </span><span class='nx'>Str</span><span class='p'>,</span> <span class='nv'>b: </span><span class='nx'>Num</span><span class='p'>}</span>
+<span class='nv'>g = </span><span class='nf'>(x) -&gt;</span> <span class='p'>{</span><span class='nv'>a: </span><span class='nx'>x</span><span class='p'>,</span> <span class='nv'>b: </span><span class='nx'>x</span><span class='p'>}</span>
+
+<span class='nv'>o = </span><span class='nx'>g</span> <span class='mi'>42</span>         <span class='c1'># does not fail yet</span>
+<span class='nx'>console</span><span class='p'>.</span><span class='nx'>log</span> <span class='nx'>o</span><span class='p'>.</span><span class='nx'>a</span>  <span class='c1'># now fails because o.a does not satisfy Str</span>
+</code></pre>
+</div><span id='naming' />
 <h2 id='naming_your_own_contracts'>Naming your own contracts</h2>
 
 <p>You can bind a contract to a variable just like normal expressions:</p>

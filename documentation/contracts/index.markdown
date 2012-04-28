@@ -495,9 +495,57 @@ contracts. Just like `or` you cannot use multiple function/object
 contracts with `and`.
 
 
+<span id="checking"></span>
+## Check-Time of Contracts
+
+The actual point in time when a contract is checked depends
+on the kind of contract. 
+
+* Simple contracts (*e.g.* `Num`, `Str`, and contracts created via
+  `!`) are checked immediately.
+* Function contracts are checked when the function is called. 
+* Object contracts are immediately checked to make sure all their 
+  properties exist. The individual property contracts are
+  checked each time the property is accessed.
+* Array contracts are checked in the same way as object contracts.
+
+For example, this means that if a function `f` takes another function 
+`g` as an argument,
+it will delay checking of `g` until `g` is actually invoked.
+
+{% highlight coffeescript %}
+f :: ((Num) -> Num, (Str) -> Str) -> Num
+f = (g, h) -> g 42
+
+num = (x) -> "string"
+str = (x) -> 42
+
+f str, num  # fails when g is called inside f
+f num, num  # since h is never called it never fails
+            # even though it would violate its contract
+{% endhighlight %}
+
+A function returning an object will immediately check for the
+existence of properties but delay checking that they match their
+contract until accessed. 
+
+{% highlight coffeescript %}
+f :: (Num) -> {a: Str, b: Num}
+f = (x) -> {a: "foo"}
+
+# fails as soon as f returns since b is missing
+f 42
+
+g :: (Num) -> {a: Str, b: Num}
+g = (x) -> {a: x, b: x}
+
+o = g 42         # does not fail yet
+console.log o.a  # now fails because o.a does not satisfy Str
+{% endhighlight %}
+
 <span id="naming"></span>
 Naming your own contracts
--------------------------
+---------
 
 You can bind a contract to a variable just like normal expressions:
 
