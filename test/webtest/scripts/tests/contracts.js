@@ -231,11 +231,11 @@ if (typeof(define) === 'function' && define.amd) {
   test("function, this contract", function() {
     var bad_o, f, o;
     if (typeof inBrowser !== "undefined" && inBrowser !== null) {
-      f = __contracts.guard(__contracts.fun([Str], Str, {
-        this: __contracts.object({
+      f = __contracts.guard(__contracts.fun([
+        Str, __contracts.object({
           name: Str
         }, {})
-      }),function(x) {
+      ], Str, {}),function(x) {
         return this.name + x;
       });
       o = {
@@ -722,19 +722,13 @@ if (typeof(define) === 'function' && define.amd) {
     CustBad = __contracts.object({
       age: Num
     }, {});
-    f_single = __contracts.guard(__contracts.fun([], Str, {
-      this: Cust
-    }),function() {
+    f_single = __contracts.guard(__contracts.fun([Cust], Str, {}),function() {
       return this.name;
     });
-    f_mult = __contracts.guard(__contracts.fun([Str], Str, {
-      this: Cust
-    }),function(s) {
+    f_mult = __contracts.guard(__contracts.fun([Str, Cust], Str, {}),function(s) {
       return this.name;
     });
-    f_bad = __contracts.guard(__contracts.fun([], Num, {
-      this: CustBad
-    }),function() {
+    f_bad = __contracts.guard(__contracts.fun([CustBad], Num, {}),function() {
       return this.age;
     });
     return o = {
