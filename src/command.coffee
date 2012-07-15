@@ -315,8 +315,9 @@ parseOptions = ->
   return
 
 # The compile-time options to pass to the CoffeeScript compiler.
-enable_contracts = opts.contracts or (if process.env.CONTRACTS_COFFEE_ENABLED is "1" then true else false)
-compileOptions = (filename) -> {filename, bare: opts.bare, contracts: enable_contracts}
+compileOptions = (filename) ->
+  enable_contracts = opts.contracts or (if process.env.CONTRACTS_COFFEE_ENABLED is "1" then true else false)
+  {filename, bare: opts.bare, contracts: enable_contracts}
 
 # Start up a new Node.js instance with the arguments in `--nodejs` passed to
 # the `node` binary, preserving the other options.
