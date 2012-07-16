@@ -9,7 +9,6 @@
   }
 })(function(__contracts) {
   var Undefined, Null, Num, Bool, Str, Odd, Even, Pos, Nat, Neg, Self, Any, None, __define, __require, __exports;
-
 Undefined =  __contracts.Undefined;
 Null      =  __contracts.Null;
 Num       =  __contracts.Num;
@@ -45,7 +44,7 @@ if (typeof(define) === 'function' && define.amd) {
       }
       ret = cb.apply(this, used_arguments);
       return __contracts.setExported(ret, "test/modules/id.coffee");
-    }
+    };
 
     if(!Array.isArray(deps)) {
       deps = wrapped_callback;

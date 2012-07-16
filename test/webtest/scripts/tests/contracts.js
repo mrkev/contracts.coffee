@@ -9,6 +9,70 @@
   }
 })(function(__contracts) {
   var Undefined, Null, Num, Bool, Str, Odd, Even, Pos, Nat, Neg, Self, Any, None, __define, __require, __exports;
+Undefined =  __contracts.Undefined;
+Null      =  __contracts.Null;
+Num       =  __contracts.Num;
+Bool      =  __contracts.Bool;
+Str       =  __contracts.Str;
+Odd       =  __contracts.Odd;
+Even      =  __contracts.Even;
+Pos       =  __contracts.Pos;
+Nat       =  __contracts.Nat;
+Neg       =  __contracts.Neg;
+Self      =  __contracts.Self;
+Any       =  __contracts.Any;
+None      =  __contracts.None;
+
+if (typeof(define) === 'function' && define.amd) {
+  // we're using requirejs
+
+  // Allow for anonymous functions
+  __define = function(name, deps, callback) {
+    var cb, wrapped_callback;
+
+    if(typeof(name) !== 'string') {
+      cb = deps;
+    } else {
+      cb = callback;
+    }
+
+
+    wrapped_callback = function() {
+      var i, ret, used_arguments = [];
+      for (i = 0; i < arguments.length; i++) {
+        used_arguments[i] = __contracts.use(arguments[i], "test/contracts.coffee");
+      }
+      ret = cb.apply(this, used_arguments);
+      return __contracts.setExported(ret, "test/contracts.coffee");
+    };
+
+    if(!Array.isArray(deps)) {
+      deps = wrapped_callback;
+    }
+    define(name, deps, wrapped_callback);
+  };
+} else if (typeof(require) !== 'undefined' && typeof(exports) !== 'undefined') {
+  // we're using commonjs
+
+  __exports = __contracts.exports("test/contracts.coffee", exports)
+  __require = function(module) {
+    module = require.apply(this, arguments);
+    return __contracts.use(module, "test/contracts.coffee");
+  };
+}
+  (function(define, require, exports) {
+      var blames;
+
+((function(cb) {
+  if (typeof(define) === 'function' && define.amd) {
+    require(['contracts'], cb);
+  } else if (typeof(require) === 'function') {
+    cb(require('contracts.js'));
+  } else {
+    cb(window.contracts);
+  }
+})(function(__contracts) {
+  var Undefined, Null, Num, Bool, Str, Odd, Even, Pos, Nat, Neg, Self, Any, None, __define, __require, __exports;
 
 Undefined =  __contracts.Undefined;
 Null      =  __contracts.Null;
@@ -179,30 +243,30 @@ if (typeof(define) === 'function' && define.amd) {
 
   test("function, dependent", function() {
     var bad_inc, inc, neg;
-    inc = __contracts.guard(__contracts.fun([Num], function($1) { return (function(result) {
-      return result > $1;
+    inc = __contracts.guard(__contracts.fun([Num], function(params) { return (function(result) {
+      return result > params[0];
     }).toContract(); }, {}),function(x) {
       return x + 1;
     });
     eq(inc(42), 43, "abides by contract");
-    bad_inc = __contracts.guard(__contracts.fun([Num], function($1) { return (function(result) {
-      return result > $1;
+    bad_inc = __contracts.guard(__contracts.fun([Num], function(params) { return (function(result) {
+      return result > params[0];
     }).toContract(); }, {}),function(x) {
       return x - 1;
     });
     throws((function() {
       return bad_inc(42);
     }), "violates dependent contract");
-    bad_inc = __contracts.guard(__contracts.fun([Str, Num], function($1, $2) { return (function(result) {
-      return result > $2;
+    bad_inc = __contracts.guard(__contracts.fun([Str, Num], function(params) { return (function(result) {
+      return result > params[1];
     }).toContract(); }, {}),function(x, y) {
       return y - 1;
     });
     throws((function() {
       return bad_inc("foo", 42);
     }), "violates multi arg dependent contract");
-    neg = __contracts.guard(__contracts.fun([__contracts.or(Bool, Num)], function($1) { return (function(r) {
-      return typeof r === typeof $1;
+    neg = __contracts.guard(__contracts.fun([__contracts.or(Bool, Num)], function(p) { return (function(r) {
+      return typeof r === typeof p[0];
     }).toContract(); }, {}),function(x) {
       if (typeof x === 'number') {
         return 0 - x;
@@ -217,11 +281,11 @@ if (typeof(define) === 'function' && define.amd) {
   test("function, this contract", function() {
     var bad_o, f, o;
     if (typeof inBrowser !== "undefined" && inBrowser !== null) {
-      f = __contracts.guard(__contracts.fun([Str], Str, {
-        this: __contracts.object({
+      f = __contracts.guard(__contracts.fun([
+        Str, __contracts.object({
           name: Str
         }, {})
-      }),function(x) {
+      ], Str, {}),function(x) {
         return this.name + x;
       });
       o = {
@@ -516,7 +580,7 @@ if (typeof(define) === 'function' && define.amd) {
     MyEven = function(x) {
       return x % 2 === 0;
     };
-    idEven = __contracts.guard(__contracts.fun([(MyEven).toContract()], function($1) { return (MyEven).toContract(); }, {}),function(x) {
+    idEven = __contracts.guard(__contracts.fun([(MyEven).toContract()], (MyEven).toContract(), {}),function(x) {
       return x;
     });
     eq(idEven(4), 4, "abides by contract");
@@ -598,6 +662,136 @@ if (typeof(define) === 'function' && define.amd) {
       }), "invariant is violated");
     }
   });
+
+  test("classes should work too", function() {
+    var Person, p;
+    Person = __contracts.guard(__contracts.fun([Str], __contracts.object({
+      name: __contracts.fun([Any], Str, {})
+    }, {}), {
+      newOnly: true
+    }),(function() {
+
+      function _Class(firstName) {
+        this.firstName = firstName;
+      }
+
+      _Class.prototype.name = function() {
+        return this.firstName;
+      };
+
+      return _Class;
+
+    })());
+    return p = new Person("bob");
+  });
+
+  test("object contracts and builtins", function() {
+    var f;
+    f = __contracts.guard(__contracts.fun([
+      __contracts.object({
+        foo: Str
+      }, {})
+    ], Str, {}),function(o) {
+      return o.foo;
+    });
+    eq(f({
+      foo: "bar"
+    }), "bar", "correct object");
+    return throws((function() {
+      return f("string");
+    }), "string instead of an object, but should complain about missing property");
+  });
+
+  test("object contracts on object-like primitives will blame", function() {
+    var g;
+    g = __contracts.guard(__contracts.fun([
+      __contracts.object({
+        toString: __contracts.fun([Any], Str, {})
+      }, {})
+    ], Str, {}),function(s) {
+      return s.toString();
+    });
+    return throws((function() {
+      return g("foo");
+    }), "foo is a string but expects object");
+  });
+
+  test("array contract ... with or", function() {
+    var Data, getData;
+    Data = __contracts.arr([__contracts.___(__contracts.or(Num, Str))]);
+    getData = __contracts.guard(__contracts.fun([Data], __contracts.or(Num, Str), {}),function(arr) {
+      return arr[0];
+    });
+    eq(getData([1, 2, 3]), 1);
+    eq(getData(["foo", 2, 3]), "foo");
+    throws((function() {
+      return getData([null, "string"]);
+    }));
+    throws((function() {
+      return getData([{}, 1, 2, 3]);
+    }));
+    return throws((function() {
+      return getData({
+        test: [1, 2, 3]
+      });
+    }));
+  });
+
+  test("null values with obj contracts", function() {
+    var a;
+    a = __contracts.guard(__contracts.fun([
+      __contracts.object({
+        a: Str,
+        b: Str
+      }, {})
+    ], Any, {}),function(b) {
+      return console.log(b);
+    });
+    return blames((function() {
+      return a(null);
+    }));
+  });
+
+  test("dont touch the arguments object", function() {
+    var a;
+    a = __contracts.guard(__contracts.fun([Any], Any, {}),function(b) {
+      return arguments.length;
+    });
+    return eq(a('b', 'c', 'd'), 3, "the arguments object should be untouched by a contract");
+  });
+
+  test("this contract on custom contracts", function() {
+    var Cust, CustBad, f_bad, f_mult, f_single, o;
+    Cust = __contracts.object({
+      name: Str
+    }, {});
+    CustBad = __contracts.object({
+      age: Num
+    }, {});
+    f_single = __contracts.guard(__contracts.fun([Cust], Str, {}),function() {
+      return this.name;
+    });
+    f_mult = __contracts.guard(__contracts.fun([Str, Cust], Str, {}),function(s) {
+      return this.name;
+    });
+    f_bad = __contracts.guard(__contracts.fun([CustBad], Num, {}),function() {
+      return this.age;
+    });
+    return o = {
+      name: "Bob",
+      single: f_single,
+      mult: f_mult,
+      bad: f_bad
+    };
+  });
+
+  if (typeof inBrowser !== "undefined" && inBrowser !== null) {
+    ok(o.single() === "Bob");
+    ok(o.mult("foo") === "Bob");
+    blames((function() {
+      return o.bad();
+    }));
+  }
 
   }).call(this, __define, __require, __exports);
 }));

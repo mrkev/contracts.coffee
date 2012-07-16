@@ -333,6 +333,7 @@ exports.Block = class Block extends Base
         };
       }
     """
+    loadContracts = loadContracts.replace("\n", "")
 
     return code if o.bare
     if o.contracts
