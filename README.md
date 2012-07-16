@@ -20,7 +20,6 @@ Quick start
 Install via npm:
 
     npm install -g contracts.coffee
-    npm install contracts.js
 
 Use the compiler:
 
@@ -34,6 +33,9 @@ If you are running in the browser then you'll need to load the
 contracts library (found in [lib/contracts/contracts.js](https://github.com/disnet/contracts.coffee/tree/master/lib/contracts))
 
     <script type="text/javascript" src="contracts.js"></script>
+
+There is also experimental support for require.js.
+See [here](https://github.com/disnet/contracts.coffee/tree/master/test/webtest) for an example.
 
 If you are running in node.js then you'll need to install the contracts.js package
 

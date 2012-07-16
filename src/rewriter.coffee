@@ -28,7 +28,6 @@ class exports.Rewriter
     @tagPostfixConditionals()
     @addImplicitBraces()
     @addImplicitParentheses()
-    @cleanContractExpr()
     @tokens
 
   # Rewrite the token stream, looking one token ahead and behind.
@@ -73,14 +72,14 @@ class exports.Rewriter
   # its paired close. We have the mis-nested outdent case included here for
   # calls that close on the same line, just before their outdent.
   closeOpenCalls: ->
-    
+
     condition = (token, i) ->
       token[0] in [')', 'CALL_END'] or
       token[0] is 'OUTDENT' and @tag(i - 1) is ')'
-      
+
     action = (token, i) ->
       @tokens[if token[0] is 'OUTDENT' then i - 1 else i][0] = 'CALL_END'
-      
+
     @scanTokens (token, i) ->
       @detectEnd i + 1, condition, action if token[0] is 'CALL_START'
       1
@@ -88,13 +87,13 @@ class exports.Rewriter
   # The lexer has tagged the opening parenthesis of an indexing operation call.
   # Match it with its paired close.
   closeOpenIndexes: ->
-    
-    condition = (token, i) -> 
+
+    condition = (token, i) ->
       token[0] in [']', 'INDEX_END']
-      
-    action = (token, i) -> 
+
+    action = (token, i) ->
       token[0] = 'INDEX_END'
-      
+
     @scanTokens (token, i) ->
       @detectEnd i + 1, condition, action if token[0] is 'INDEX_START'
       1
@@ -102,29 +101,28 @@ class exports.Rewriter
   # Object literals may be written with implicit braces, for simple cases.
   # Insert the missing braces here, so that the parser doesn't have to.
   addImplicitBraces: ->
-    
+
     stack       = []
     start       = null
     startsLine  = null
     sameLine    = yes
     startIndent = 0
-    
+
     condition = (token, i) ->
       [one, two, three] = @tokens[i + 1 .. i + 3]
       return no if 'HERECOMMENT' is one?[0]
       [tag] = token
       sameLine = no if tag in LINEBREAKS
       ((tag in ['TERMINATOR', 'OUTDENT'] or (tag in IMPLICIT_END and sameLine)) and
-          ((!startsLine and @tag(i - 1) isnt ',') or 
+          ((!startsLine and @tag(i - 1) isnt ',') or
           not (two?[0] is ':' or one?[0] is '@' and three?[0] is ':'))) or
         (tag is ',' and one and
           one[0] not in ['IDENTIFIER', 'NUMBER', 'STRING', '@', 'TERMINATOR', 'OUTDENT'])
-          
+
     action = (token, i) ->
-      tok = ['}', '}', token[2]]
-      tok.generated = yes
+      tok = @generate '}', '}', token[2]
       @tokens.splice i, 0, tok
-      
+
     @scanTokens (token, i, tokens) ->
       if (tag = token[0]) in EXPRESSION_START
         stack.push [(if tag is 'INDENT' and @tag(i - 1) is '{' then '{' else tag), i]
@@ -142,8 +140,7 @@ class exports.Rewriter
       startsLine = not prevTag or (prevTag in LINEBREAKS)
       value = new String('{')
       value.generated = yes
-      tok = ['{', value, token[2]]
-      tok.generated = yes
+      tok = @generate '{', value, token[2]
       tokens.splice idx, 0, tok
       @detectEnd i + 2, condition, action
       2
@@ -152,9 +149,9 @@ class exports.Rewriter
   # Insert the implicit parentheses here, so that the parser doesn't have to
   # deal with them.
   addImplicitParentheses: ->
-    
+
     noCall = seenSingle = seenControl = no
-    
+
     condition = (token, i) ->
       [tag] = token
       return yes if not seenSingle and token.fromThen
@@ -166,13 +163,13 @@ class exports.Rewriter
         (tag isnt 'INDENT' or
           (@tag(i - 2) not in ['CLASS', 'EXTENDS'] and @tag(i - 1) not in IMPLICIT_BLOCK and
           not ((post = @tokens[i + 1]) and post.generated and post[0] is '{')))
-    
-    action = (token, i) -> 
-      @tokens.splice i, 0, ['CALL_END', ')', token[2]]
-      
+
+    action = (token, i) ->
+      @tokens.splice i, 0, @generate 'CALL_END', ')', token[2]
+
     @scanTokens (token, i, tokens) ->
       tag     = token[0]
-      noCall  = yes if tag in ['CLASS', 'IF']
+      noCall  = yes if tag in ['CLASS', 'IF', 'FOR', 'WHILE']
       [prev, current, next] = tokens[i - 1 .. i + 1]
       callObject  = not noCall and tag is 'INDENT' and
                     next and next.generated and next[0] is '{' and
@@ -185,7 +182,7 @@ class exports.Rewriter
       return 1 unless callObject or
         prev?.spaced and (prev.call or prev[0] in IMPLICIT_FUNC) and
         (tag in IMPLICIT_CALL or not (token.spaced or token.newLine) and tag in IMPLICIT_UNSPACED_CALL)
-      tokens.splice i, 0, ['CALL_START', '(', token[2]]
+      tokens.splice i, 0, @generate 'CALL_START', '(', token[2]
       @detectEnd i + 1, condition, action
       prev[0] = 'FUNC_EXIST' if prev[0] is '?'
       2
@@ -196,13 +193,14 @@ class exports.Rewriter
   # but we need to make sure it's balanced.
   addImplicitIndentation: ->
     inContractExpression = false
-    
+
     starter = indent = outdent = null
 
     condition = (token, i) ->
       # inside of contract expressions we allow ',' to be a closer
       token[1] isnt ';' and (token[0] in SINGLE_CLOSERS or (inContractExpression and token[0] is ',')) and
       not (token[0] is 'ELSE' and starter not in ['IF', 'THEN'])
+
     action = (token, i) ->
       @tokens.splice (if @tag(i - 1) is ',' then i - 1 else i), 0, outdent
 
@@ -222,9 +220,8 @@ class exports.Rewriter
       if tag in SINGLE_LINERS and @tag(i + 1) isnt 'INDENT' and
          not (tag is 'ELSE' and @tag(i + 1) is 'IF')
         starter = tag
-        [indent, outdent] = @indentation token
+        [indent, outdent] = @indentation token, yes
         indent.fromThen   = true if starter is 'THEN'
-        indent.generated  = outdent.generated = true
         tokens.splice i + 1, 0, indent
         @detectEnd i + 2, condition, action
         tokens.splice i, 1 if tag is 'THEN'
@@ -234,16 +231,16 @@ class exports.Rewriter
   # Tag postfix conditionals as such, so that we can parse them with a
   # different precedence.
   tagPostfixConditionals: ->
-        
+
     original = null
-    
-    condition = (token, i) -> 
+
+    condition = (token, i) ->
       token[0] in ['TERMINATOR', 'INDENT']
-      
+
     action = (token, i) ->
       if token[0] isnt 'INDENT' or (token.generated and not token.fromThen)
-        original[0] = 'POST_' + original[0] 
-    
+        original[0] = 'POST_' + original[0]
+
     @scanTokens (token, i) ->
       return 1 unless token[0] is 'IF'
       original = token
@@ -256,17 +253,18 @@ class exports.Rewriter
       token[0] = 'CONTRACT_SIG'
       1
 
-  cleanContractExpr: ->
-    inContract = false
-    @scanTokens (token, i, tokens) ->
-      inContract = true if token[0] is 'CONTRACT_SIG'
-      inContract = false if token[0] is 'TERMINATOR'
-
-      token[0] = 'THIS_CONTRACT' if token[1] is '@' and inContract and tokens[i+1][0] is "{"
-      1
   # Generate the indentation tokens, based on another token on the same line.
-  indentation: (token) ->
-    [['INDENT', 2, token[2]], ['OUTDENT', 2, token[2]]]
+  indentation: (token, implicit = no) ->
+    indent  = ['INDENT', 2, token[2]]
+    outdent = ['OUTDENT', 2, token[2]]
+    indent.generated = outdent.generated = yes if implicit
+    [indent, outdent]
+
+  # Create a generated token: one that exists due to a use of implicit syntax.
+  generate: (tag, value, line) ->
+    tok = [tag, value, line]
+    tok.generated = yes
+    tok
 
   # Look up a tag by token index.
   tag: (i) -> @tokens[i]?[0]

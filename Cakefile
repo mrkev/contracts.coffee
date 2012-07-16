@@ -11,10 +11,10 @@ unless process.platform is 'win32'
 
 bold = red = green = reset = ''
 if enableColors
-  bold  = '\033[0;1m'
-  red   = '\033[0;31m'
-  green = '\033[0;32m'
-  reset = '\033[0m'
+  bold  = '\x1B[0;1m'
+  red   = '\x1B[0;31m'
+  green = '\x1B[0;32m'
+  reset = '\x1B[0m'
 
 # Built file header.
 header = """
@@ -72,15 +72,26 @@ task 'build', 'build the CoffeeScript language from source', build = (cb) ->
   lib = "lib/coffee-script"
   files = fs.readdirSync 'src'
   files = ('src/' + file for file in files when file.match(/\.coffee$/))
-  run ['-c', '-o', 'lib/coffee-script'].concat(files), cb
-  contractLib = fs.readFileSync 'contracts.js/lib/contracts.js'
-  fs.writeFileSync 'lib/contracts/contracts.js', contractLib
+  run ['-c', '-o', 'lib/coffee-script'].concat(files), ->
+    if fs.existsSync("./contracts.js/Cakefile")
+      exec "cake build", cwd: "./contracts.js", env: PATH: process.env.PATH + ":../bin/", (err, stdout, stderr) ->
+        if err is null
+          contractLib = fs.readFileSync 'contracts.js/lib/contracts.js'
+          fs.writeFileSync 'lib/contracts/contracts.js', contractLib
+          cb() if typeof cb is 'function'
+        else
+          console.log "hiya"
+          console.log err
+    else
+      console.log "The contracts.js submodule has not been checked out!"
+      console.log "You probably want to run: git submodule init && git submodule update"
+      console.log "Aborting build..."
+      process.exit 1
 
 buildWebtests = ->
   contractLib = fs.readFileSync 'lib/contracts/contracts.js'
   fs.writeFileSync 'test/webtest/scripts/contracts.js', contractLib
   run ['-c', '-C', '-o', 'test/webtest/scripts', 'test/webtest/scripts']
-  run ['-c', '-C', '-o', 'test/webtest/browserify', 'test/webtest/browserify']
   run ['-c', '-C', '-o', 'test/webtest/scripts/tests/', 'test/contracts.coffee']
 
 task 'build:webtests', 'compiles the contracts testing files', ->
@@ -152,6 +163,10 @@ task 'doc:source', 'rebuild the internal documentation', ->
 
 task 'doc:underscore', 'rebuild the Underscore.coffee documentation page', ->
   exec 'docco examples/underscore.coffee && cp -rf docs documentation && rm -r docs', (err) ->
+    throw err if err
+
+task 'doc:contracts', 'rebuild the contracts.coffee documentation', ->
+  exec 'jekyll documentation/contracts documentation/contracts/_site && cp documentation/contracts/_site/index.html index.html', (err) ->
     throw err if err
 
 task 'bench', 'quick benchmark of compilation time', ->
@@ -254,8 +269,9 @@ runTests = (CoffeeScript) ->
 
 
 task 'test', 'run the CoffeeScript language test suite', ->
-  buildWebtests()
-  runTests CoffeeScript
+  build ->
+    buildWebtests()
+    runTests CoffeeScript
 
 
 task 'test:browser', 'run the test suite against the merged browser script', ->

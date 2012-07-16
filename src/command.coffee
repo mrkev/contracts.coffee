@@ -19,16 +19,18 @@ helpers.extend CoffeeScript, new EventEmitter
 printLine = (line) -> process.stdout.write line + '\n'
 printWarn = (line) -> process.stderr.write line + '\n'
 
+hidden = (file) -> /^\.|~$/.test file
+
 # The help banner that is printed when `coffee` is called without arguments.
 BANNER = '''
-  Usage: coffee [options] path/to/script.coffee
+  Usage: coffee [options] path/to/script.coffee -- [args]
 
   If called without options, `coffee` will run your script.
-         '''
+'''
 
 # The list of all the valid option flags that `coffee` knows how to handle.
 SWITCHES = [
-  ['-b', '--bare',            'compile without a top-level function wrapper']
+  ['-b', '--bare',            'compile without a top-level function wrapper (overrides --contracts)']
   ['-c', '--compile',         'compile to JavaScript and save as .js files']
   ['-e', '--eval',            'pass a string from the command line as input']
   ['-h', '--help',            'display this help message']
@@ -66,13 +68,12 @@ exports.run = ->
   loadRequires()                         if opts.require
   return require './repl'                if opts.interactive
   if opts.watch and !fs.watch
-    printWarn "The --watch feature depends on Node v0.6.0+. You are running #{process.version}."
+    return printWarn "The --watch feature depends on Node v0.6.0+. You are running #{process.version}."
   return compileStdio()                  if opts.stdio
   return compileScript null, sources[0]  if opts.eval
   return require './repl'                unless sources.length
-  if opts.run
-    opts.literals = sources.splice(1).concat opts.literals
-  process.argv = process.argv.slice(0, 2).concat opts.literals
+  literals = if opts.run then sources.splice 1 else []
+  process.argv = process.argv[0..1].concat literals
   process.argv[0] = 'coffee'
   process.execPath = require.main.filename
   for source in sources
@@ -97,11 +98,11 @@ compilePath = (source, topLevel, base) ->
       fs.readdir source, (err, files) ->
         throw err if err and err.code isnt 'ENOENT'
         return if err?.code is 'ENOENT'
-        files = files.map (file) -> path.join source, file
         index = sources.indexOf source
-        sources[index..index] = files
+        sources[index..index] = (path.join source, file for file in files)
         sourceCode[index..index] = files.map -> null
-        compilePath file, no, base for file in files
+        for file in files when not hidden file
+          compilePath (path.join source, file), no, base
     else if topLevel or path.extname(source) is '.coffee'
       watch source, base if opts.watch
       fs.readFile source, (err, code) ->
@@ -137,7 +138,7 @@ compileScript = (file, input, base) ->
   catch err
     CoffeeScript.emit 'failure', err, task
     return if CoffeeScript.listeners('failure').length
-    return printLine err.message if o.watch
+    return printLine err.message + '\x07' if o.watch
     printWarn err instanceof Error and err.stack or "ERROR: #{err}"
     process.exit 1
 
@@ -179,8 +180,12 @@ watch = (source, base) ->
   watchErr = (e) ->
     if e.code is 'ENOENT'
       return if sources.indexOf(source) is -1
-      removeSource source, base, yes
-      compileJoin()
+      try
+        rewatch()
+        compile()
+      catch e
+        removeSource source, base, yes
+        compileJoin()
     else throw e
 
   compile = ->
@@ -188,32 +193,22 @@ watch = (source, base) ->
     compileTimeout = wait 25, ->
       fs.stat source, (err, stats) ->
         return watchErr err if err
-        return if prevStats and (stats.size is prevStats.size and
-          stats.mtime.getTime() is prevStats.mtime.getTime())
+        return rewatch() if prevStats and stats.size is prevStats.size and
+          stats.mtime.getTime() is prevStats.mtime.getTime()
         prevStats = stats
         fs.readFile source, (err, code) ->
           return watchErr err if err
           compileScript(source, code.toString(), base)
-
-  watchErr = (e) ->
-    throw e unless e.code is 'ENOENT'
-    removeSource source, base, yes
-    compileJoin()
+          rewatch()
 
   try
-    watcher = fs.watch source, callback = (event) ->
-      if event is 'change'
-        compile()
-      else if event is 'rename'
-        watcher.close()
-        wait 250, ->
-          compile()
-          try
-            watcher = fs.watch source, callback
-          catch e  
-            watchErr e
-  catch e 
+    watcher = fs.watch source, compile
+  catch e
     watchErr e
+
+  rewatch = ->
+    watcher?.close()
+    watcher = fs.watch source, compile
 
 
 # Watch a directory of files for new additions.
@@ -228,8 +223,8 @@ watchDir = (source, base) ->
             throw err unless err.code is 'ENOENT'
             watcher.close()
             return unwatchDir source, base
-          files = files.map (file) -> path.join source, file
-          for file in files when not notSources[file]
+          for file in files when not hidden(file) and not notSources[file]
+            file = path.join source, file
             continue if sources.some (s) -> s.indexOf(file) >= 0
             sources.push file
             sourceCode.push null
@@ -238,7 +233,7 @@ watchDir = (source, base) ->
     throw e unless e.code is 'ENOENT'
 
 unwatchDir = (source, base) ->
-  prevSources = sources.slice()
+  prevSources = sources[..]
   toRemove = (file for file in sources when file.indexOf(source) >= 0)
   removeSource file, base, yes for file in toRemove
   return unless sources.some (s, i) -> prevSources[i] isnt s
@@ -252,7 +247,7 @@ removeSource = (source, base, removeJs) ->
   sourceCode.splice index, 1
   if removeJs and not opts.join
     jsPath = outputPath source, base
-    path.exists jsPath, (exists) ->
+    fs.exists jsPath, (exists) ->
       if exists
         fs.unlink jsPath, (err) ->
           throw err if err and err.code isnt 'ENOENT'
@@ -279,9 +274,9 @@ writeJs = (source, js, base) ->
         printLine err.message
       else if opts.compile and opts.watch
         timeLog "compiled #{source}"
-  path.exists jsDir, (exists) ->
+  fs.exists jsDir, (exists) ->
     if exists then compile() else exec "mkdir -p #{jsDir}", compile
-    
+
 # Convenience for cleaner setTimeouts.
 wait = (milliseconds, func) -> setTimeout func, milliseconds
 
@@ -311,7 +306,7 @@ printTokens = (tokens) ->
 # `process.argv` that are specified in `SWITCHES`.
 parseOptions = ->
   optionParser  = new optparse.OptionParser SWITCHES, BANNER
-  o = opts      = optionParser.parse process.argv.slice 2
+  o = opts      = optionParser.parse process.argv[2..]
   o.compile     or=  !!o.output
   o.run         = not (o.compile or o.print or o.lint)
   o.print       = !!  (o.print or (o.eval or o.stdio and o.compile))
@@ -320,7 +315,9 @@ parseOptions = ->
   return
 
 # The compile-time options to pass to the CoffeeScript compiler.
-compileOptions = (filename) -> {filename, bare: opts.bare, contracts: opts.contracts || process.env.CONTRACTS_COFFEE_ENABLED}
+compileOptions = (filename) ->
+  enable_contracts = opts.contracts or (if process.env.CONTRACTS_COFFEE_ENABLED is "1" then true else false)
+  {filename, bare: opts.bare, contracts: enable_contracts}
 
 # Start up a new Node.js instance with the arguments in `--nodejs` passed to
 # the `node` binary, preserving the other options.

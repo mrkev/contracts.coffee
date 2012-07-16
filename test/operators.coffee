@@ -263,9 +263,15 @@ test "#1102: String literal prevents line continuation", ->
 test "#1703, ---x is invalid JS", ->
   x = 2
   eq (- --x), -1
-  
+
 test "Regression with implicit calls against an indented assignment", ->
-  eq 1, a = 
+  eq 1, a =
     1
-  
+
   eq a, 1
+
+test "#2155 ... conditional assignment to a closure", ->
+  x = null
+  func = -> x ?= (-> if true then 'hi')
+  func()
+  eq x(), 'hi'

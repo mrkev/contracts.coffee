@@ -46,7 +46,7 @@ helpers.extend global,
 exports.run = ->
   global.__originalDirname = fs.realpathSync '.'
   process.chdir cakefileDirectory __originalDirname
-  args = process.argv.slice 2
+  args = process.argv[2..]
   CoffeeScript.run fs.readFileSync('Cakefile').toString(), filename: 'Cakefile'
   oparse = new optparse.OptionParser switches
   return printTasks() unless args.length
@@ -58,7 +58,8 @@ exports.run = ->
 
 # Display the list of Cake tasks in a format similar to `rake -T`
 printTasks = ->
-  cakefilePath = path.join path.relative(__originalDirname, process.cwd()), 'Cakefile'
+  relative = path.relative or path.resolve
+  cakefilePath = path.join relative(__originalDirname, process.cwd()), 'Cakefile'
   console.log "#{cakefilePath} defines the following tasks:\n"
   for name, task of tasks
     spaces = 20 - name.length
@@ -78,7 +79,7 @@ missingTask = (task) -> fatalError "No such task: #{task}"
 # When `cake` is invoked, search in the current and all parent directories
 # to find the relevant Cakefile.
 cakefileDirectory = (dir) ->
-  return dir if path.existsSync path.join dir, 'Cakefile'
+  return dir if fs.existsSync path.join dir, 'Cakefile'
   parent = path.normalize path.join dir, '..'
   return cakefileDirectory parent unless parent is dir
   throw new Error "Cakefile not found in #{process.cwd()}"

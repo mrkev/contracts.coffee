@@ -334,6 +334,7 @@ printStackTrace.implementation.prototype = {
 
 (function() {
   "use strict";
+
   /*
   contracts.coffee
   http://disnetdev.com/contracts.coffee
@@ -341,8 +342,10 @@ printStackTrace.implementation.prototype = {
   Copyright 2011, Tim Disney
   Released under the MIT License
   */
+
   var Contract, ModuleName, Unproxy, Utils, and_, any, arr, blame, blameM, check, checkOptions, contract_orig_map, ctor, ctorSafe, enabled, findCallsite, fun, getModName, guard, idHandler, none, not_, object, opt, or_, root, self, unproxy, ___, _blame,
-    __hasProp = Object.prototype.hasOwnProperty;
+    __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; },
+    __hasProp = {}.hasOwnProperty;
 
   root = {};
 
@@ -406,11 +409,12 @@ printStackTrace.implementation.prototype = {
     getPropertyDescriptor: function(obj, prop) {
       var desc, o;
       o = obj;
-      while (true) {
+      while (o !== null) {
         desc = Object.getOwnPropertyDescriptor(o, prop);
-        if (desc !== undefined) return desc;
+        if (desc !== undefined) {
+          return desc;
+        }
         o = Object.getPrototypeOf(o);
-        if (o === null) break;
       }
       return;
     },
@@ -437,7 +441,9 @@ printStackTrace.implementation.prototype = {
       var i;
       i = 0;
       while (i < obj.length) {
-        if (!(i in obj)) return false;
+        if (!(i in obj)) {
+          return false;
+        }
         i++;
       }
       return true;
@@ -463,13 +469,19 @@ printStackTrace.implementation.prototype = {
     pOpt = true;
     for (name in a) {
       if (a[name] instanceof Contract) {
-        if (!a[name].equals(b[name])) pOpt = false;
+        if (!a[name].equals(b[name])) {
+          pOpt = false;
+        }
       } else {
-        if (a[name] !== b[name]) pOpt = false;
+        if (a[name] !== b[name]) {
+          pOpt = false;
+        }
       }
     }
     for (name in b) {
-      if (!(name in a)) pOpt = false;
+      if (!(name in a)) {
+        pOpt = false;
+      }
     }
     return pOpt;
   };
@@ -491,7 +503,9 @@ printStackTrace.implementation.prototype = {
     ps = parents.slice(0);
     server = (toblame.isServer ? toblame : other);
     m = "Contract violation: " + msg + "\n" + "Value guarded in: " + server + " -- blame is on: " + toblame + "\n";
-    if (ps) m += "Parent contracts:\n" + ps.reverse().join("\n");
+    if (ps) {
+      m += "Parent contracts:\n" + ps.reverse().join("\n");
+    }
     err = new Error(m);
     st = printStackTrace({
       e: err
@@ -521,13 +535,17 @@ printStackTrace.implementation.prototype = {
       getOwnPropertyDescriptor: function(name) {
         var desc;
         desc = Object.getOwnPropertyDescriptor(obj, name);
-        if (desc !== void 0) desc.configurable = true;
+        if (desc !== void 0) {
+          desc.configurable = true;
+        }
         return desc;
       },
       getPropertyDescriptor: function(name) {
         var desc;
         desc = Utils.getPropertyDescriptor(obj, name);
-        if (desc) desc.configurable = true;
+        if (desc) {
+          desc.configurable = true;
+        }
         return desc;
       },
       getOwnPropertyNames: function() {
@@ -607,7 +625,7 @@ printStackTrace.implementation.prototype = {
     };
 
     Contract.prototype.equals = function(other) {
-      throw "Equality checking must be overridden";
+      throw new Error("Equality checking must be overridden");
     };
 
     return Contract;
@@ -654,13 +672,20 @@ printStackTrace.implementation.prototype = {
   fun = function(dom, rng, options) {
     var c, callOnly, calldom, callrng, cleanDom, contractName, domName, newOnly, newdom, newrng, optionsName;
     cleanDom = function(dom) {
-      if (dom instanceof Contract) dom = [dom];
+      if (!Array.isArray(dom)) {
+        dom = [dom];
+      }
+      if (dom.some(function(d) {
+        return !(d instanceof Contract);
+      })) {
+        throw new Error("domain argument to the function contract is not a contract");
+      }
       dom.reduce((function(prevWasOpt, curr) {
         if (curr.ctype === "opt") {
           return true;
         } else {
           if (prevWasOpt) {
-            throw "Illagal arguments: required argument following an optional argument.";
+            throw new Error(("A required domain contract (" + curr + ") followed an ") + "optional domain contract in a function contract");
           } else {
             return false;
           }
@@ -684,10 +709,10 @@ printStackTrace.implementation.prototype = {
     callOnly = options && options.callOnly;
     newOnly = options && options.newOnly;
     if (callOnly && newOnly) {
-      throw "Cannot have a function be both newOnly and newSafe";
+      throw new Error("Cannot have a function be both newOnly and newSafe");
     }
     if (newOnly && options["this"]) {
-      throw "Illegal arguments: cannot have both newOnly and a contract on 'this'";
+      throw new Error("Illegal arguments: cannot have both newOnly and a contract on 'this'");
     }
     domName = "(" + calldom.join(",") + ")";
     optionsName = (options["this"] ? "{this: " + options["this"].cname + "}" : "");
@@ -697,7 +722,9 @@ printStackTrace.implementation.prototype = {
       handler = idHandler(f);
       that = this;
       parents = parentKs.slice(0);
-      if (typeof f !== "function") blame(pos, neg, this, f, parents);
+      if (typeof f !== "function") {
+        blame(pos, neg, this, f, parents);
+      }
       parents.push(that);
       /*
           options:
@@ -707,10 +734,11 @@ printStackTrace.implementation.prototype = {
             post: ({} -> Bool) - function to check postconditions
             this: {...} - object contract to check 'this'
       */
+
       makeHandler = function(dom, rng, options) {
         var functionHandler;
         return functionHandler = function() {
-          var args, bf, boundArgs, clean_rng, i, res, thisc;
+          var args, bf, boundArgs, checked, clean_rng, dep_args, i, max_i, res, thisc;
           args = [];
           if (options && options.checkStack && !(options.checkStack(stack))) {
             throw new Error("stack checking failed");
@@ -719,14 +747,25 @@ printStackTrace.implementation.prototype = {
             blame(neg, pos, "precondition: " + options.pre.toString(), "[failed precondition]", parents);
           }
           i = 0;
-          while (i < dom.length) {
-            args[i] = dom[i].check(arguments[i], neg, pos, parents, stack);
+          max_i = Math.max(dom != null ? dom.length : void 0, arguments.length);
+          while (i < max_i) {
+            checked = dom[i] ? dom[i].check(arguments[i], neg, pos, parents, stack) : arguments[i];
+            if (i < arguments.length) {
+              args[i] = checked;
+            }
             i++;
           }
           if (typeof rng === "function") {
-            clean_rng = rng.apply(this, args);
+            dep_args = Array.isArray(args) ? args : [args];
+            clean_rng = rng.call(this, args);
+            if (!(clean_rng instanceof Contract)) {
+              throw new Error("range argument to function contract is not a contract");
+            }
           } else {
             clean_rng = rng;
+            if (!(clean_rng instanceof Contract)) {
+              throw new Error("range argument to function contract is not a contract");
+            }
           }
           if (options.isNew || options.newSafe) {
             boundArgs = [].concat.apply([null], args);
@@ -774,7 +813,9 @@ printStackTrace.implementation.prototype = {
     c.raw_options = options;
     c.equals = function(other) {
       var pCDom, pNDom, pOpt, zipCDom, zipNDom;
-      if (!other instanceof Contract || other.ctype !== this.ctype) return false;
+      if (!other instanceof Contract || other.ctype !== this.ctype) {
+        return false;
+      }
       zipCDom = Utils.zip(this.calldom, other.calldom);
       zipNDom = Utils.zip(this.newdom, other.newdom);
       pCDom = (zipCDom.length !== 0) && zipCDom.every(function(zd) {
@@ -807,29 +848,35 @@ printStackTrace.implementation.prototype = {
 
   object = function(objContract, options, name) {
     var c, objName, setSelfContracts;
-    if (options == null) options = {};
+    if (options == null) {
+      options = {};
+    }
     objName = function(obj) {
       var props;
       if (name === void 0) {
         props = Object.keys(obj).map(function(propName) {
+          var _ref;
           if (obj[propName].cname) {
             return propName + " : " + obj[propName].cname;
           } else {
-            return propName + " : " + obj[propName].value.cname;
+            return propName + " : " + ((_ref = obj[propName].value) != null ? _ref.cname : void 0);
           }
         }, this);
-        return "{" + props.join(", ") + "}";
+        return "{\n  " + props.join(",\n  ") + "\n}";
       } else {
         return name;
       }
     };
     c = new Contract(objName(objContract), "object", function(obj, pos, neg, parentKs) {
-      var contractDesc, handler, invariant, objDesc, op, parents, prop, that, value;
+      var contractDesc, handler, invariant, nonObject, objDesc, op, parents, prop, proto, that, value, _ref, _ref1;
       handler = idHandler(obj);
       that = this;
       parents = parentKs.slice(0);
       parents.push(this);
-      if (!obj instanceof Object) blame(pos, neg, this, obj, parentKs);
+      nonObject = ["undefined", "boolean", "number", "string"];
+      if (_ref = typeof obj, __indexOf.call(nonObject, _ref) >= 0) {
+        blame(pos, neg, this, obj, parentKs);
+      }
       if (options.extensible === true && !Object.isExtensible(obj)) {
         blame(pos, neg, "[extensible object]", "[non-extensible object]", parents);
       }
@@ -850,14 +897,25 @@ printStackTrace.implementation.prototype = {
       }
       for (prop in this.oc) {
         contractDesc = this.oc[prop];
-        objDesc = Utils.getPropertyDescriptor(obj, prop);
+        if ((typeof obj === 'object') || (typeof obj === 'function')) {
+          objDesc = Utils.getPropertyDescriptor(obj, prop);
+        } else if (typeof obj[prop] !== 'undefined') {
+          objDesc = {
+            value: obj[prop],
+            writable: true,
+            configurable: true,
+            enumerable: true
+          };
+        } else {
+          objDesc = null;
+        }
         if (contractDesc instanceof Contract) {
           value = contractDesc;
         } else {
-          if (contractDesc["value"]) {
+          if (contractDesc["value"] && contractDesc["value"] instanceof Contract) {
             value = contractDesc["value"];
           } else {
-            blameM(pos, neg, "contract property descriptor missing value property", parents);
+            blameM(pos, neg, "property " + prop + " in the object contract was not a contract", parents);
           }
         }
         if (objDesc) {
@@ -930,11 +988,11 @@ printStackTrace.implementation.prototype = {
       };
       handler["get"] = function(receiver, name) {
         if (that.oc.hasOwnProperty(name)) {
-          return that.oc[name].value.check(obj[name], pos, neg, parents);
+          return obj && that.oc[name].value.check(obj[name], pos, neg, parents);
         } else if ((options.arrayRangeContract && (options.arrayRange !== undefined)) && (parseInt(name, 10) >= options.arrayRange)) {
-          return options.arrayRangeContract.check(obj[name], pos, neg, parents);
+          return obj && options.arrayRangeContract.check(obj[name], pos, neg, parents);
         } else {
-          return obj[name];
+          return obj && obj[name];
         }
       };
       handler.set = function(receiver, name, val) {
@@ -972,7 +1030,8 @@ printStackTrace.implementation.prototype = {
           return new bf();
         });
       } else {
-        op = Proxy.create(handler, Object.prototype);
+        proto = (obj != null ? (_ref1 = obj.constructor) != null ? _ref1.prototype : void 0 : void 0) || Object.prototype;
+        op = Proxy.create(handler, proto);
       }
       unproxy.set(op, this);
       return op;
@@ -998,11 +1057,11 @@ printStackTrace.implementation.prototype = {
         return _results;
       } else {
         return childrenNames.forEach(function(cName) {
-          var i, _results2;
+          var i, _results1;
           if (typeof c[cName] !== "undefined") {
             if (Array.isArray(c[cName])) {
               i = 0;
-              _results2 = [];
+              _results1 = [];
               while (i < c[cName].length) {
                 if (c[cName][i] === self) {
                   c[cName][i] = toset;
@@ -1011,9 +1070,9 @@ printStackTrace.implementation.prototype = {
                     setSelfContracts(c[cName][i], toset);
                   }
                 }
-                _results2.push(i++);
+                _results1.push(i++);
               }
-              return _results2;
+              return _results1;
             } else {
               if (c[cName] === self) {
                 return c[cName] = toset;
@@ -1029,10 +1088,18 @@ printStackTrace.implementation.prototype = {
     };
     setSelfContracts(c, c);
     c.equals = function(other) {
-      if (!other instanceof Contract || other.ctype !== this.ctype) return false;
+      if (!other instanceof Contract || other.ctype !== this.ctype) {
+        return false;
+      }
       return checkOptions(this.oc, other.oc) && checkOptions(this.raw_options, other.raw_options);
     };
     return c;
+  };
+
+  ___ = function(k) {
+    return {
+      deferred: k
+    };
   };
 
   arr = function(ks) {
@@ -1042,12 +1109,17 @@ printStackTrace.implementation.prototype = {
     prefix = "";
     i = 0;
     while (i < ks.length) {
-      if (i !== 0) prefix = ", ";
-      if (typeof ks[i] === "function") {
+      if (i !== 0) {
+        prefix = ", ";
+      }
+      if (ks[i].deferred) {
         if (i !== ks.length - 1) {
-          throw "___() must be at the last position in the array";
+          throw new Error("___() must be at the last position in the array");
         }
-        rangeContract = ks[i]();
+        if (!(ks[i].deferred instanceof Contract)) {
+          throw new Error("value given to ___ is not a contract");
+        }
+        rangeContract = ks[i].deferred;
         rangeIndex = i;
         name += prefix + "..." + rangeContract.cname;
       } else {
@@ -1063,15 +1135,14 @@ printStackTrace.implementation.prototype = {
     }, name);
   };
 
-  ___ = function(k) {
-    return function() {
-      return k;
-    };
-  };
-
   or_ = function() {
     var c, flats, ho, ks, name;
     ks = [].slice.call(arguments);
+    ks.forEach(function(el, idx) {
+      if (!(el instanceof Contract)) {
+        throw new Error("Argument " + idx + " to the `or` contract is not a contract");
+      }
+    });
     flats = ks.filter(function(el) {
       return el.ctype === "check";
     });
@@ -1079,7 +1150,7 @@ printStackTrace.implementation.prototype = {
       return el.ctype !== "check";
     });
     if (ho.length > 1) {
-      throw "Cannot have more than 1 higher order contract in 'or'";
+      throw new Error("Cannot have more than 1 higher order contract in 'or'");
     }
     name = ks.join(" or ");
     c = new Contract(name, "or", function(val, pos, neg, parentKs) {
@@ -1104,19 +1175,28 @@ printStackTrace.implementation.prototype = {
     c.flats = flats;
     c.ho = ho;
     c.equals = function(other) {
-      var pFlats, zipFlats;
-      if (!other instanceof Contract || other.ctype !== this.ctype) return false;
+      var ho_eq, pFlats, zipFlats;
+      if (!other instanceof Contract || other.ctype !== this.ctype) {
+        return false;
+      }
       zipFlats = Utils.zip(this.flats, other.flats);
       pFlats = (zipFlats.length !== 0) && zipFlats.every(function(zf) {
         return zf[0].equals(zf[1]);
       });
-      return pFlats && (this.ho.equals(other.ho));
+      ho_eq = this.ho.length === 1 && other.ho.length === 1 ? this.ho[0].equals(other.ho[0]) : true;
+      return pFlats && ho_eq;
     };
     return c;
   };
 
   and_ = function(k1, k2) {
     var c;
+    if (!(k1 instanceof Contract)) {
+      throw new Error("Argument 0 to the `and` contract is not a contract");
+    }
+    if (!(k2 instanceof Contract)) {
+      throw new Error("Argument 1 to the `and` contract is not a contract");
+    }
     c = new Contract("" + k1.cname + " and " + k2.cname, "and", function(val, pos, neg, parentKs) {
       var k1c;
       k1c = k1.check(val, pos, neg, parentKs);
@@ -1125,7 +1205,9 @@ printStackTrace.implementation.prototype = {
     c.k1 = k1;
     c.k2 = k2;
     c.equals = function(other) {
-      if (!other instanceof Contract || other.ctype !== this.ctype) return false;
+      if (!other instanceof Contract || other.ctype !== this.ctype) {
+        return false;
+      }
       return (this.k1.equals(other.k1)) && (this.k2.equals(other.k2));
     };
     return c;
@@ -1133,8 +1215,11 @@ printStackTrace.implementation.prototype = {
 
   not_ = function(k) {
     var c;
+    if (!(k instanceof Contract)) {
+      throw new Error("Argument to the `not` contract is not a contract");
+    }
     if (k.ctype === "fun" || k.ctype === "object") {
-      throw "cannot construct a 'not' contract with a function or object contract";
+      throw new Error("cannot construct a 'not' contract with a function or object contract");
     }
     c = new Contract("not " + k.cname, "not", function(val, pos, neg, parentKs) {
       var res;
@@ -1147,7 +1232,9 @@ printStackTrace.implementation.prototype = {
     });
     c.k = k;
     c.equals = function(other) {
-      if (!other instanceof Contract || other.ctype !== this.ctype) return false;
+      if (!other instanceof Contract || other.ctype !== this.ctype) {
+        return false;
+      }
       return this.k.equals(other.k);
     };
     return c;
@@ -1155,6 +1242,9 @@ printStackTrace.implementation.prototype = {
 
   opt = function(k) {
     var c;
+    if (!(k instanceof Contract)) {
+      throw new Error("Argument to the `optional` contract is not a contract");
+    }
     c = new Contract("opt(" + k.cname + ")", "opt", function(val, pos, neg, parentKs) {
       if (val === void 0) {
         return val;
@@ -1164,7 +1254,9 @@ printStackTrace.implementation.prototype = {
     });
     c.k = k;
     c.equals = function(other) {
-      if (!other instanceof Contract || other.ctype !== this.ctype) return false;
+      if (!other instanceof Contract || other.ctype !== this.ctype) {
+        return false;
+      }
       return this.k.equals(other.k);
     };
     return c;
@@ -1175,7 +1267,7 @@ printStackTrace.implementation.prototype = {
     st = printStackTrace({
       e: new Error()
     });
-    guardedAt = st[2];
+    guardedAt = st[0] === 'Error' ? st[3] : st[2];
     match = /\/([^\/]*):(\d*)[\)]?$/.exec(guardedAt);
     if (match) {
       filename = match[1];
@@ -1190,7 +1282,9 @@ printStackTrace.implementation.prototype = {
   guard = function(k, x, server, setup) {
     var c, client, stack;
     stack = [];
-    if (typeof setup === "function") setup(stack);
+    if (typeof setup === "function") {
+      setup(stack);
+    }
     if (server == null) {
       server = getModName(true);
     } else {
@@ -1326,7 +1420,9 @@ printStackTrace.implementation.prototype = {
 
   root.exports = function(moduleName, original) {
     var handler;
-    if (original == null) original = {};
+    if (original == null) {
+      original = {};
+    }
     handler = idHandler(original);
     handler.set = function(r, name, value) {
       var orig, originalContract, originalValue;

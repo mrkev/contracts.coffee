@@ -7,6 +7,7 @@
     return '' unless File.exists?("documentation/js/#{file}.js")
     cs = File.read("documentation/coffee/#{file}.coffee")
     js = File.read("documentation/js/#{file}.js")
+    js = js.sub(/^\/\/ generated.*?\n/i, '')
     cshtml = Uv.parse(cs, 'xhtml', 'coffeescript', false, 'idle', false)
     jshtml = Uv.parse(js, 'xhtml', 'javascript', false, 'idle', false)
     append = executable  == true ? '' : "alert(#{executable});"
@@ -128,13 +129,13 @@
       seamlessly from CoffeeScript (and vice-versa). The compiled output is 
       readable and pretty-printed, passes through 
       <a href="http://www.javascriptlint.com/">JavaScript Lint</a>
-      without warnings, will work in every JavaScript implementation, and tends
+      without warnings, will work in every JavaScript runtime, and tends
       to run as fast or faster than the equivalent handwritten JavaScript.
     </p>
 
     <p>
       <b>Latest Version:</b>
-      <a href="http://github.com/jashkenas/coffee-script/tarball/1.2.0">1.2.0</a>
+      <a href="http://github.com/jashkenas/coffee-script/tarball/1.3.1">1.3.1</a>
     </p>
 
     <h2>
@@ -187,15 +188,6 @@ npm install -g coffee-script</pre>
 
   <pre>
 sudo bin/cake install</pre>
-
-    <p>
-      If installing on Ubuntu or Debian,
-      <a href="http://opinionatedprogrammer.com/2010/12/installing-coffeescript-on-debian-or-ubuntu/">be
-      careful not to use the existing out-of-date package</a>. If installing on
-      Windows, your best bet is probably to run Node.js under Cygwin. If you'd
-      just like to experiment, you can try the
-      <a href="https://github.com/alisey/CoffeeScript-Compiler-for-Windows">CoffeeScript Compiler For Windows</a>.
-    </p>
 
     <h2>
       <span id="usage" class="bookmark"></span>
@@ -351,7 +343,7 @@ Expressions
         <tt>coffee -o lib/ -cw src/</tt>
       </li>
       <li>
-        Start the CoffeeScript REPL:<br />
+        Start the CoffeeScript REPL (<tt>Ctrl-D</tt> to exit, <tt>Ctrl-V</tt>for multi-line):<br />
         <tt>coffee</tt>
       </li>
     </ul>
@@ -383,7 +375,7 @@ Expressions
       ending the line will do just as well (although semicolons can still
       be used to fit multiple expressions onto a single line).
       Instead of using curly braces
-      <tt>{ }</tt> to surround blocks of code in <a href="#functions">functions</a>,
+      <tt>{ }</tt> to surround blocks of code in <a href="#literals">functions</a>,
       <a href="#conditionals">if-statements</a>,
       <a href="#switch">switch</a>, and <a href="#try">try/catch</a>,
       use indentation.
@@ -532,7 +524,7 @@ Expressions
     <p>
       If you would like to iterate over just the keys that are defined on the
       object itself, by adding a <tt>hasOwnProperty</tt>
-      check to avoid properties that may be interited from the prototype, use<br />
+      check to avoid properties that may be inherited from the prototype, use<br />
       <tt>for own key, value of object</tt>
     </p>
     <p>
@@ -561,6 +553,8 @@ Expressions
       Ranges can also be used to extract slices of arrays.
       With two dots (<tt>3..6</tt>), the range is inclusive (<tt>3, 4, 5, 6</tt>);
       with three dots (<tt>3...6</tt>), the range excludes the end (<tt>3, 4, 5</tt>).
+      Slices indices have useful defaults. An omitted first index defaults to
+      zero and an omitted second index defaults to the size of the array.
     </p>
     <%= code_for('slices', 'middle') %>
     <p>
@@ -720,6 +714,7 @@ Expressions
     </p>
     <p>
       Constructor functions are named, to better support helpful stack traces.
+      In the first class in the example below, <tt>this.constructor.name is "Animal"</tt>.
     </p>
     <%= code_for('classes', true) %>
     <p>
@@ -875,9 +870,9 @@ Expressions
       <b class="header">Extended Regular Expressions</b>
       Similar to "heredocs" and "herecomments", CoffeeScript supports "heregexes" &mdash;
       extended regular expressions that ignore internal whitespace and can contain
-      comments, after Perl's <tt>/x</tt> modifier, but delimited by <tt>///</tt>.
-      They go a long way towards making complex regular expressions readable.
-      To quote from the CoffeeScript source:
+      comments and interpolation. Modeled after Perl's <tt>/x</tt> modifier, CoffeeSctipt's
+      heregexes are delimited by <tt>///</tt> and go a long way towards making complex
+      regular expressions readable. To quote from the CoffeeScript source:
     </p>
     <%= code_for('heregexes') %>
 
@@ -946,11 +941,11 @@ Expressions
 
     <h2>
       <span id="resources" class="bookmark"></span>
-      Books and Screencasts
+      Books
     </h2>
 
     <p>
-      There are a number of excellent books and screencasts to help you get
+      There are a number of excellent resources to help you get
       started with CoffeeScript, some of which are freely available online.
     </p>
 
@@ -975,6 +970,17 @@ Expressions
         introduction to the language. By the end of the book, you'll have built
         a fast-paced multiplayer word game, writing both the client-side and Node.js
         portions in CoffeeScript.
+      </li>
+    </ul>
+    
+    <h2>
+      Screencasts
+    </h2>
+    
+    <ul>
+      <li>
+        <a href="http://coffeescript.codeschool.com">A Sip of CoffeeScript</a> is a <a href="http://www.codeschool.com">Code School Course</a>
+        which combines 6 screencasts with in-browser coding to make learning fun.  The first level is free to try out.
       </li>
       <li>
         <a href="http://peepcode.com/products/coffeescript">Meet CoffeeScript</a>
@@ -1096,6 +1102,56 @@ Expressions
       <span id="changelog" class="bookmark"></span>
       Change Log
     </h2>
+    
+    <p>
+      <b class="header" style="margin-top: 20px;">
+        <a href="https://github.com/jashkenas/coffee-script/compare/1.2.0...1.3.1">1.3.1</a>
+        <span class="timestamp"> &ndash; <small>April 10, 2012</small></span>
+      </b>
+      <ul>
+        <li>
+          CoffeeScript now enforces all of JavaScript's <b>Strict Mode</b> early syntax 
+          errors at compile time. This includes old-style octal literals, 
+          duplicate property names in object literals, duplicate parameters in 
+          a function definition, deleting naked variables, setting the value of
+          <tt>eval</tt> or <tt>arguments</tt>, and more.
+          See a full discussion at 
+          <a href="https://github.com/jashkenas/coffee-script/issues/1547">#1547</a>.
+        </li>
+        <li>
+          The REPL now has a handy new multi-line mode for entering large
+          blocks of code. It's useful when copy-and-pasting examples into the
+          REPL. Enter multi-line mode with <tt>Ctrl-V</tt>. You may also now 
+          pipe input directly into the REPL.
+        </li>
+        <li>
+          CoffeeScript now prints a <tt>Generated by CoffeeScript VERSION</tt> 
+          header at the top of each compiled file.
+        </li>
+        <li>
+          Conditional assignment of previously undefined variables 
+          <tt>a or= b</tt> is now considered a syntax error.
+        </li>
+        <li>
+          A tweak to the semantics of <tt>do</tt>, which can now be used to
+          more easily simulate a namespace: <tt>do (x = 1, y = 2) -> ...</tt>
+        </li>
+        <li>
+          Loop indices are now mutable within a loop iteration, and immutable
+          between them.
+        </li>
+        <li>
+          Both endpoints of a slice are now allowed to be omitted for consistency, 
+          effectively creating a shallow copy of the list.
+        </li>
+        <li>
+          Additional tweaks and improvments to <tt>coffee --watch</tt> under 
+          Node's "new" file watching API. Watch will now beep by default 
+          if you introduce a syntax error into a watched script. We also now
+          ignore hidden directories by default when watching recursively.
+        </li>
+      </ul>
+    </p>
     
     <p>
       <b class="header" style="margin-top: 20px;">

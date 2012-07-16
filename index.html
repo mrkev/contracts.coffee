@@ -42,6 +42,7 @@
       <li><a href="#arrays">Arrays</a></li>
       <li><a href="#operators">Operators</a></li>
       <li style="text-decoration: none;">&nbsp;</li>
+      <li><a href="#checking">Check-Time</a></li>
       <li><a href="#naming">Naming</a></li>
       <li><a href="#duck">Duck-Typing</a></li>
       <li><a href="#log">Change Log</a></li>
@@ -186,6 +187,12 @@ Parent contracts:
 ...
 </code></pre>
 </div>
+<p>Contracts.coffee also has experimental support for <a href='http://requirejs.org/'>require.js</a>. Just load the &#8220;contracts&#8221; module first in <code>main.js</code>. So your <code>main.js</code> will look something like:</p>
+<div class='highlight'><pre><code class='javascript'><span class='nx'>require</span><span class='p'>([</span><span class='s2'>&quot;contracts&quot;</span><span class='p'>,</span> <span class='s2'>&quot;MyModule&quot;</span><span class='p'>],</span> <span class='kd'>function</span><span class='p'>(</span><span class='nx'>c</span><span class='p'>,</span> <span class='nx'>myMod</span><span class='p'>)</span> <span class='p'>{</span>
+    <span class='c1'>// ...</span>
+<span class='p'>});</span>
+</code></pre>
+</div>
 <p>If you are planning to run your code on node.js then you simply need to install <code>contracts.js</code> via npm:</p>
 <div class='highlight'><pre><code class='bash'>npm install contracts.js
 </code></pre>
@@ -194,11 +201,11 @@ Parent contracts:
 <div class='highlight'><pre><code class='bash'>bin/coffee -c --contracts MyContractedScript.coffee
 </code></pre>
 </div>
-<p>And finally, note that contracts.coffee requires some pretty new features of JavaScript to get its job done (in particular <a href='https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Proxy'>Proxies</a>) so it currently only works on Firefox 4+ and Node.js 0.5.10 (but not 0.6.x yet). Proxy support is in V8 but it hasn&#8217;t worked it way into Chrome just yet.</p>
+<p>And finally, note that contracts.coffee requires some pretty new features of JavaScript to get its job done (in particular <a href='https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Proxy'>Proxies</a>) so it currently only works on Firefox 4+, Node.js 0.5.x and 0.7.x (but not 0.6.x), and recent versions of Chrome (though at the moment you&#8217;ll need to enable the experimental JavaScript flag in about:flags).</p>
 
-<p>When using node you will need to supply two command line flags to enable Proxies (<code>--harmony_proxies</code>) and WeakMaps (<code>--harmony-weakmaps</code>). If you use the <code>coffee</code> or <code>cake</code> scripts these flags will be enabled automatically for you, otherwise the full process looks like:</p>
+<p>When using node you will need to supply two command line flags to enable Proxies (<code>--harmony_proxies</code>) and WeakMaps (<code>--harmony-weakmaps</code> in node.js 0.5.x or <code>--harmony-collections</code> in 0.7.x). If you use the <code>coffee</code> or <code>cake</code> scripts these flags will be enabled automatically for you, otherwise the full process looks like:</p>
 <div class='highlight'><pre><code class='bash'>coffee -c --contracts script.coffee
-node --harmony_proxies --harmony-weakmaps script.js
+node --harmony_proxies --harmony-collections script.js
 </code></pre>
 </div>
 <p>Note that since leaving off the <code>--contracts</code> flag will generate JavaScript code with absolutely no trace of contracts (the code is exactly what vanilla CoffeeScript would generate), you can easily set up a production build with contracts disabled that can run in any browser or JavaScript environment and a development/testing build with contracts enabled that you run in Firefox to help track down bugs.</p>
@@ -217,84 +224,21 @@ node --harmony_proxies --harmony-weakmaps script.js
 
 <p>In order to provide good error messages when things go wrong, contracts.coffee needs to know where contracted values are created and used in your code. It does this by enforcing a kind of module discipline and keeping track of which module a value was in when it was first wrapped up in a contract and which module uses the contracted value.</p>
 
+<p>Since JavaScript doesn&#8217;t (yet) have modules, contracts.coffee must enforce a notion of modules on its own. The good news is that for the common cases you&#8217;ll never have to deal with this.</p>
+
+<ul>
+<li>
 <p>If you are running in node.js the appropriate module wiring is done automatically. You just need to use <code>require</code> and the <code>exports</code> object like normal.</p>
+</li>
 
-<p>If you are in the browser, some hand wiring is needed (future versions of contracts.coffee will automate this better). To do this the library provides two utility functions: <code>Contracts.exports</code> and <code>Contracts.use</code>.</p>
+<li>
+<p>If you are running in the browser and using <a href='http://requirejs.org/'>require.js</a>, then the wiring is also automatically handled for you. Just be sure to include &#8220;contracts&#8221; as your first loaded module. (Here is an <a href='https://github.com/disnet/contracts.coffee/tree/master/test/webtest'>example</a> of this in action)</p>
+</li>
 
-<p>The <code>Contracts.exports(moduleName)</code> function creates an empty object for you to use much like the node.js <code>exports</code> object. Any contracted values you add to it will reference <code>moduleName</code> in any contract violation messages.</p>
-<div class='highlight'><pre><code class='coffeescript'><span class='c1'># Library.coffee</span>
-
-<span class='c1'># create and name the exports object</span>
-<span class='nv'>exports = </span><span class='nx'>Contracts</span><span class='p'>.</span><span class='nx'>exports</span> <span class='s2'>&quot;Library&quot;</span>
-
-<span class='nx'>exports</span><span class='p'>.</span><span class='nx'>id</span> <span class='o'>::</span> <span class='nf'>(Num) -&gt;</span> <span class='nx'>Num</span>
-<span class='nv'>exports.id = </span><span class='nf'>(x) -&gt;</span> <span class='nx'>x</span>
-
-<span class='c1'># put the exports object on the global object </span>
-<span class='c1'># for other modules to see and use</span>
-<span class='nb'>window</span><span class='p'>.</span><span class='nv'>MyLib = </span><span class='nx'>exports</span>
-</code></pre>
-</div>
-<p>The <code>Contracts.use(exportObject, moduleName)</code> function takes an object created by <code>Contracts.exports</code> (or a normal object) and assigns the correct user module name for use in later error messages.</p>
-<div class='highlight'><pre><code class='coffeescript'><span class='c1'># Main.coffee</span>
-<span class='p'>{</span><span class='nx'>id</span><span class='p'>}</span> <span class='o'>=</span> <span class='nx'>Contracts</span><span class='p'>.</span><span class='nx'>use</span> <span class='nb'>window</span><span class='p'>.</span><span class='nx'>MyLib</span><span class='p'>,</span> <span class='s2'>&quot;Main&quot;</span>
-
-<span class='nx'>id</span> <span class='mi'>4</span>     <span class='c1'># ok</span>
-<span class='nx'>id</span> <span class='s2'>&quot;foo&quot;</span> <span class='c1'># Contract Violation...</span>
-</code></pre>
-</div><pre style='color: red'>
-Contract violation: expected &lt;Num&gt;, actual: "foo"
-Value guarded in: Library
-  -- blame is on: Main
-Parent contracts:
-(Num) -&gt; Num 
-</pre>
-<p>Admittedly, in the example above finding the right module name is pretty trivial (we could have just inspected the stacktrace). To see the real power of recording the right names with <code>exports</code>/<code>use</code> consider the following example:</p>
-<div class='highlight'><pre><code class='coffeescript'><span class='lineno'>1</span> <span class='c1'># CheckingLibrary.coffee</span>
-<span class='lineno'>2</span> <span class='nv'>exports = </span><span class='nx'>Contracts</span><span class='p'>.</span><span class='nx'>exports</span> <span class='s2'>&quot;CheckingLibrary&quot;</span>
-<span class='lineno'>3</span> 
-<span class='lineno'>4</span> <span class='nx'>exports</span><span class='p'>.</span><span class='nx'>checkAge</span> <span class='o'>::</span> <span class='nf'>(Num) -&gt;</span> <span class='nx'>Bool</span>
-<span class='lineno'>5</span> <span class='nv'>exports.checkAge = </span><span class='nf'>(age) -&gt;</span>
-<span class='lineno'>6</span>   <span class='c1'># make sure the age makes sense</span>
-<span class='lineno'>7</span>   <span class='nx'>age</span> <span class='o'>&gt;</span> <span class='mi'>0</span> <span class='o'>&amp;&amp;</span> <span class='nx'>age</span> <span class='o'>&lt;</span> <span class='mi'>150</span> 
-<span class='lineno'>8</span> 
-<span class='lineno'>9</span> <span class='nb'>window</span><span class='p'>.</span><span class='nv'>CheckingLibrary = </span><span class='nx'>exports</span>
-</code></pre>
-</div><div class='highlight'><pre><code class='coffeescript'><span class='lineno'>1</span> <span class='c1'># Validator.coffee</span>
-<span class='lineno'>2</span> <span class='nv'>exports = </span><span class='nx'>Contracts</span><span class='p'>.</span><span class='nx'>exports</span> <span class='s2'>&quot;Validator&quot;</span>
-<span class='lineno'>3</span> 
-<span class='lineno'>4</span> <span class='nx'>exports</span><span class='p'>.</span><span class='nx'>validateForm</span> <span class='o'>::</span> <span class='p'>(</span><span class='nf'>(Str) -&gt;</span> <span class='nx'>Bool</span><span class='p'>,</span> <span class='nx'>Str</span><span class='p'>)</span> <span class='o'>-&gt;</span> <span class='nx'>Bool</span>
-<span class='lineno'>5</span> <span class='nv'>exports.validateForm = </span><span class='nf'>(checker, fieldName) -&gt;</span>
-<span class='lineno'>6</span>   <span class='nx'>checker</span> <span class='nx'>$</span><span class='p'>(</span><span class='nx'>fieldName</span><span class='p'>).</span><span class='nx'>val</span><span class='p'>()</span>   <span class='c1'># failure is here </span>
-<span class='lineno'>7</span> 
-<span class='lineno'>8</span> <span class='nb'>window</span><span class='p'>.</span><span class='nv'>Validator = </span><span class='nx'>exports</span>
-</code></pre>
-</div><div class='highlight'><pre><code class='coffeescript'><span class='lineno'>1</span> <span class='c1'># Main.coffee</span>
-<span class='lineno'>2</span> <span class='p'>{</span><span class='nx'>checkAge</span><span class='p'>}</span>      <span class='o'>=</span> <span class='nx'>Contracts</span><span class='p'>.</span><span class='nx'>use</span> <span class='nx'>CheckingLibrary</span><span class='p'>,</span> <span class='s2'>&quot;Main&quot;</span>
-<span class='lineno'>3</span> <span class='p'>{</span><span class='nx'>validateForm</span><span class='p'>}</span>  <span class='o'>=</span> <span class='nx'>Contracts</span><span class='p'>.</span><span class='nx'>use</span> <span class='nx'>Validator</span><span class='p'>,</span> <span class='s2'>&quot;Main&quot;</span>
-<span class='lineno'>4</span> 
-<span class='lineno'>5</span> <span class='nx'>$</span><span class='p'>(</span><span class='s2'>&quot;form&quot;</span><span class='p'>).</span><span class='nx'>submit</span> <span class='o'>-&gt;</span>
-<span class='lineno'>6</span>   <span class='c1'># checkAge takes Num but validateForm passes Str!</span>
-<span class='lineno'>7</span>   <span class='nx'>validateForm</span> <span class='nx'>checkAge</span><span class='p'>,</span> <span class='s2'>&quot;#age&quot;</span>
-</code></pre>
-</div>
-<p>We get this contract violation:</p>
-<pre style='color: red'>
-Contract violation: expected &lt;Num&gt;, actual: "42"
-Value guarded in: CheckingLibrary
-  -- blame is on: Main
-Parent contracts:
-(Num) -&gt; Bool
-</pre>
-<p>Here we have a library that does some simple form validation. The <code>checkAge</code> library function checks ages to be within a reasonable range for humans and the <code>validateForm</code> function takes a field name and a checker function and checks the field&#8217;s value with the supplied checker.</p>
-
-<p>The problem happens when <code>Main.coffee</code> sets up the form submit handler to call <code>validateForm</code> (which expects a checker that takes strings) with <code>checkAge</code> (which takes numbers).</p>
-
-<p>Notice that the violation happens at <code>Validator.coffee:4</code> when the checker is called with a string but the module at fault is actually <code>Main.coffee</code> (since it was responsible for providing <code>Validator.coffee</code> with the right checker). In this case it is pretty much impossible to correctly assign blame by just inspecting the stacktrace since the the point of failure is in a different location than the file actually at fault.</p>
-
-<p>But the error message gets it right!</p>
-
-<p>It gets it right because we setup the module names with <code>exports</code>/<code>use</code> which allows the system to blame the offending module.</p>
+<li>
+<p>If you have some other situation then you will need to do the module wiring by hand. This is documented over <a href='https://github.com/disnet/contracts.coffee/wiki/Manual-Modules'>here</a>.</p>
+</li>
+</ul>
 <span id='simple' />
 <h2 id='simple_contracts'>Simple Contracts</h2>
 
@@ -343,11 +287,11 @@ Parent contracts:
 </code></pre>
 </div>
 <p>Dependent functions:</p>
-<div class='highlight'><pre><code class='coffeescript'><span class='nx'>inc</span> <span class='o'>::</span> <span class='nf'>(Num) -&gt;</span> <span class='o'>!</span><span class='nf'>(result) -&gt;</span> <span class='nx'>result</span> <span class='o'>&gt;</span> <span class='nx'>$1</span>
+<div class='highlight'><pre><code class='coffeescript'><span class='nx'>inc</span> <span class='o'>::</span> <span class='nf'>(Num) -&gt;</span> <span class='o'>!</span><span class='nf'>(result, args) -&gt;</span> <span class='nx'>result</span> <span class='o'>&gt;</span> <span class='nx'>args</span><span class='p'>[</span><span class='mi'>0</span><span class='p'>]</span>
 <span class='nv'>inc = </span><span class='nf'>(n) -&gt;</span> <span class='nx'>n</span> <span class='o'>+</span> <span class='mi'>1</span>
 </code></pre>
 </div>
-<p>The variable <code>$1</code> is the first argument passed to the function (<code>$2</code> would be the second argument, <code>$3</code> the third, and so on). This allows us to compare the result of the function to its arguments. Note that the test is run after the function has completed so if any of the arguments were mutated during the function&#8217;s execution the test could give spurious results.</p>
+<p>The variable <code>args[0]</code> is the first argument passed to the function (<code>args[1]</code> would be the second argument, <code>args[2]</code> the third, and so on). This allows us to compare the result of the function to its arguments. Note that the test is run after the function has completed so if any of the arguments were mutated during the function&#8217;s execution the test could give spurious results.</p>
 
 <p>The <code>this</code> contract:</p>
 <div class='highlight'><pre><code class='coffeescript'><span class='nx'>f</span> <span class='o'>::</span> <span class='nf'>(Str, @{name: Str}) -&gt;</span> <span class='nx'>Str</span>
@@ -372,6 +316,18 @@ Parent contracts:
   <span class='nv'>f: </span><span class='nf'>(x) -&gt;</span> <span class='nx'>x</span>
 </code></pre>
 </div>
+<p><strong>Note:</strong> Putting an object contract on a primitive will always fail. This might seem obvious at first but since many primitives have methods, the following contract would seem reasonable:</p>
+<div class='highlight'><pre><code class='coffeescript'><span class='nx'>f</span> <span class='o'>::</span> <span class='p'>({</span><span class='nv'>toString: </span><span class='nf'>(Any) -&gt;</span> <span class='nx'>Str</span><span class='p'>})</span> <span class='o'>-&gt;</span> <span class='nx'>Str</span>
+<span class='nv'>f = </span><span class='nf'>(s) -&gt;</span> <span class='nx'>s</span><span class='p'>.</span><span class='nx'>toString</span><span class='p'>()</span>
+
+<span class='nx'>f</span> <span class='s2'>&quot;a string&quot;</span>   <span class='c1'># Contract violation</span>
+<span class='nx'>f</span> <span class='p'>{}</span>           <span class='c1'># ok</span>
+</code></pre>
+</div>
+<p>Even though &#8220;a string&#8221; has a <code>toString</code> method the contract will always signal a violation. This is because JavaScript proxies can wrap objects but not primitives.</p>
+
+<p>In addition due to a limitation in the current JavaScript engines implementations of proxies, you cannot put a contract on the <code>Date</code> object. This is expected to be fixed in future implementations. See <a href='https://github.com/disnet/contracts.coffee/issues/44'>this issue</a> to track progress on this.</p>
+
 <p>Optional properties:</p>
 <div class='highlight'><pre><code class='coffeescript'><span class='nx'>o</span> <span class='o'>::</span>
   <span class='nv'>a: </span><span class='nx'>Str</span>
@@ -468,7 +424,47 @@ Parent contracts:
 </code></pre>
 </div>
 <p>The <code>a</code> property must pass both the <code>Num</code> and <code>Even</code> contracts. Just like <code>or</code> you cannot use multiple function/object contracts with <code>and</code>.</p>
-<span id='naming' />
+<span id='checking' />
+<h2 id='checktime_of_contracts'>Check-Time of Contracts</h2>
+
+<p>The actual point in time when a contract is checked depends on the kind of contract.</p>
+
+<ul>
+<li>Simple contracts (<em>e.g.</em> <code>Num</code>, <code>Str</code>, and contracts created via <code>!</code>) are checked immediately.</li>
+
+<li>Function contracts are checked when the function is called.</li>
+
+<li>Object contracts are immediately checked to make sure all their properties exist. The individual property contracts are checked each time the property is accessed.</li>
+
+<li>Array contracts are checked in the same way as object contracts.</li>
+</ul>
+
+<p>For example, this means that if a function <code>f</code> takes another function <code>g</code> as an argument, it will delay checking of <code>g</code> until <code>g</code> is actually invoked.</p>
+<div class='highlight'><pre><code class='coffeescript'><span class='nx'>f</span> <span class='o'>::</span> <span class='p'>(</span><span class='nf'>(Num) -&gt;</span> <span class='nx'>Num</span><span class='p'>,</span> <span class='nf'>(Str) -&gt;</span> <span class='nx'>Str</span><span class='p'>)</span> <span class='o'>-&gt;</span> <span class='nx'>Num</span>
+<span class='nv'>f = </span><span class='nf'>(g, h) -&gt;</span> <span class='nx'>g</span> <span class='mi'>42</span>
+
+<span class='nv'>num = </span><span class='nf'>(x) -&gt;</span> <span class='s2'>&quot;string&quot;</span>
+<span class='nv'>str = </span><span class='nf'>(x) -&gt;</span> <span class='mi'>42</span>
+
+<span class='nx'>f</span> <span class='nx'>str</span><span class='p'>,</span> <span class='nx'>num</span>  <span class='c1'># fails when g is called inside f</span>
+<span class='nx'>f</span> <span class='nx'>num</span><span class='p'>,</span> <span class='nx'>num</span>  <span class='c1'># since h is never called it never fails</span>
+            <span class='c1'># even though it would violate its contract</span>
+</code></pre>
+</div>
+<p>A function returning an object will immediately check for the existence of properties but delay checking that they match their contract until accessed.</p>
+<div class='highlight'><pre><code class='coffeescript'><span class='nx'>f</span> <span class='o'>::</span> <span class='nf'>(Num) -&gt;</span> <span class='p'>{</span><span class='nv'>a: </span><span class='nx'>Str</span><span class='p'>,</span> <span class='nv'>b: </span><span class='nx'>Num</span><span class='p'>}</span>
+<span class='nv'>f = </span><span class='nf'>(x) -&gt;</span> <span class='p'>{</span><span class='nv'>a: </span><span class='s2'>&quot;foo&quot;</span><span class='p'>}</span>
+
+<span class='c1'># fails as soon as f returns since b is missing</span>
+<span class='nx'>f</span> <span class='mi'>42</span>
+
+<span class='nx'>g</span> <span class='o'>::</span> <span class='nf'>(Num) -&gt;</span> <span class='p'>{</span><span class='nv'>a: </span><span class='nx'>Str</span><span class='p'>,</span> <span class='nv'>b: </span><span class='nx'>Num</span><span class='p'>}</span>
+<span class='nv'>g = </span><span class='nf'>(x) -&gt;</span> <span class='p'>{</span><span class='nv'>a: </span><span class='nx'>x</span><span class='p'>,</span> <span class='nv'>b: </span><span class='nx'>x</span><span class='p'>}</span>
+
+<span class='nv'>o = </span><span class='nx'>g</span> <span class='mi'>42</span>         <span class='c1'># does not fail yet</span>
+<span class='nx'>console</span><span class='p'>.</span><span class='nx'>log</span> <span class='nx'>o</span><span class='p'>.</span><span class='nx'>a</span>  <span class='c1'># now fails because o.a does not satisfy Str</span>
+</code></pre>
+</div><span id='naming' />
 <h2 id='naming_your_own_contracts'>Naming your own contracts</h2>
 
 <p>You can bind a contract to a variable just like normal expressions:</p>
@@ -563,6 +559,22 @@ Parent contracts:
 <h2 id='change_log'>Change Log</h2>
 
 <ul>
+<li>
+<p><a href=''>0.3.0</a> (March 15th, 2012)</p>
+
+<ul>
+<li><a href='https://github.com/disnet/contracts.coffee/issues/8'>change</a> to dependent function contracts</li>
+
+<li>various contracts.coffee bug fixes: <a href='https://github.com/disnet/contracts.coffee/issues/27'>#27</a>, <a href='https://github.com/disnet/contracts.coffee/issues/41'>#41</a>, <a href='https://github.com/disnet/contracts.coffee/issues/33'>#33</a>, <a href='https://github.com/disnet/contracts.coffee/issues/31'>#31</a>,</li>
+
+<li>various contracts.js bug fixes: <a href='https://github.com/disnet/contracts.js/pull/9'>#9</a>, <a href='https://github.com/disnet/contracts.js/pull/8'>#8</a>, <a href='https://github.com/disnet/contracts.js/pull/7'>#7</a>, <a href='https://github.com/disnet/contracts.js/pull/6'>#6</a>, <a href='https://github.com/disnet/contracts.js/pull/5'>#5</a>, <a href='https://github.com/disnet/contracts.js/pull/4'>#4</a></li>
+
+<li>experimental support for require.js (see <a href='https://github.com/disnet/contracts.coffee/tree/master/test/webtest'>here</a> for example use)</li>
+
+<li>based off CoffeeScript 1.3.1</li>
+</ul>
+</li>
+
 <li>
 <p><a href='https://github.com/disnet/contracts.coffee/tree/c0.2.0'>0.2.0</a> (January 4th, 2012)</p>
 

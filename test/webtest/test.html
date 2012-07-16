@@ -13,7 +13,9 @@
       },
         throws = function(f, msg) {
         raises(f, msg);
-      },
+      }, fail = function(msg) {
+        same(false, true, msg);
+      }, 
         inBrowser = true;
     </script>
 
