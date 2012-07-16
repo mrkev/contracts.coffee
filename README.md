@@ -49,10 +49,10 @@ experimental JavaScript flag in about:flags).
 
 Change Log
 ----------
-* [0.3.1]() (July 15th, 2012)
+* [0.3.1](https://github.com/disnet/contracts.coffee/tree/c0.3.1) (July 15th, 2012)
   * support for stable node.js (v0.8.0+)
   * some bug fixes
-* [0.3.0]() (March 15th, 2012)
+* [0.3.0](https://github.com/disnet/contracts.coffee/tree/c0.3.0) (March 15th, 2012)
   * [change](https://github.com/disnet/contracts.coffee/issues/8) to dependent function contracts
   * various contracts.coffee bug fixes: [#27](https://github.com/disnet/contracts.coffee/issues/27), [#41](https://github.com/disnet/contracts.coffee/issues/41), [#33](https://github.com/disnet/contracts.coffee/issues/33), [#31](https://github.com/disnet/contracts.coffee/issues/31),
   * various contracts.js bug fixes: [#9](https://github.com/disnet/contracts.js/pull/9), [#8](https://github.com/disnet/contracts.js/pull/8), [#7](https://github.com/disnet/contracts.js/pull/7), [#6](https://github.com/disnet/contracts.js/pull/6), [#5](https://github.com/disnet/contracts.js/pull/5), [#4](https://github.com/disnet/contracts.js/pull/4)
