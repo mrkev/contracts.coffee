@@ -447,6 +447,23 @@ if (typeof(define) === 'function' && define.amd) {
     }
   });
 
+  test("objects, deleting fields", function() {
+    var b, foo;
+    foo = __contracts.guard(__contracts.fun([
+      __contracts.object({
+        id: Str
+      }, {})
+    ], __contracts.object({
+      id: Str
+    }, {}), {}),function(o) {
+      return o;
+    });
+    b = foo({
+      id: "foo"
+    });
+    return delete b.id;
+  });
+
   test("arrays, basic", function() {
     var a;
     if (typeof inBrowser !== "undefined" && inBrowser !== null) {

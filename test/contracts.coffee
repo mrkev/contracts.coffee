@@ -260,6 +260,13 @@ test "objects, recursive", ->
 	  throws (-> obj.b.a = "foo"), "violates contract"
 	  throws (-> obj.c().a), "violates contract"
 
+test "objects, deleting fields", ->
+  foo :: ({id:Str}) -> {id:Str}
+  foo = (o) -> o
+
+  b = foo {id: "foo"}
+  delete b.id
+
 test "arrays, basic", ->
 	if inBrowser?
 	  a :: [Num, Str]
