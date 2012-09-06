@@ -166,7 +166,7 @@ task 'doc:underscore', 'rebuild the Underscore.coffee documentation page', ->
     throw err if err
 
 task 'doc:contracts', 'rebuild the contracts.coffee documentation', ->
-  exec 'jekyll documentation/contracts documentation/contracts/_site && cp documentation/contracts/_site/index.html index.html', (err) ->
+  exec 'jekyll --pygments documentation/contracts documentation/contracts/_site && cp documentation/contracts/_site/index.html index.html', (err) ->
     throw err if err
 
 task 'bench', 'quick benchmark of compilation time', ->

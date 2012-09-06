@@ -431,6 +431,8 @@ mutating (on property sets and delete).
 Arrays
 ------
 
+**Note: due to a proxy bug in all the current JavaScript engines, arrays are not currently being wrapped in a contract. This won't cause code to fail, it just means that contracts will not be checked for arrays. See this github [issue](https://github.com/disnet/contracts.coffee/issues/54) for more info.**
+
 Basic arrays:
 
 {% highlight coffeescript %}
@@ -663,6 +665,9 @@ In duck-typing, functions work when given *any* object that has the properties t
 Change Log
 ----------
 
+* [0.3.2]() (September 5, 2012)
+  * disabling contracts for arrays (see issue [54](https://github.com/disnet/contracts.coffee/issues/54))
+  * various bug fixes
 * [0.3.1](https://github.com/disnet/contracts.coffee/tree/c0.3.1) (July 15th, 2012)
   * support for stable node.js (v0.8.0+)
   * some bug fixes

@@ -113,7 +113,7 @@ square "42"</textarea>
 <p>This says that the <code>id</code> function should always be called with a number and will always return a number. It looks a lot like types (in fact the syntax looks a <em>lot</em> like Haskell) but unlike types, contracts are enforced at runtime in pure JavaScript.</p>
 
 <p>If we try to use <code>id</code> incorrectly:</p>
-<div class='highlight'><pre><code class='coffeescript'><span class='nx'>id</span> <span class='s2'>&quot;foo&quot;</span>
+<div class='highlight'><pre><code class='coffeescript'><span class='nx'>id</span> <span class='s'>&quot;foo&quot;</span>
 </code></pre>
 </div>
 <p>The program throws an error, which displays lots of nice information telling us what we did wrong:</p>
@@ -130,7 +130,7 @@ Parent contracts:
     <span class='nv'>name: </span><span class='nx'>Str</span>
     <span class='nv'>age: </span><span class='nx'>Num</span>
 <span class='nv'>person =</span>
-    <span class='nv'>name: </span><span class='s2'>&quot;Bertrand Meyer&quot;</span>
+    <span class='nv'>name: </span><span class='s'>&quot;Bertrand Meyer&quot;</span>
     <span class='nv'>age: </span><span class='mi'>42</span>
 </code></pre>
 </div>
@@ -143,8 +143,8 @@ Parent contracts:
 <div class='highlight'><pre><code class='coffeescript'><span class='nx'>average</span> <span class='o'>::</span> <span class='nf'>({name: Str, age: Num}, [...Num]) -&gt;</span> <span class='nx'>Str</span>
 <span class='nv'>average = </span><span class='nf'>(person, loc) -&gt;</span>
     <span class='nv'>sum = </span><span class='nx'>loc</span><span class='p'>.</span><span class='nx'>reduce</span> <span class='nf'>(s1, s2) -&gt;</span> <span class='nx'>s1</span> <span class='o'>+</span> <span class='nx'>s2</span>
-    <span class='s2'>&quot;#{person.name} wrote on average </span>
-<span class='s2'>     #{sum / loc.length} lines of code.&quot;</span>
+    <span class='s'>&quot;</span><span class='si'>#{</span><span class='nx'>person</span><span class='p'>.</span><span class='nx'>name</span><span class='si'>}</span><span class='s'> wrote on average </span>
+<span class='s'>     </span><span class='si'>#{</span><span class='nx'>sum</span> <span class='o'>/</span> <span class='nx'>loc</span><span class='p'>.</span><span class='nx'>length</span><span class='si'>}</span><span class='s'> lines of code.&quot;</span>
 </code></pre>
 </div>
 <p>Under the covers, contracts are really just normal functions that return <code>true</code> or <code>false</code>, so it&#8217;s really easy to roll your own by using the <code>!</code> operator to define new contracts.</p>
@@ -297,7 +297,7 @@ node --harmony_proxies --harmony-collections script.js
 <div class='highlight'><pre><code class='coffeescript'><span class='nx'>f</span> <span class='o'>::</span> <span class='nf'>(Str, @{name: Str}) -&gt;</span> <span class='nx'>Str</span>
 <span class='nv'>f = </span><span class='nf'>(s) -&gt;</span> <span class='c1'>#...</span>
 
-<span class='nv'>o = </span><span class='p'>{</span> <span class='nv'>name: </span><span class='s2'>&quot;foo&quot;</span><span class='p'>,</span> <span class='nv'>f: </span><span class='nx'>f</span><span class='p'>}</span>
+<span class='nv'>o = </span><span class='p'>{</span> <span class='nv'>name: </span><span class='s'>&quot;foo&quot;</span><span class='p'>,</span> <span class='nv'>f: </span><span class='nx'>f</span><span class='p'>}</span>
 <span class='nx'>o</span><span class='p'>.</span><span class='nx'>f</span><span class='p'>()</span>
 </code></pre>
 </div>
@@ -311,7 +311,7 @@ node --harmony_proxies --harmony-collections script.js
   <span class='nv'>b: </span><span class='nx'>Num</span>
   <span class='nv'>f: </span><span class='nf'>(Num) -&gt;</span> <span class='nx'>Num</span>
 <span class='nv'>o =</span>
-  <span class='nv'>a: </span><span class='s2'>&quot;foo&quot;</span>
+  <span class='nv'>a: </span><span class='s'>&quot;foo&quot;</span>
   <span class='nv'>b: </span><span class='mi'>42</span>
   <span class='nv'>f: </span><span class='nf'>(x) -&gt;</span> <span class='nx'>x</span>
 </code></pre>
@@ -320,7 +320,7 @@ node --harmony_proxies --harmony-collections script.js
 <div class='highlight'><pre><code class='coffeescript'><span class='nx'>f</span> <span class='o'>::</span> <span class='p'>({</span><span class='nv'>toString: </span><span class='nf'>(Any) -&gt;</span> <span class='nx'>Str</span><span class='p'>})</span> <span class='o'>-&gt;</span> <span class='nx'>Str</span>
 <span class='nv'>f = </span><span class='nf'>(s) -&gt;</span> <span class='nx'>s</span><span class='p'>.</span><span class='nx'>toString</span><span class='p'>()</span>
 
-<span class='nx'>f</span> <span class='s2'>&quot;a string&quot;</span>   <span class='c1'># Contract violation</span>
+<span class='nx'>f</span> <span class='s'>&quot;a string&quot;</span>   <span class='c1'># Contract violation</span>
 <span class='nx'>f</span> <span class='p'>{}</span>           <span class='c1'># ok</span>
 </code></pre>
 </div>
@@ -334,7 +334,7 @@ node --harmony_proxies --harmony-collections script.js
   <span class='nv'>b: </span><span class='nx'>Num</span><span class='o'>?</span>
   <span class='nv'>f: </span><span class='nf'>(Num) -&gt;</span> <span class='nx'>Num</span>
 <span class='nv'>o =</span>
-  <span class='nv'>a: </span><span class='s2'>&quot;foo&quot;</span>
+  <span class='nv'>a: </span><span class='s'>&quot;foo&quot;</span>
   <span class='nv'>f: </span><span class='nf'>(x) -&gt;</span> <span class='nx'>x</span>
 </code></pre>
 </div>
@@ -343,7 +343,7 @@ node --harmony_proxies --harmony-collections script.js
   <span class='nv'>oo: </span><span class='p'>{</span> <span class='nv'>a: </span><span class='nx'>Str</span> <span class='p'>}</span>
   <span class='nv'>b: </span><span class='nx'>Num</span>
 <span class='nv'>o =</span>
-  <span class='nv'>oo: </span><span class='p'>{</span> <span class='nv'>a: </span><span class='s2'>&quot;foo&quot;</span> <span class='p'>}</span>
+  <span class='nv'>oo: </span><span class='p'>{</span> <span class='nv'>a: </span><span class='s'>&quot;foo&quot;</span> <span class='p'>}</span>
   <span class='nv'>b: </span><span class='mi'>42</span>
 </code></pre>
 </div>
@@ -366,7 +366,7 @@ node --harmony_proxies --harmony-collections script.js
       <span class='nv'>post: </span><span class='nf'>(o) -&gt;</span> <span class='nx'>o</span><span class='p'>.</span><span class='nx'>a</span> <span class='o'>&gt;</span> <span class='mi'>20</span>
 <span class='nv'>o =</span>
   <span class='nv'>a: </span><span class='mi'>12</span>
-  <span class='nv'>f: </span><span class='nf'>(x) -&gt;</span> <span class='err'>@</span><span class='p'>.</span><span class='nv'>a = </span><span class='err'>@</span><span class='p'>.</span><span class='nx'>a</span> <span class='o'>+</span> <span class='nx'>x</span>
+  <span class='nv'>f: </span><span class='nf'>(x) -&gt;</span> <span class='nx'>@</span><span class='p'>.</span><span class='nv'>a = </span><span class='nx'>@</span><span class='p'>.</span><span class='nx'>a</span> <span class='o'>+</span> <span class='nx'>x</span>
 </code></pre>
 </div>
 <p>The pre and post condition functions are called with the object that <code>f</code> is a member of. As their names imply, <code>pre</code> is called before the function <code>f</code> is invoked and <code>post</code> is called after.</p>
@@ -378,19 +378,21 @@ node --harmony_proxies --harmony-collections script.js
       <span class='nv'>pre: </span><span class='nf'>(o) -&gt;</span> <span class='nx'>o</span><span class='p'>.</span><span class='nx'>a</span> <span class='o'>&gt;</span> <span class='mi'>10</span>
       <span class='nv'>post: </span><span class='nf'>(o) -&gt;</span> <span class='nx'>o</span><span class='p'>.</span><span class='nx'>a</span> <span class='o'>&gt;</span> <span class='mi'>20</span>
   <span class='o'>-|</span> <span class='nv'>invariant: </span><span class='o'>-&gt;</span>
-    <span class='err'>@</span><span class='p'>.</span><span class='nx'>a</span> <span class='o'>&gt;</span> <span class='mi'>0</span> <span class='o'>and</span> <span class='err'>@</span><span class='p'>.</span><span class='nx'>a</span> <span class='o'>&lt;</span> <span class='mi'>100</span>
+    <span class='nx'>@</span><span class='p'>.</span><span class='nx'>a</span> <span class='o'>&gt;</span> <span class='mi'>0</span> <span class='o'>and</span> <span class='nx'>@</span><span class='p'>.</span><span class='nx'>a</span> <span class='o'>&lt;</span> <span class='mi'>100</span>
 <span class='nv'>o =</span>
   <span class='nv'>a: </span><span class='mi'>12</span>
-  <span class='nv'>f: </span><span class='nf'>(x) -&gt;</span> <span class='err'>@</span><span class='p'>.</span><span class='nv'>a = </span><span class='err'>@</span><span class='p'>.</span><span class='nx'>a</span> <span class='o'>+</span> <span class='nx'>x</span>
+  <span class='nv'>f: </span><span class='nf'>(x) -&gt;</span> <span class='nx'>@</span><span class='p'>.</span><span class='nv'>a = </span><span class='nx'>@</span><span class='p'>.</span><span class='nx'>a</span> <span class='o'>+</span> <span class='nx'>x</span>
 </code></pre>
 </div>
 <p>The invariant is checked at contract application and whenever there is a possibility of <code>o</code> mutating (on property sets and delete).</p>
 
 <h2 id='arrays'>Arrays</h2>
 
+<p><strong>Note: due to a proxy bug in all the current JavaScript engines, arrays are not currently being wrapped in a contract. This won&#8217;t cause code to fail, it just means that contracts will not be checked for arrays. See this github <a href='https://github.com/disnet/contracts.coffee/issues/54'>issue</a> for more info.</strong></p>
+
 <p>Basic arrays:</p>
 <div class='highlight'><pre><code class='coffeescript'><span class='nx'>a</span> <span class='o'>::</span> <span class='p'>[</span><span class='nx'>Num</span><span class='p'>,</span> <span class='nx'>Str</span><span class='p'>,</span> <span class='p'>[</span><span class='nx'>Bool</span><span class='p'>,</span> <span class='nx'>Num</span><span class='p'>]]</span>
-<span class='nv'>a = </span><span class='p'>[</span><span class='mi'>42</span><span class='p'>,</span> <span class='s2'>&quot;foo&quot;</span><span class='p'>,</span> <span class='p'>[</span><span class='kc'>true</span><span class='p'>,</span> <span class='mi'>24</span><span class='p'>]</span>
+<span class='nv'>a = </span><span class='p'>[</span><span class='mi'>42</span><span class='p'>,</span> <span class='s'>&quot;foo&quot;</span><span class='p'>,</span> <span class='p'>[</span><span class='kc'>true</span><span class='p'>,</span> <span class='mi'>24</span><span class='p'>]</span>
 </code></pre>
 </div>
 <p>This says the array must have three elements, the first being a <code>Num</code>, the second being a <code>Str</code>, and the third being another array.</p>
@@ -404,7 +406,7 @@ node --harmony_proxies --harmony-collections script.js
 
 <p>Mixing arrays</p>
 <div class='highlight'><pre><code class='coffeescript'><span class='nx'>a</span> <span class='o'>::</span> <span class='p'>[</span><span class='nx'>Bool</span><span class='p'>,</span> <span class='nx'>Str</span><span class='p'>,</span> <span class='p'>...</span><span class='nx'>Num</span><span class='p'>]</span>
-<span class='nv'>a = </span><span class='p'>[</span><span class='kc'>false</span><span class='p'>,</span> <span class='s2'>&quot;foo&quot;</span><span class='p'>,</span> <span class='mi'>432</span><span class='p'>,</span> <span class='mi'>854</span><span class='p'>,</span> <span class='mi'>21</span><span class='p'>]</span>
+<span class='nv'>a = </span><span class='p'>[</span><span class='kc'>false</span><span class='p'>,</span> <span class='s'>&quot;foo&quot;</span><span class='p'>,</span> <span class='mi'>432</span><span class='p'>,</span> <span class='mi'>854</span><span class='p'>,</span> <span class='mi'>21</span><span class='p'>]</span>
 </code></pre>
 </div>
 <p>The <code>...</code> operator can be mixed with single contracts. This says that the array&#8217;s first and second positions must pass the first two contracts and the remaining array positions must pass <code>Num</code>. The <code>...</code> operator must be in the last position of the array contract.</p>
@@ -443,7 +445,7 @@ node --harmony_proxies --harmony-collections script.js
 <div class='highlight'><pre><code class='coffeescript'><span class='nx'>f</span> <span class='o'>::</span> <span class='p'>(</span><span class='nf'>(Num) -&gt;</span> <span class='nx'>Num</span><span class='p'>,</span> <span class='nf'>(Str) -&gt;</span> <span class='nx'>Str</span><span class='p'>)</span> <span class='o'>-&gt;</span> <span class='nx'>Num</span>
 <span class='nv'>f = </span><span class='nf'>(g, h) -&gt;</span> <span class='nx'>g</span> <span class='mi'>42</span>
 
-<span class='nv'>num = </span><span class='nf'>(x) -&gt;</span> <span class='s2'>&quot;string&quot;</span>
+<span class='nv'>num = </span><span class='nf'>(x) -&gt;</span> <span class='s'>&quot;string&quot;</span>
 <span class='nv'>str = </span><span class='nf'>(x) -&gt;</span> <span class='mi'>42</span>
 
 <span class='nx'>f</span> <span class='nx'>str</span><span class='p'>,</span> <span class='nx'>num</span>  <span class='c1'># fails when g is called inside f</span>
@@ -453,7 +455,7 @@ node --harmony_proxies --harmony-collections script.js
 </div>
 <p>A function returning an object will immediately check for the existence of properties but delay checking that they match their contract until accessed.</p>
 <div class='highlight'><pre><code class='coffeescript'><span class='nx'>f</span> <span class='o'>::</span> <span class='nf'>(Num) -&gt;</span> <span class='p'>{</span><span class='nv'>a: </span><span class='nx'>Str</span><span class='p'>,</span> <span class='nv'>b: </span><span class='nx'>Num</span><span class='p'>}</span>
-<span class='nv'>f = </span><span class='nf'>(x) -&gt;</span> <span class='p'>{</span><span class='nv'>a: </span><span class='s2'>&quot;foo&quot;</span><span class='p'>}</span>
+<span class='nv'>f = </span><span class='nf'>(x) -&gt;</span> <span class='p'>{</span><span class='nv'>a: </span><span class='s'>&quot;foo&quot;</span><span class='p'>}</span>
 
 <span class='c1'># fails as soon as f returns since b is missing</span>
 <span class='nx'>f</span> <span class='mi'>42</span>
@@ -484,16 +486,16 @@ node --harmony_proxies --harmony-collections script.js
 <p>The result of the expression in the <code>!</code> escape must be a function that returns a boolean. It is converted to a contract that checks its value against the function.</p>
 
 <p>The standard <code>Num</code> and <code>Str</code> contracts you have seen are implemented as:</p>
-<div class='highlight'><pre><code class='coffeescript'><span class='nv'>Num = </span><span class='o'>?!</span><span class='nf'>(x) -&gt;</span> <span class='k'>typeof</span> <span class='nx'>x</span> <span class='o'>is</span> <span class='s1'>&#39;number&#39;</span>
-<span class='nv'>Str = </span><span class='o'>?!</span><span class='nf'>(x) -&gt;</span> <span class='k'>typeof</span> <span class='nx'>x</span> <span class='o'>is</span> <span class='s1'>&#39;string&#39;</span>
+<div class='highlight'><pre><code class='coffeescript'><span class='nv'>Num = </span><span class='o'>?!</span><span class='nf'>(x) -&gt;</span> <span class='k'>typeof</span> <span class='nx'>x</span> <span class='o'>is</span> <span class='s'>&#39;number&#39;</span>
+<span class='nv'>Str = </span><span class='o'>?!</span><span class='nf'>(x) -&gt;</span> <span class='k'>typeof</span> <span class='nx'>x</span> <span class='o'>is</span> <span class='s'>&#39;string&#39;</span>
 </code></pre>
 </div>
 <p>The syntax may look a little strange at first, but it can be read as &#8220;assign to <code>Num</code> the contract generated from the function <code>(x) -&gt;
 ...</code></p>
 
 <p>It could also be written:</p>
-<div class='highlight'><pre><code class='coffeescript'><span class='nv'>Num = </span><span class='nf'>(x) -&gt;</span> <span class='k'>typeof</span> <span class='nx'>x</span> <span class='o'>is</span> <span class='s1'>&#39;number&#39;</span>
-<span class='nv'>Str = </span><span class='nf'>(x) -&gt;</span> <span class='k'>typeof</span> <span class='nx'>x</span> <span class='o'>is</span> <span class='s1'>&#39;string&#39;</span>
+<div class='highlight'><pre><code class='coffeescript'><span class='nv'>Num = </span><span class='nf'>(x) -&gt;</span> <span class='k'>typeof</span> <span class='nx'>x</span> <span class='o'>is</span> <span class='s'>&#39;number&#39;</span>
+<span class='nv'>Str = </span><span class='nf'>(x) -&gt;</span> <span class='k'>typeof</span> <span class='nx'>x</span> <span class='o'>is</span> <span class='s'>&#39;string&#39;</span>
 
 <span class='nv'>f = </span><span class='nf'>(!Num) -&gt;</span> <span class='o'>!</span><span class='nx'>Str</span>
 </code></pre>
@@ -511,7 +513,7 @@ node --harmony_proxies --harmony-collections script.js
   <span class='nv'>left: </span><span class='nx'>Self</span> <span class='o'>or</span> <span class='nx'>Null</span>
   <span class='nv'>right: </span><span class='nx'>Self</span> <span class='o'>or</span> <span class='nx'>Null</span>
   <span class='o'>-|</span> <span class='nv'>invariant: </span><span class='o'>-&gt;</span>
-    <span class='p'>(</span><span class='err'>@</span><span class='p'>.</span><span class='nx'>node</span> <span class='o'>&gt;</span> <span class='err'>@</span><span class='p'>.</span><span class='nx'>left</span><span class='p'>.</span><span class='nx'>node</span><span class='p'>)</span> <span class='o'>and</span> <span class='p'>(</span><span class='err'>@</span><span class='p'>.</span><span class='nx'>node</span> <span class='o'>&lt;</span> <span class='err'>@</span><span class='p'>.</span><span class='nx'>right</span><span class='p'>.</span><span class='nx'>node</span><span class='p'>)</span>
+    <span class='p'>(</span><span class='nx'>@</span><span class='p'>.</span><span class='nx'>node</span> <span class='o'>&gt;</span> <span class='nx'>@</span><span class='p'>.</span><span class='nx'>left</span><span class='p'>.</span><span class='nx'>node</span><span class='p'>)</span> <span class='o'>and</span> <span class='p'>(</span><span class='nx'>@</span><span class='p'>.</span><span class='nx'>node</span> <span class='o'>&lt;</span> <span class='nx'>@</span><span class='p'>.</span><span class='nx'>right</span><span class='p'>.</span><span class='nx'>node</span><span class='p'>)</span>
 <span class='p'>})</span>
 </code></pre>
 </div>
@@ -524,15 +526,15 @@ node --harmony_proxies --harmony-collections script.js
   <span class='nv'>left: </span><span class='nx'>Self</span> <span class='o'>or</span> <span class='nx'>Null</span>
   <span class='nv'>right: </span><span class='nx'>Self</span> <span class='o'>or</span> <span class='nx'>Null</span>
   <span class='o'>-|</span> <span class='nv'>invariant: </span><span class='o'>-&gt;</span>
-    <span class='p'>(</span><span class='err'>@</span><span class='p'>.</span><span class='nx'>color</span> <span class='o'>is</span> <span class='s2'>&quot;red&quot;</span> <span class='o'>or</span> <span class='err'>@</span><span class='p'>.</span><span class='nx'>color</span> <span class='o'>is</span> <span class='s2'>&quot;black&quot;</span><span class='p'>)</span> <span class='o'>and</span>
-    <span class='p'>(</span><span class='k'>if</span> <span class='err'>@</span><span class='p'>.</span><span class='nx'>color</span> <span class='o'>is</span> <span class='s2'>&quot;red&quot;</span>
-      <span class='p'>(</span><span class='err'>@</span><span class='p'>.</span><span class='nx'>left</span><span class='p'>.</span><span class='nx'>color</span> <span class='o'>is</span> <span class='s2'>&quot;black&quot;</span> <span class='o'>and</span> 
-       <span class='err'>@</span><span class='p'>.</span><span class='nx'>right</span><span class='p'>.</span><span class='nx'>color</span> <span class='o'>is</span> <span class='s2'>&quot;black&quot;</span><span class='p'>)</span> 
+    <span class='p'>(</span><span class='nx'>@</span><span class='p'>.</span><span class='nx'>color</span> <span class='o'>is</span> <span class='s'>&quot;red&quot;</span> <span class='o'>or</span> <span class='nx'>@</span><span class='p'>.</span><span class='nx'>color</span> <span class='o'>is</span> <span class='s'>&quot;black&quot;</span><span class='p'>)</span> <span class='o'>and</span>
+    <span class='p'>(</span><span class='k'>if</span> <span class='nx'>@</span><span class='p'>.</span><span class='nx'>color</span> <span class='o'>is</span> <span class='s'>&quot;red&quot;</span>
+      <span class='p'>(</span><span class='nx'>@</span><span class='p'>.</span><span class='nx'>left</span><span class='p'>.</span><span class='nx'>color</span> <span class='o'>is</span> <span class='s'>&quot;black&quot;</span> <span class='o'>and</span> 
+       <span class='nx'>@</span><span class='p'>.</span><span class='nx'>right</span><span class='p'>.</span><span class='nx'>color</span> <span class='o'>is</span> <span class='s'>&quot;black&quot;</span><span class='p'>)</span> 
     <span class='k'>else</span> 
       <span class='kc'>true</span>
     <span class='p'>)</span> <span class='o'>and</span>
-    <span class='p'>(</span><span class='err'>@</span><span class='p'>.</span><span class='nx'>node</span> <span class='o'>&gt;=</span> <span class='err'>@</span><span class='p'>.</span><span class='nx'>left</span><span class='p'>.</span><span class='nx'>node</span><span class='p'>)</span> <span class='o'>and</span> 
-    <span class='p'>(</span><span class='err'>@</span><span class='p'>.</span><span class='nx'>node</span> <span class='o'>&gt;=</span> <span class='err'>@</span><span class='p'>.</span><span class='nx'>right</span><span class='p'>.</span><span class='nx'>node</span><span class='p'>)</span> <span class='o'>and</span>
+    <span class='p'>(</span><span class='nx'>@</span><span class='p'>.</span><span class='nx'>node</span> <span class='o'>&gt;=</span> <span class='nx'>@</span><span class='p'>.</span><span class='nx'>left</span><span class='p'>.</span><span class='nx'>node</span><span class='p'>)</span> <span class='o'>and</span> 
+    <span class='p'>(</span><span class='nx'>@</span><span class='p'>.</span><span class='nx'>node</span> <span class='o'>&gt;=</span> <span class='nx'>@</span><span class='p'>.</span><span class='nx'>right</span><span class='p'>.</span><span class='nx'>node</span><span class='p'>)</span> <span class='o'>and</span>
 <span class='p'>})</span>
 </code></pre>
 </div>
@@ -559,6 +561,16 @@ node --harmony_proxies --harmony-collections script.js
 <h2 id='change_log'>Change Log</h2>
 
 <ul>
+<li>
+<p><a href=''>0.3.2</a> (September 5, 2012)</p>
+
+<ul>
+<li>disabling contracts for arrays (see issue <a href='https://github.com/disnet/contracts.coffee/issues/54'>54</a>)</li>
+
+<li>various bug fixes</li>
+</ul>
+</li>
+
 <li>
 <p><a href='https://github.com/disnet/contracts.coffee/tree/c0.3.1'>0.3.1</a> (July 15th, 2012)</p>
 
