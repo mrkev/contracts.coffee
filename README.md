@@ -49,6 +49,9 @@ experimental JavaScript flag in about:flags).
 
 Change Log
 ----------
+* [0.3.2](https://github.com/disnet/contracts.coffee/tree/c0.3.1) (September 5, 2012)
+  * disabling contracts for arrays (see issue [54](https://github.com/disnet/contracts.coffee/issues/54))
+  * various bug fixes
 * [0.3.1](https://github.com/disnet/contracts.coffee/tree/c0.3.1) (July 15th, 2012)
   * support for stable node.js (v0.8.0+)
   * some bug fixes
