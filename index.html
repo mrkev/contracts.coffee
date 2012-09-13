@@ -445,8 +445,8 @@ node --harmony_proxies --harmony-collections script.js
 <div class='highlight'><pre><code class='coffeescript'><span class='nx'>f</span> <span class='o'>::</span> <span class='p'>(</span><span class='nf'>(Num) -&gt;</span> <span class='nx'>Num</span><span class='p'>,</span> <span class='nf'>(Str) -&gt;</span> <span class='nx'>Str</span><span class='p'>)</span> <span class='o'>-&gt;</span> <span class='nx'>Num</span>
 <span class='nv'>f = </span><span class='nf'>(g, h) -&gt;</span> <span class='nx'>g</span> <span class='mi'>42</span>
 
-<span class='nv'>num = </span><span class='nf'>(x) -&gt;</span> <span class='s'>&quot;string&quot;</span>
-<span class='nv'>str = </span><span class='nf'>(x) -&gt;</span> <span class='mi'>42</span>
+<span class='nv'>str = </span><span class='nf'>(x) -&gt;</span> <span class='s'>&quot;string&quot;</span>
+<span class='nv'>num = </span><span class='nf'>(x) -&gt;</span> <span class='mi'>42</span>
 
 <span class='nx'>f</span> <span class='nx'>str</span><span class='p'>,</span> <span class='nx'>num</span>  <span class='c1'># fails when g is called inside f</span>
 <span class='nx'>f</span> <span class='nx'>num</span><span class='p'>,</span> <span class='nx'>num</span>  <span class='c1'># since h is never called it never fails</span>
@@ -562,7 +562,7 @@ node --harmony_proxies --harmony-collections script.js
 
 <ul>
 <li>
-<p><a href=''>0.3.2</a> (September 5, 2012)</p>
+<p><a href='https://github.com/disnet/contracts.coffee/tree/c0.3.1'>0.3.2</a> (September 5, 2012)</p>
 
 <ul>
 <li>disabling contracts for arrays (see issue <a href='https://github.com/disnet/contracts.coffee/issues/54'>54</a>)</li>
