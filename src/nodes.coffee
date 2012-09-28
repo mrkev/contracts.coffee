@@ -264,17 +264,7 @@ exports.Block = class Block extends Base
       prelude = "#{@compileNode merge(o, indent: '')}\n" if preludeExps.length
       @expressions = rest
     code = @compileWithDeclarations o
-    moduleShim = """
-      (function(cb) {
-        if (typeof(define) === 'function' && define.amd) {
-          require(['contracts'], cb);
-        } else if (typeof(require) === 'function') {
-          cb(require('contracts.js'));
-        } else {
-          cb(window.contracts);
-        }
-      })
-    """
+    moduleShim = "(function(cb) {if (typeof(define) === 'function' && define.amd) {require(['contracts'], cb); } else if (typeof(require) === 'function') {cb(require('contracts.js')); } else {cb(window.contracts); } })"
 
     # alias the contract lib to an internal prefix (to distinguish between
     # contract.coffee usages of contracts and user usages of it)
@@ -338,18 +328,13 @@ exports.Block = class Block extends Base
         };
       }
     """
+    loadContractsMin = 'var Undefined,Null,Num,Bool,Str,Odd,Even,Pos,Nat,Neg,Self,Any,None,__define,__require,__exports;Undefined=__contracts.Undefined;Null=__contracts.Null;Num=__contracts.Num;Bool=__contracts.Bool;Str=__contracts.Str;Odd=__contracts.Odd;Even=__contracts.Even;Pos=__contracts.Pos;Nat=__contracts.Nat;Neg=__contracts.Neg;Self=__contracts.Self;Any=__contracts.Any;None=__contracts.None;if(typeof define==="function"&&define.amd){__define=function(a,b,c){var d,e;if(typeof a!=="string"){d=b}else{d=c}e=function(){var a,b,c=[];for(a=0;a<arguments.length;a++){c[a]=__contracts.use(arguments[a],"#{o.filename}")}b=d.apply(this,c);return __contracts.setExported(b,"#{o.filename}")};if(!Array.isArray(b)){b=e}define(a,b,e)}}else if(typeof require!=="undefined"&&typeof exports!=="undefined"){__exports=__contracts.exports("#{o.filename}",exports);__require=function(a){a=require.apply(this,arguments);return __contracts.use(a,"#{o.filename}")}}'
 
     return code if o.bare
     if o.contracts
-      """
-        #{prelude}
-        (#{moduleShim}(function(__contracts) {
-          #{loadContracts}
-          (function(define, require, exports) {
-            #{code}
-          }).call(this, __define, __require, __exports);
-        }));
-      """
+      """#{prelude} (#{moduleShim}(function(__contracts) { #{loadContractsMin} (function(define, require, exports) {
+        #{code} 
+      }).call(this, __define, __require, __exports); }));"""
     else
       "#{prelude}(function() {\n#{code}\n}).call(this);"
 
