@@ -29,6 +29,6 @@
   "devDependencies": {
     "uglify-js":  ">=1.0.0",
     "jison":      ">=0.2.0",
-    "contracts.js": "0.2.x"
+    "contracts-js": "0.2.x"
   }
 }
