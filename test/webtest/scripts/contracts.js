@@ -471,7 +471,7 @@ printStackTrace.implementation.prototype = {
     pOpt = true;
     for (name in a) {
       if (a[name] instanceof Contract) {
-        if (!a[name].equals(b[name])) {
+        if (!((b[name] instanceof Contract) && (a[name].equals(b[name])))) {
           pOpt = false;
         }
       } else {
@@ -1037,7 +1037,7 @@ printStackTrace.implementation.prototype = {
       } else if (Array.isArray(obj)) {
         op = obj;
       } else {
-        proto = Object.getPrototypeOf(obj);
+        proto = obj === null ? null : Object.getPrototypeOf(obj);
         op = Proxy.create(handler, proto);
       }
       unproxy.set(op, this);
