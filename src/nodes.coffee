@@ -264,7 +264,7 @@ exports.Block = class Block extends Base
       prelude = "#{@compileNode merge(o, indent: '')}\n" if preludeExps.length
       @expressions = rest
     code = @compileWithDeclarations o
-    moduleShim = "(function(cb) {if (typeof(define) === 'function' && define.amd) {require(['contracts'], cb); } else if (typeof(require) === 'function') {cb(require('contracts-js')); } else {cb(window.contracts); } })"
+    moduleShim = "(function(cb) {if (typeof(define) === 'function' && define.amd) {require(['contracts-js'], cb); } else if (typeof(require) === 'function') {cb(require('contracts-js')); } else {cb(window['contracts-js']); } })"
 
     # alias the contract lib to an internal prefix (to distinguish between
     # contract.coffee usages of contracts and user usages of it)
