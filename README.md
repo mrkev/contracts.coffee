@@ -14,6 +14,8 @@ Like types but less painful, like assert but more useful.
 
 Documentation, usage, and more examples: http://disnetdev.com/contracts.coffee/
 
+**Note:** I am no longer actively maintaining contracts.coffee. Check out [contracts.js](https://github.com/disnet/contracts.js) instead which has great contracts.coffee inspired syntax thanks to [sweet.js](http://sweetjs.org) macros. 
+
 Quick start
 ===========
 
