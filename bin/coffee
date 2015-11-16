@@ -1,4 +1,4 @@
 #!/bin/sh
 
-exec node --harmony_proxies --harmony-collections $(dirname $0)/coffee-node $@
+exec node --harmony $(dirname $0)/coffee-node $@
 
